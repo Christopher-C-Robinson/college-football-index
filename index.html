@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#172333">
     <meta name="description" content="A transparent, schedule-adjusted analysis of every FBS and FCS college football team.">
     <title>College Football Index — FBS + FCS Team Analysis</title>
-    <link rel="stylesheet" href="./styles.css?v=91863d9352f8">
-    <script type="module" src="./js/app.js?v=16222ec6d132"></script>
+    <link rel="stylesheet" href="./styles.css?v=288b464d823c">
+    <script type="module" src="./js/app.js?v=26e3aed9c1df"></script>
   </head>
   <body>
     <header class="site-header">
@@ -137,9 +137,10 @@
         </div>
 
         <div class="dossier-grid">
-          <article class="panel schedule-panel">
-            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">GAME BY GAME</p><h3>Schedule ledger</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
-            <div id="schedule-list" class="schedule-list"></div>
+          <article class="panel season-outlook-panel" aria-labelledby="season-outlook-title">
+            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">FROM THIS SNAPSHOT</p><h3 id="season-outlook-title">Season outlook</h3></div></div>
+            <div id="season-projection-summary" class="season-projection-summary"></div>
+            <div id="schedule-forecast-note" class="schedule-forecast-note">Choose a team to see forecasts, actual scores, and forecast errors.</div>
           </article>
           <article class="panel form-panel">
             <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">PERFORMANCE TRACE</p><h3>Score margin, week by week</h3></div><span class="panel-tag">RAW RESULT</span></div>
@@ -149,6 +150,10 @@
             <div class="mini-insight" id="team-insight"></div>
           </article>
         </div>
+        <article class="panel schedule-panel" aria-labelledby="schedule-ledger-title">
+          <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">GAME BY GAME</p><h3 id="schedule-ledger-title">Schedule ledger</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
+          <div id="schedule-list" class="schedule-list"></div>
+        </article>
       </section>
 
       <section id="method" class="section-shell section-block method-section">

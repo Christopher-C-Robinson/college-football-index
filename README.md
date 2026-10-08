@@ -14,6 +14,7 @@ A neutral, transparent analysis site for every FBS and FCS team. One connected g
 - **Team comparison:** compare any two loaded teams by power, opponent power, expected wins, wins above expectation, efficiency, raw scoring margin, and estimated home-road swing. Matchup Lens and the simulator default to the current board’s top two ranked teams on initial load and whenever filters, weights, or data change; the simulator resets to neutral site and runs automatically. Changing either simulation team or its venue also updates results automatically. Manual choices stay available between board updates.
 - **Weight controls:** drag each slider, use its keyboard arrows, or click its decrease/increase arrows to adjust by one weight point. Displayed percentages show each weight’s normalized share of the blend, to one decimal where needed.
 - **Matchup simulator:** run 10,000 hypothetical outcomes for two teams at a neutral site or either team's home field. It uses adjusted power and each matchup's home/road effects for the spread, current scoring and points-allowed rates for the score total, and greater rating uncertainty for teams with fewer results.
+- **Season projections:** select any team in Team Explorer to see model scores and win chances for its listed schedule. Completed games compare saved or reconstructed pregame forecasts with actual scores, signed misses, and average forecast errors. Upcoming games use the loaded snapshot and the same simulator; expected remaining wins sum those probabilities. An expected final record appears only when every listed unplayed game is covered. Lower-division opponents and missing pregame forecasts are shown explicitly.
 - **Team identity:** the site starts with a neutral theme and no team selected. Selecting a team from the ranked board or explorer applies its CFBD primary and alternate colors.
 - **Searchable selectors:** type in any dropdown to narrow its choices. Team fields also match abbreviations and conferences; use arrow keys and Enter to select, or Escape to restore the current choice.
 
@@ -38,6 +39,14 @@ The workflow works with this repository's current GitHub Pages branch publishing
 The browser always checks the public snapshot. A deliberately imported file remains selected, with source/timestamps visible and a warning if the same-season public dataset is newer. “Return to public snapshot” switches back.
 
 The simulator and backtester share `js/prediction.js`; both use power and matchup-specific venue effects. Score totals use shrunk scoring/allowed averages. Logistic game error plus normal rating uncertainty remains an **uncalibrated baseline**. Injuries, weather, and tactical details are not included. Résumé remains retrospective; its expected wins are not claimed as pregame forecasts.
+
+Team Explorer loads compact season archives from `data/forecasts/`. Daily data refreshes save upcoming forecasts and retain their original values once kickoff passes, including games still awaiting a final result. Initial 2022–2026 historical forecasts are reconstructed from the preserved backtests and labeled accordingly; they were not published before those games. Past scores are never graded against the current full-season ratings. See [forecast archive details](data/forecasts/README.md).
+
+Generate the current archive without API calls:
+
+```sh
+node scripts/update-forecasts.mjs
+```
 
 ## Accuracy foundation
 

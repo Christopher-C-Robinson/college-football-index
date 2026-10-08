@@ -4,6 +4,7 @@ import { estimateHomeField } from '../js/model.js';
 import { createCfbdClient, promptForApiKey } from './lib/cfbd.mjs';
 import { assertValidDataset, datasetMetadata, readJson, writeJsonAtomic } from './lib/dataset.mjs';
 import { resolveSeason } from './lib/season.mjs';
+import { updateSeasonForecastArchive } from './lib/season-forecasts.mjs';
 
 const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -39,6 +40,13 @@ const dataset = {
 const report = assertValidDataset(dataset, { previous: previous?.meta?.season === season ? previous : null, now });
 dataset.meta.coverage = report.coverage;
 await writeJsonAtomic(outputPath, dataset);
+const forecasts = await updateSeasonForecastArchive(dataset, {
+  directory: resolve(projectDirectory, 'data/forecasts'),
+  baselineDirectory: resolve(projectDirectory, 'data/backtests')
+});
+console.log('Forecast archive: ' + forecasts.archive.predictions.length + ' predictions (' + forecasts.archive.meta.counts.snapshot + ' saved pregame, ' + forecasts.archive.meta.counts.reconstructed + ' reconstructed).');
+if (forecasts.newlyRetired) console.warn('Warning: ' + forecasts.newlyRetired + ' forecasts retired after schedule identity changes; original records remain in the archive.');
+if (forecasts.baselineIdentityMismatches.length) console.warn('Warning: ' + forecasts.baselineIdentityMismatches.length + ' baseline forecasts no longer match the schedule and remain unavailable.');
 console.log('Saved ' + dataset.games.length + ' scheduled games and ' + dataset.teamStats.length + ' team box-score entries.');
 console.log('Home-field model: ' + homeField.gamesUsed + ' completed FBS/FCS games across ' + homeField.seasons.length + ' seasons; league estimate ' + homeField.leaguePoints.toFixed(1) + ' points.');
 console.log('Rated-game box-score coverage: ' + (report.coverage.boxScoreCoverage * 100).toFixed(1) + '%.');

@@ -3,12 +3,16 @@ import { simulateMatchup } from './prediction.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
 import { enhanceSearchableSelects } from './searchable-select.js';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
+import { buildSeasonProjections, validateForecastArchive } from './season-projections.js';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote } from './season-projections-view.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
 const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
-const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
+const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, forecastArchive: null, forecastStatus: 'unavailable', focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
+const forecastArchiveLoads = new Map();
+const seasonAnalysisCache = new Map();
 const ids = function (id) { return document.getElementById(id); };
 
 function escapeHtml(value) {
@@ -24,7 +28,6 @@ function winnerScore(game, teamName) { return teamKey(game.homeTeam) === teamKey
 function opponentScore(game, teamName) { return teamKey(game.homeTeam) === teamKey(teamName) ? game.awayPoints : game.homePoints; }
 function opponentName(game, teamName) { return teamKey(game.homeTeam) === teamKey(teamName) ? game.awayTeam : game.homeTeam; }
 function isAway(game, teamName) { return teamKey(game.homeTeam) !== teamKey(teamName); }
-function isFbsGame(game) { return String(game.homeClassification).toLowerCase() === 'fbs' && String(game.awayClassification).toLowerCase() === 'fbs'; }
 function margin(game, teamName) { return winnerScore(game, teamName) - opponentScore(game, teamName); }
 function compactName(name) {
   const value = String(name || '');
@@ -109,9 +112,6 @@ function teamGames(name) {
   return state.model.games.filter(function (game) {
     return teamKey(game.homeTeam) === teamKey(name) || teamKey(game.awayTeam) === teamKey(name);
   }).sort(function (a, b) { return String(a.startDate || '').localeCompare(String(b.startDate || '')); });
-}
-function opponentClass(game, name) {
-  return teamKey(game.homeTeam) === teamKey(name) ? game.awayClassification : game.homeClassification;
 }
 function formatRecord(team) {
   return team ? recordText(team.wins, team.losses, team.ties) : '0-0';
@@ -286,9 +286,12 @@ function renderDossier() {
     ids('team-home-field').textContent = '—';
     ids('team-home-field-sample').textContent = 'No team selected';
     ids('schedule-count').textContent = 'NO TEAM DATA';
+    ids('season-projection-summary').hidden = false;
+    ids('season-projection-summary').innerHTML = '<p class="panel-intro">Choose a team to see expected remaining wins, a projected record, and past forecast errors.</p>';
+    ids('schedule-forecast-note').hidden = true;
     ids('schedule-list').innerHTML = '<div class="schedule-empty">' + (state.model.allTeams.length ? 'Choose a team above or from the rankings board to explore its schedule.' : 'Import a season dataset to explore any team’s schedule.') + '</div>';
     ids('trace-intro').textContent = 'Load a complete FBS + FCS season file to see a team’s performance trace.';
-    ids('margin-chart').innerHTML = '<div class="schedule-empty">No team data loaded.</div>';
+    ids('margin-chart').innerHTML = '<div class="schedule-empty">Choose a team to view its results.</div>';
     ids('team-insight').textContent = state.model.allTeams.length ? 'Select a team to open its season profile.' : 'The team explorer is ready for the full season dataset.';
     return;
   }
@@ -308,26 +311,21 @@ function renderDossier() {
   ids('team-home-field-sample').textContent = team.homeFieldHomeGames || team.homeFieldRoadGames
     ? 'HOME ' + team.homeFieldHomeGames + ' · ROAD ' + team.homeFieldRoadGames + ' GAMES'
     : 'Field baseline · no history';
-  ids('schedule-count').textContent = String(played.length) + ' FINAL · ' + String(games.length - played.length) + ' UPCOMING';
-  const sorted = games.sort(function (a, b) { return String(a.startDate || '').localeCompare(String(b.startDate || '')); });
-  if (!sorted.length) {
+  let analysis = seasonAnalysisCache.get(teamKey(team.name));
+  if (!analysis) {
+    analysis = buildSeasonProjections(state.model, team.name, state.forecastArchive);
+    seasonAnalysisCache.set(teamKey(team.name), analysis);
+  }
+  const canceled = analysis.rows.filter(row => row.status === 'canceled').length;
+  ids('schedule-count').textContent = played.length + ' FINAL · ' + analysis.summary.totalRemainingGames + ' UNPLAYED' + (canceled ? ' · ' + canceled + ' CANCELED' : '');
+  ids('season-projection-summary').hidden = false;
+  ids('season-projection-summary').innerHTML = renderProjectionSummary(analysis);
+  ids('schedule-forecast-note').hidden = false;
+  ids('schedule-forecast-note').innerHTML = renderProjectionNote(analysis, { archiveStatus: state.forecastStatus });
+  if (!analysis.rows.length) {
     ids('schedule-list').innerHTML = '<div class="schedule-empty">No games in this season file yet.</div>';
   } else {
-    ids('schedule-list').innerHTML = sorted.map(function (game) {
-      const done = completed(game);
-      const opponent = opponentName(game, team.name);
-      const ownScore = done ? winnerScore(game, team.name) : null;
-      const oppScore = done ? opponentScore(game, team.name) : null;
-      const resultClass = done ? (ownScore > oppScore ? '' : ownScore < oppScore ? ' loss' : '') : ' upcoming';
-      const resultText = done ? (ownScore > oppScore ? 'W' : ownScore < oppScore ? 'L' : 'T') + ' ' + ownScore + '–' + oppScore : 'UP NEXT';
-      const classification = String(opponentClass(game, team.name) || 'unknown').toUpperCase();
-      const site = game.neutralSite ? 'Neutral site' : (isAway(game, team.name) ? 'Away' : 'Home');
-      return '<div class="schedule-row">' +
-        '<div class="schedule-date">' + escapeHtml(shortDate(game.startDate)) + '<br>WK ' + escapeHtml(game.week || '—') + '</div>' +
-        '<div class="schedule-opponent"><span class="opponent-initial">' + escapeHtml(initials(opponent)) + '</span><div><div class="opponent-name">' + (game.neutralSite ? '' : isAway(game, team.name) ? '@ ' : 'vs. ') + escapeHtml(opponent) + '</div><div class="opponent-meta">' + escapeHtml(classification) + ' · ' + escapeHtml(site) + '</div></div></div>' +
-        '<div class="schedule-result' + resultClass + '">' + escapeHtml(resultText) + (done ? '<span>' + (isFbsGame(game) ? 'FBS GAME' : classification + ' GAME') + '</span>' : '<span>' + escapeHtml(game.venue || 'SCHEDULED') + '</span>') + '</div>' +
-        '</div>';
-    }).join('');
+    ids('schedule-list').innerHTML = renderSeasonProjections(analysis);
   }
   renderTrace(team, played);
   renderInsight(team, played);
@@ -520,7 +518,7 @@ function runMatchupSimulation() {
       homeTeam: reversed ? teamB.name : teamA.name,
       awayTeam: reversed ? teamA.name : teamB.name,
       neutralSite: venue === 'neutral'
-    }, { runs: SIMULATION_RUNS, seed: [state.model.meta.season, state.model.meta.resultsThrough, teamA.name, teamB.name, venue].join('|') });
+    }, { runs: SIMULATION_RUNS });
   } catch (error) {
     output.innerHTML = '<div class="simulation-empty">' + escapeHtml(error.message || 'Both teams need completed FBS or FCS results in the loaded data.') + '</div>';
     return;
@@ -593,6 +591,9 @@ function setDataset(raw, message, persist, source = 'imported') {
   const model = buildModel(raw, state.weights);
   state.raw = raw;
   state.model = model;
+  state.forecastArchive = null;
+  state.forecastStatus = 'loading';
+  seasonAnalysisCache.clear();
   state.source = source;
   state.focusTeam = teamByKey(previousFocus) ? teamByKey(previousFocus).name : null;
   state.compareA = null; state.compareB = null;
@@ -613,6 +614,33 @@ function setDataset(raw, message, persist, source = 'imported') {
     ids('import-message').className = 'import-message';
     ids('import-message').textContent = (message || '') + storageWarning;
   }
+  loadSeasonForecasts(raw);
+}
+
+async function loadSeasonForecasts(raw) {
+  const season = Number(raw.meta?.season);
+  const cacheKey = season + '|' + (raw.meta?.generatedAt || 'undated');
+  try {
+    if (!Number.isInteger(season) || season < 2000 || season > 2100) throw new Error('A valid season is required.');
+    if (!forecastArchiveLoads.has(cacheKey)) {
+      forecastArchiveLoads.set(cacheKey, fetch('./data/forecasts/' + season + '.json', { cache: 'no-store' }).then(async response => {
+        if (!response.ok) throw new Error('Pregame forecasts are unavailable for this season.');
+        return validateForecastArchive(await response.json(), season);
+      }).catch(error => {
+        forecastArchiveLoads.delete(cacheKey);
+        throw error;
+      }));
+    }
+    const archive = await forecastArchiveLoads.get(cacheKey);
+    if (state.raw !== raw) return;
+    state.forecastArchive = archive;
+    state.forecastStatus = 'ready';
+  } catch (error) {
+    if (state.raw !== raw) return;
+    state.forecastStatus = 'unavailable';
+  }
+  seasonAnalysisCache.clear();
+  renderDossier();
 }
 
 function selectFocusTeam(name, scrollToProfile) {
@@ -707,14 +735,18 @@ document.addEventListener('click', async function (event) {
     return;
   }
   if (event.target.id === 'reset-data' || event.target.closest('[data-return-public]')) {
+    const selectionAtRequest = state.raw;
     try {
       const bundled = validateDataset(await loadBundled());
+      if (state.raw !== selectionAtRequest) return;
       state.publicDataset = bundled;
       state.publicUnavailable = false;
+      forecastArchiveLoads.clear();
       let message = 'Using the latest public snapshot.';
       try { localStorage.removeItem(STORAGE_KEY); } catch (storageError) { message += ' Browser storage could not be cleared; the saved import may return on your next visit.'; }
       setDataset(bundled, message, false, 'public');
     } catch (error) {
+      if (state.raw !== selectionAtRequest) return;
       ids('import-message').className = 'import-message is-error';
       ids('import-message').textContent = error.message;
     }
