@@ -72,6 +72,8 @@ test('provider-completed zero-zero rows remain raw but do not count as played ga
   assert.match(report.warnings.join(' '), /0–0.*unplayed/);
   assert.match(report.warnings.join(' '), /box scores.*ignored/);
   assert.deepEqual(value, original);
+  const futureCancellation = dataset([game({ homePoints: 0, awayPoints: 0, startDate: '2026-12-01T00:00:00Z' })]);
+  assert.equal(assertValidDataset(futureCancellation, { now }).coverage.completedGames, 0);
 });
 
 test('collector preserves zero-zero schedule payloads and ignores their cached boxes', async t => {

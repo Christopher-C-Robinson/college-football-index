@@ -120,7 +120,7 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
     if (typeof game.completed !== 'boolean') errors.push('Game ' + id + ' is missing its completion flag.');
     if (game.completed === true) {
       if (!validScore(game.homePoints) || !validScore(game.awayPoints)) errors.push('Completed game ' + id + ' must have nonnegative integer scores.');
-      if (start > generatedAt) errors.push('Completed game ' + id + ' kicks off after dataset generation.');
+      if (completed(game) && start > generatedAt) errors.push('Completed game ' + id + ' kicks off after dataset generation.');
       if (!game.homeClassification || !game.awayClassification) {
         unclassifiedGames += 1;
         for (const side of ['home', 'away']) if (!game[side + 'Classification'] && knownDivisionOne.has(game[side + 'Team'])) errors.push('Completed game ' + id + ' is missing a known Division I team classification.');

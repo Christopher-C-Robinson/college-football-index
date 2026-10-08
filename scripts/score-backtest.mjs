@@ -1,5 +1,5 @@
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { dirname, extname, resolve } from 'node:path';
+import { dirname, extname, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { scoreReports } from './lib/scoring.mjs';
 
@@ -39,7 +39,7 @@ export async function runScorer(args = process.argv.slice(2)) {
     reports.push(data);
     reportPaths.push(path);
   }
-  const summary = { ...scoreReports(reports), files: reportPaths };
+  const summary = { ...scoreReports(reports), files: reportPaths.map(path => relative(process.cwd(), path)) };
   const serialized = JSON.stringify(summary, null, 2) + '\n';
   if (outputPath) {
     await mkdir(dirname(outputPath), { recursive: true });

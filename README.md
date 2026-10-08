@@ -48,12 +48,21 @@ node --test
 node scripts/validate-data.mjs
 ```
 
-Collect raw history once, replay 2022–2026, and score it:
+Reproduce the saved baseline without an API key or network calls:
+
+```sh
+node scripts/backtest.mjs --history data/history/baseline-2026-10-08 --from 2022 --to 2026 --out .cache/reproduced-baseline
+node scripts/score-backtest.mjs .cache/reproduced-baseline --out .cache/reproduced-baseline/summary.json
+```
+
+The [saved baseline reports](data/backtests/README.md) separate completed seasons from incomplete 2026. Exact compressed source archives and fingerprints are preserved with them.
+
+To collect a fresh dataset and create a separate evaluation:
 
 ```sh
 node scripts/sync-history.mjs --from 2018 --to 2026 --stats-from 2022 --out .cache/history
-node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out data/backtests
-node scripts/score-backtest.mjs data/backtests --out data/backtests/summary.json
+node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out .cache/backtests
+node scripts/score-backtest.mjs .cache/backtests --out .cache/backtests/summary.json
 ```
 
 The four warmup seasons are required for five-season venue fits. Historical collection uses the same secret/prompt as current sync. Alternatively, run the workflow with `task: backtest` on the desired branch; it uploads raw archives and reports and does not publish the site. Reports include margin MAE/RMSE/bias, Brier/log loss, reliability bins, 80% interval coverage, and subdivision/venue/season-phase/favorite-size/evidence splits.

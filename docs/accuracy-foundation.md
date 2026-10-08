@@ -2,6 +2,8 @@
 
 This release establishes a reproducible evaluation baseline. It fixes objectively incorrect inputs and makes future model changes measurable. It does not tune the 28-point cap, prior, venue pooling, probability scale, composite weights, or simulator error distribution.
 
+The [first saved baseline](../data/backtests/README.md) covers 6,307 games in completed 2022–2025 seasons and 647 games in incomplete 2026. Completed-season margin MAE is 14.91 points; the simulator's middle 80% range contained 67.6% of outcomes. These measurements establish calibration work to do; this release does not claim predictive gains. Exact compressed inputs are committed for replay without API calls.
+
 ## Shared implementation
 
 | File | Responsibility |
