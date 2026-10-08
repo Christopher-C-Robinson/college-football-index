@@ -35,23 +35,87 @@ function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisio
     (Number.isInteger(subdivisionRank) && subdivisionRank > 0 ? '<span class="forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + subdivisionRank + '</span>' : '');
 }
 
-function scoreline(team, opponent, score) {
-  const label = team + ' ' + number(score.for, 0) + ' — ' + opponent + ' ' + number(score.against, 0);
-  return '<div class="forecast-scoreline" aria-label="' + escapeHtml(label) + '">' +
-    '<span class="forecast-score-side"><span>' + escapeHtml(team) + '</span><strong>' + number(score.for, 0) + '</strong></span>' +
-    '<span class="forecast-score-dash" aria-hidden="true">—</span>' +
-    '<span class="forecast-score-side"><span>' + escapeHtml(opponent) + '</span><strong>' + number(score.against, 0) + '</strong></span></div>';
-}
-
 function forecastSource(forecast, teamName, opponentName) {
-  const priorSources = [[teamName, forecast.teamPriorSeason], [opponentName, forecast.opponentPriorSeason]]
+  const priorSources = [[teamName, forecast.teamPriorSeason, forecast.teamPriorGames], [opponentName, forecast.opponentPriorSeason, forecast.opponentPriorGames]]
     .filter(([, season]) => Number.isInteger(season) && season > 0);
   const priorLabel = priorSources.length ? '<span class="forecast-cold-start">Prior-season fallback</span>' +
-    priorSources.map(([name, season]) => '<span class="forecast-cold-start">' + escapeHtml(name) + ' uses ' + season + ' season data · no current-season FBS/FCS results</span>').join('')
+    priorSources.map(([name, season, games]) => '<span class="forecast-cold-start">' + escapeHtml(name) + ' uses ' + season + ' season data' +
+      (finite(games) ? ' (' + plural(games, 'FBS/FCS result') + ')' : '') + ' · no current-season FBS/FCS results</span>').join('')
     : forecast.coldStart ? '<span class="forecast-cold-start">Cold start · limited results</span>' : '';
   return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(forecast.generatedAt, true) +
     (forecast.modelVersion ? ' · v' + escapeHtml(forecast.modelVersion) : '') +
     priorLabel + '</p>';
+}
+
+function scoreComparison(row, teamName, forecast, actual) {
+  const actualMargin = actual ? actual.for - actual.against : null;
+  const values = [
+    [teamName, forecast?.for, actual?.for, actual && forecast ? actual.for - forecast.for : null, false],
+    [row.opponentName, forecast?.against, actual?.against, actual && forecast ? actual.against - forecast.against : null, false],
+    [teamName + ' margin', forecast?.margin, actualMargin, actual && forecast ? actualMargin - forecast.margin : null, true]
+  ];
+  return '<section class="forecast-score-comparison"><h5 class="forecast-section-title">Score comparison</h5>' +
+    '<table class="forecast-score-table"><caption class="sr-only">Current projected and actual scores for ' + escapeHtml(teamName + ' versus ' + row.opponentName) + '</caption>' +
+    '<thead><tr><th scope="col">Team</th><th scope="col">Model<small>current</small></th><th scope="col">Actual</th><th scope="col">Difference<small>actual − model</small></th></tr></thead><tbody>' +
+    values.map(([name, model, result, difference, margin]) => '<tr' + (margin ? ' class="is-margin"' : '') + '><th scope="row">' + escapeHtml(name) + '</th><td class="is-model">' +
+      (margin ? signed(model) : number(model)) + '</td><td>' + (margin ? signed(result) : number(result, 0)) + '</td><td class="is-difference">' + signed(difference) + '</td></tr>').join('') + '</tbody></table>' +
+    '<p class="forecast-table-note">' + (actual ? 'Positive margin difference means ' + escapeHtml(teamName) + ' performed better than the current projection.' : row.status === 'canceled' ? 'Canceled game; no result to compare.' : row.status === 'unplayed' ? 'Final result not available.' : 'Actual scores will appear after the game is final.') + '</p></section>';
+}
+
+function marginGraphic(forecast, actual) {
+  if (!finite(forecast.marginLow80) || !finite(forecast.marginHigh80) || forecast.marginLow80 > forecast.marginHigh80) return '';
+  const actualMargin = actual ? actual.for - actual.against : null;
+  const domain = Math.ceil(Math.max(Math.abs(forecast.marginLow80), Math.abs(forecast.marginHigh80), Math.abs(forecast.margin), finite(actualMargin) ? Math.abs(actualMargin) : 0, 1) * 1.12);
+  const x = value => (150 + value / domain * 134).toFixed(2);
+  const label = 'Middle 80% of simulated scoring margins: ' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + ' points. Current projection ' + signed(forecast.margin) + (actual ? '. Actual margin ' + signed(actualMargin) : '') + '. Exploratory, uncalibrated range.';
+  return '<div class="forecast-margin-range"><div class="forecast-range-heading"><span>Middle 80% of simulated margins</span><strong>' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + '</strong></div>' +
+    '<svg class="forecast-range-chart" viewBox="0 0 300 52" role="img" aria-label="' + escapeHtml(label) + '">' +
+    '<line class="forecast-range-axis" x1="16" x2="284" y1="20" y2="20"/><line class="forecast-range-zero" x1="150" x2="150" y1="7" y2="30"/>' +
+    '<line class="forecast-range-band" x1="' + x(forecast.marginLow80) + '" x2="' + x(forecast.marginHigh80) + '" y1="20" y2="20"/>' +
+    '<circle class="forecast-range-model" cx="' + x(forecast.margin) + '" cy="20" r="5"/>' +
+    (actual ? '<path class="forecast-range-actual" d="M ' + x(actualMargin) + ' 12 l 6 8 l -6 8 l -6 -8 Z"/>' : '') +
+    '<text class="forecast-range-label" x="16" y="47" text-anchor="start">−' + domain + '</text><text class="forecast-range-label" x="150" y="47" text-anchor="middle">0</text><text class="forecast-range-label" x="284" y="47" text-anchor="end">+' + domain + '</text></svg>' +
+    '<div class="forecast-range-legend"><span><i class="is-model" aria-hidden="true"></i>Projection</span>' + (actual ? '<span><i class="is-actual" aria-hidden="true"></i>Actual</span>' : '') + '<span>Exploratory · uncalibrated</span></div></div>';
+}
+
+function matchupOutlook(row, teamName, forecast, actual) {
+  if (!forecast) return '<section class="forecast-matchup-outlook"><h5 class="forecast-section-title">Model outlook</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'The current snapshot cannot project this game.') + '</p></section>';
+  const probability = forecast.winProbability * 100;
+  const probabilityLabel = teamName + ' win probability ' + number(probability) + ' percent; ' + row.opponentName + ' ' + number(100 - probability) + ' percent.';
+  return '<section class="forecast-matchup-outlook"><h5 class="forecast-section-title">Model outlook · current</h5>' +
+    '<div class="forecast-win-heading"><span>' + escapeHtml(teamName) + '<small>win chance</small></span><strong>' + number(probability) + '%</strong></div>' +
+    '<div class="forecast-win-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span style="width:' + probability.toFixed(3) + '%"></span></div>' +
+    '<div class="forecast-win-labels"><span>' + escapeHtml(teamName) + '</span><span>' + escapeHtml(row.opponentName) + '</span></div>' +
+    '<dl class="forecast-margin-factors" title="The power gap and venue adjustment sum to the projected margin before rounding."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
+    '<div><dt>Neutral strength gap</dt><dd>' + signed(forecast.neutralMargin) + '</dd></div><div><dt>Venue adjustment</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div></dl>' +
+    marginGraphic(forecast, actual) + '</section>';
+}
+
+function matchupContext(row, teamName, forecast) {
+  const team = row.matchup?.team || {};
+  const opponent = row.matchup?.opponent || {};
+  const yardsPerPlay = (value, coverage) => {
+    if (!finite(value)) return '—';
+    if (!coverage) return number(value, 2);
+    const method = String(coverage.method || '').replace(/-/g, ' ');
+    const detail = 'Raw current-season yards/play' + (finite(coverage.games) ? ' from ' + plural(coverage.games, 'covered FBS/FCS game') : '') +
+      (method ? '; ' + method : '') + (finite(coverage.plays) && coverage.plays > 0 ? ' using ' + plural(coverage.plays, 'play') : '') +
+      (coverage.method === 'play-weighted' && coverage.rateOnlyGames > 0 ? '; ' + plural(coverage.rateOnlyGames, 'game') + ' without play counts excluded' : '') + '.';
+    return '<span title="' + escapeHtml(detail) + '">' + number(value, 2) + '</span>';
+  };
+  const power = (entry, value, priorSeason) => signed(finite(value) ? value : entry.power) +
+    (priorSeason ? '<small>' + escapeHtml(priorSeason) + ' data</small>' : '<small>current season</small>');
+  const rows = [
+    ['Record · current season', escapeHtml(team.record || '—'), escapeHtml(opponent.record || '—')],
+    ['FBS/FCS results · current', number(finite(forecast?.teamCurrentGames) ? forecast.teamCurrentGames : team.ratedGames, 0), number(finite(forecast?.opponentCurrentGames) ? forecast.opponentCurrentGames : opponent.ratedGames, 0)],
+    ['Power · points above field', power(team, forecast?.teamPower, forecast?.teamPriorSeason), power(opponent, forecast?.opponentPower, forecast?.opponentPriorSeason)],
+    ['Offense · yards/play', yardsPerPlay(team.offenseYpp, team.offenseYppCoverage), yardsPerPlay(opponent.offenseYpp, opponent.offenseYppCoverage)],
+    ['Defense · yards allowed/play', yardsPerPlay(team.defenseYpp, team.defenseYppCoverage), yardsPerPlay(opponent.defenseYpp, opponent.defenseYppCoverage)]
+  ];
+  return '<section class="forecast-matchup-context"><h5 class="forecast-section-title">Team context · current season</h5>' +
+    '<table class="forecast-context-table"><caption class="sr-only">Current matchup data for ' + escapeHtml(teamName + ' and ' + row.opponentName) + '</caption><thead><tr><th scope="col">Metric</th><th scope="col">' + escapeHtml(teamName) + '</th><th scope="col">' + escapeHtml(row.opponentName) + '</th></tr></thead><tbody>' +
+    rows.map(([label, first, second]) => '<tr><th scope="row">' + label + '</th><td>' + first + '</td><td>' + second + '</td></tr>').join('') + '</tbody></table>' +
+    '<p class="forecast-table-note">Power sources are labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
 }
 
 function renderRow(row, teamName, rankingsReady) {
@@ -59,29 +123,17 @@ function renderRow(row, teamName, rankingsReady) {
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
   const status = { final: 'Final', upcoming: 'Scheduled', unplayed: 'Not final', canceled: 'Canceled' }[row.status] || 'Scheduled';
   const sitePrefix = row.site === 'Away' ? '@ ' : 'vs. ';
-  const modelLabel = 'MODEL · CURRENT';
-  const noForecast = row.unavailableReason || 'The current snapshot cannot project this game.';
   const actualLabel = actual ? '<span class="forecast-outcome' + (actual.outcome === 'L' ? ' is-loss' : '') + '">' + escapeHtml(actual.outcome) + '</span>' : '';
-  const actualContent = actual ? scoreline(teamName, row.opponentName, actual)
-    : '<p class="forecast-no-score">' + (row.status === 'canceled' ? 'Game canceled' : row.status === 'unplayed' ? 'Final result not available' : 'Not played yet') + '</p>';
-  const modelContent = forecast ? scoreline(teamName, row.opponentName, forecast)
-    : '<p class="forecast-unavailable">' + escapeHtml(noForecast) + '</p>';
-  const error = forecast && actual && row.error && finite(row.error.margin) ? row.error : null;
-  const errors = error ? '<dl class="forecast-errors" aria-label="Actual minus projected scores">' +
-    '<div><dt>Margin miss</dt><dd>' + signed(error.margin) + '<small> pts</small></dd></div>' +
-    '<div><dt>Team score miss</dt><dd>' + signed(error.teamScore) + '</dd></div>' +
-    '<div><dt>Opponent score miss</dt><dd>' + signed(error.opponentScore) + '</dd></div></dl>' : '';
   return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + '" role="listitem">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p></div><span class="forecast-game-status">' + status + '</span></div>' +
-    '<div class="forecast-score-grid"><div class="forecast-score-card"><span class="forecast-card-label">' + modelLabel + '</span>' + modelContent + '</div>' +
-    '<div class="forecast-score-card is-actual"><span class="forecast-card-label">ACTUAL ' + actualLabel + '</span>' + actualContent + '</div></div>' +
-    (forecast ? '<div class="forecast-probability"><span>Win chance <strong>' + number(forecast.winProbability * 100, 1) + '%</strong></span><span>Model margin <strong>' + signed(forecast.margin) + ' pts</strong></span></div>' + forecastSource(forecast, teamName, row.opponentName) : '') + errors + '</article>';
+    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p></div><span class="forecast-game-status">' + status + ' ' + actualLabel + '</span></div>' +
+    '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + matchupContext(row, teamName, forecast) + '</div>' +
+    (forecast ? forecastSource(forecast, teamName, row.opponentName) : '') + '</article>';
 }
 
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
-  return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' model forecasts and actual results') + '">' +
+  return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
     analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady)).join('') + '</div>';
 }
 

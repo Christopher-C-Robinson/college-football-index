@@ -14,12 +14,37 @@ function orientForecast(prediction, home, generatedAt) {
     against: home ? prediction.projectedAwayScore : prediction.projectedHomeScore,
     margin: home ? prediction.predictedMargin : -prediction.predictedMargin,
     winProbability: home ? prediction.homeWinProbability : 1 - prediction.homeWinProbability,
+    neutralMargin: home ? prediction.homePower - prediction.awayPower : prediction.awayPower - prediction.homePower,
+    venueAdjustment: home ? prediction.venuePoints : -prediction.venuePoints,
+    marginLow80: home ? prediction.marginLow80 : -prediction.marginHigh80,
+    marginHigh80: home ? prediction.marginHigh80 : -prediction.marginLow80,
+    teamPower: home ? prediction.homePower : prediction.awayPower,
+    opponentPower: home ? prediction.awayPower : prediction.homePower,
+    teamCurrentGames: home ? prediction.homeGames : prediction.awayGames,
+    opponentCurrentGames: home ? prediction.awayGames : prediction.homeGames,
     kind: 'current', generatedAt,
     modelVersion: prediction.modelVersion,
     coldStart: Boolean(prediction.homeColdStart || prediction.awayColdStart),
     preseasonFallbackVersion: prediction.preseasonFallbackVersion || null,
     teamPriorSeason: (home ? prediction.homePriorSeason : prediction.awayPriorSeason) || null,
-    opponentPriorSeason: (home ? prediction.awayPriorSeason : prediction.homePriorSeason) || null
+    opponentPriorSeason: (home ? prediction.awayPriorSeason : prediction.homePriorSeason) || null,
+    teamPriorGames: (home ? prediction.homePriorGames : prediction.awayPriorGames) || null,
+    opponentPriorGames: (home ? prediction.awayPriorGames : prediction.homePriorGames) || null
+  };
+}
+
+function matchupTeam(team, name, effectivePower) {
+  const modeled = divisionOne(team?.classification);
+  const power = finite(effectivePower) ? effectivePower : team?.power;
+  return {
+    name,
+    record: modeled ? team.wins + '–' + team.losses + (team.ties ? '–' + team.ties : '') : null,
+    ratedGames: modeled ? team.coverage?.results ?? null : null,
+    power: modeled && finite(power) ? power : null,
+    offenseYpp: modeled ? team.metrics?.offenseYpp ?? null : null,
+    defenseYpp: modeled ? team.metrics?.defenseYpp ?? null : null,
+    offenseYppCoverage: modeled ? team.metrics?.coverage?.offenseYpp ?? null : null,
+    defenseYppCoverage: modeled ? team.metrics?.coverage?.defenseYpp ?? null : null
   };
 }
 
@@ -87,6 +112,10 @@ export function buildSeasonProjections(model, teamName) {
       return { gameId: idOf(game), date: game.startDate, week: game.week, opponentName, classification,
         site: game.neutralSite ? 'Neutral site' : home ? 'Home' : 'Away', venue: game.venue || '',
         status, actual, forecast, error, unavailableReason, timeTBD: game.startTimeTBD === true,
+        matchup: {
+          team: matchupTeam(team, team.name, forecast?.teamPower),
+          opponent: matchupTeam(opponent, opponentName, forecast?.opponentPower)
+        },
         opponentRank: overallRanks.get(key(opponentName)) || null,
         opponentSubdivisionRank: subdivisionRanks.get(key(opponentName)) || null,
         rankFieldSize: rankedTeams.length, subdivisionFieldSize: subdivisionSizes.get(classification.toLowerCase()) || 0,
