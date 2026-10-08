@@ -1,4 +1,6 @@
 const DEFAULTS = { power: 55, efficiency: 30, resume: 15 };
+export const HOME_FIELD_POINTS = 2.5;
+export const WIN_PROBABILITY_SCALE = 7.5;
 
 function text(value) {
   return value === undefined || value === null ? '' : String(value).trim();
@@ -61,6 +63,7 @@ function addTeam(teams, name, conference, classification) {
   if (!teams.has(normalized)) {
     teams.set(normalized, {
       name: text(name), conference: text(conference), classification: text(classification).toLowerCase(),
+      color: '', alternateColor: '', abbreviation: '',
       games: [], wins: 0, losses: 0, ties: 0, fbsWins: 0, fbsLosses: 0, fbsTies: 0,
       fcsWins: 0, fcsLosses: 0, fcsTies: 0, overallPointsFor: 0, overallPointsAgainst: 0,
       opponents: [], expectedWins: 0, winsAboveExpectation: 0, opponentPower: null, power: null,
@@ -200,6 +203,25 @@ export function buildModel(rawData, requestedWeights) {
     if (away) away.games.push(game);
   });
 
+  const metadataRows = Array.isArray(data.teamMetadata) ? data.teamMetadata : [];
+  const metadataByName = new Map();
+  metadataRows.forEach(function (entry) {
+    const aliases = [entry.school, entry.team].concat(Array.isArray(entry.alternateNames) ? entry.alternateNames : []);
+    aliases.forEach(function (alias) {
+      const aliasKey = key(alias);
+      if (aliasKey && !metadataByName.has(aliasKey)) metadataByName.set(aliasKey, entry);
+    });
+  });
+  teams.forEach(function (team, teamName) {
+    const metadata = metadataByName.get(teamName);
+    if (!metadata) return;
+    if (!team.conference && metadata.conference) team.conference = text(metadata.conference);
+    if (!team.classification && metadata.classification) team.classification = text(metadata.classification).toLowerCase();
+    team.color = text(metadata.color || metadata.primaryColor);
+    team.alternateColor = text(metadata.alternateColor || metadata.altColor);
+    team.abbreviation = text(metadata.abbreviation);
+  });
+
   const ratedGames = games.filter(function (game) {
     return isCompleted(game) && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
   });
@@ -248,7 +270,7 @@ export function buildModel(rawData, requestedWeights) {
     gameCount.set(key(game.homeTeam), (gameCount.get(key(game.homeTeam)) || 0) + 1);
     gameCount.set(key(game.awayTeam), (gameCount.get(key(game.awayTeam)) || 0) + 1);
   });
-  const homeField = 2.5;
+  const homeField = HOME_FIELD_POINTS;
   const prior = 2;
   for (let iteration = 0; iteration < 60; iteration += 1) {
     const sums = new Map(ratingTeams.map(function (teamName) { return [teamName, 0]; }));
@@ -381,5 +403,5 @@ export function formatNumber(value, digits) {
 }
 
 export function standardWinProbability(predictedMargin) {
-  return 1 / (1 + Math.exp(-predictedMargin / 7.5));
+  return 1 / (1 + Math.exp(-predictedMargin / WIN_PROBABILITY_SCALE));
 }

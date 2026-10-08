@@ -64,6 +64,7 @@ for (const classification of ['fbs', 'fcs']) {
   const result = await request('/games', { year: year, seasonType: 'regular', classification: classification });
   if (Array.isArray(result)) schedules.push(...result);
 }
+const teamMetadata = await request('/teams', { year: year });
 const gamesById = new Map();
 schedules.forEach(function (game) { gamesById.set(String(game.id), game); });
 const games = Array.from(gamesById.values()).sort(function (a, b) {
@@ -109,6 +110,9 @@ const dataset = {
     apiCalls: apiCalls
   },
   games: games,
+  teamMetadata: Array.isArray(teamMetadata) ? teamMetadata.filter(function (team) {
+    return ['fbs', 'fcs'].includes(String(team.classification || '').toLowerCase());
+  }) : [],
   teamStats: teamStats
 };
 
@@ -116,5 +120,5 @@ const outputPath = resolve(projectDirectory, 'data', 'current-season.json');
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, JSON.stringify(dataset, null, 2) + '\n', 'utf8');
 console.log('Saved ' + games.length + ' scheduled games and ' + teamStats.length + ' team box-score entries to data/current-season.json.');
-console.log('CFBD API calls: ' + apiCalls + ' (two schedule requests plus two per completed week).');
+console.log('CFBD API calls: ' + apiCalls + ' (two schedule requests, one team-metadata request, plus two per completed week).');
 console.log('As of ' + dataset.meta.asOf + '. Keep the API key out of project files and source control.');

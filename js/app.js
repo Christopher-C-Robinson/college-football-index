@@ -1,7 +1,9 @@
-import { buildModel, recordText, shortDate, formatNumber } from './model.js';
+import { buildModel, recordText, shortDate, formatNumber, standardWinProbability, HOME_FIELD_POINTS, WIN_PROBABILITY_SCALE } from './model.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
+const SIMULATION_RUNS = 10000;
+const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
 const state = { raw: null, model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
 const ids = function (id) { return document.getElementById(id); };
 
@@ -33,6 +35,76 @@ function compactName(name) {
 function initials(name) {
   return String(name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part[0]; }).join('').toUpperCase();
 }
+function normalizeHex(value) {
+  const raw = String(value || '').trim().replace(/^#/, '');
+  if (/^[0-9a-f]{3}$/i.test(raw)) return '#' + raw.split('').map(function (part) { return part + part; }).join('').toLowerCase();
+  return /^[0-9a-f]{6}$/i.test(raw) ? '#' + raw.toLowerCase() : null;
+}
+function colorChannels(hex) {
+  const value = normalizeHex(hex) || NEUTRAL_THEME.primary;
+  return [1, 3, 5].map(function (start) { return parseInt(value.slice(start, start + 2), 16); });
+}
+function blendColor(base, target, amount) {
+  const from = colorChannels(base);
+  const to = colorChannels(target);
+  return '#' + from.map(function (channel, index) {
+    return Math.round(channel * (1 - amount) + to[index] * amount).toString(16).padStart(2, '0');
+  }).join('');
+}
+function relativeLuminance(hex) {
+  const channels = colorChannels(hex).map(function (channel) {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+function contrastRatio(first, second) {
+  const values = [relativeLuminance(first), relativeLuminance(second)].sort(function (a, b) { return b - a; });
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+function colorForDarkSurface(color) {
+  const background = '#1d3041';
+  if (contrastRatio(color, background) >= 3) return color;
+  for (let step = 1; step <= 20; step += 1) {
+    const candidate = blendColor(color, '#ffffff', step / 20);
+    if (contrastRatio(candidate, background) >= 3) return candidate;
+  }
+  return '#ffffff';
+}
+function colorForLightText(color) {
+  const background = '#f3f2ee';
+  if (contrastRatio(color, background) >= 4.5) return color;
+  for (let step = 1; step <= 20; step += 1) {
+    const candidate = blendColor(color, '#172333', step / 20);
+    if (contrastRatio(candidate, background) >= 4.5) return candidate;
+  }
+  return '#172333';
+}
+function contrastingInk(color) {
+  return contrastRatio(color, '#ffffff') >= contrastRatio(color, '#172333') ? '#ffffff' : '#172333';
+}
+function applyTeamTheme(team) {
+  const root = document.documentElement;
+  const primary = normalizeHex(team && (team.color || team.primaryColor)) || NEUTRAL_THEME.primary;
+  const secondary = normalizeHex(team && (team.alternateColor || team.altColor || team.secondaryColor)) || (team ? primary : NEUTRAL_THEME.secondary);
+  root.style.setProperty('--blue', primary);
+  root.style.setProperty('--blue-mid', colorForLightText(primary));
+  root.style.setProperty('--blue-light', blendColor(primary, '#f3f2ee', 0.9));
+  root.style.setProperty('--accent', colorForDarkSurface(secondary));
+  root.style.setProperty('--team-dark', blendColor(primary, '#172333', 0.56));
+  root.style.setProperty('--team-ink', contrastingInk(primary));
+  root.style.setProperty('--team-secondary', secondary);
+  const context = ids('team-brand-context');
+  if (context) {
+    context.hidden = !team;
+    context.textContent = team ? (team.abbreviation || initials(team.name) || team.name) : '';
+    context.title = team ? team.name : '';
+    context.setAttribute('aria-label', team ? team.name + ' selected' : 'No team selected');
+  }
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  if (themeColor) themeColor.content = team ? primary : NEUTRAL_THEME.primary;
+  document.body.classList.toggle('has-team-theme', Boolean(team));
+}
 function teamGames(name) {
   return state.model.games.filter(function (game) {
     return teamKey(game.homeTeam) === teamKey(name) || teamKey(game.awayTeam) === teamKey(name);
@@ -54,7 +126,7 @@ function visibleTeams() {
   return state.model.allTeams.filter(function (team) { return team.games.length > 0; })
     .slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
 }
-function currentFocus() { return teamByKey(state.focusTeam) || visibleTeams()[0] || null; }
+function currentFocus() { return teamByKey(state.focusTeam) || null; }
 
 function isPowerFour(team) {
   const conference = teamKey(team.conference);
@@ -130,17 +202,24 @@ function setStatus() {
 
 function populateSelectors() {
   const teams = visibleTeams();
-  const selectIds = ['team-select', 'compare-a', 'compare-b'];
-  selectIds.forEach(function (id) {
-    const select = ids(id);
+  const selectors = [
+    { id: 'team-select', label: 'Select a team' },
+    { id: 'compare-a', label: 'Choose a team' },
+    { id: 'compare-b', label: 'Choose a team' },
+    { id: 'sim-a', label: 'Select Team A' },
+    { id: 'sim-b', label: 'Select Team B' }
+  ];
+  selectors.forEach(function (item) {
+    const select = ids(item.id);
     const prior = select.value;
-    select.innerHTML = teams.length ? teams.map(function (team) {
+    const options = teams.map(function (team) {
       return '<option value="' + escapeHtml(team.name) + '">' + escapeHtml(team.name) + '</option>';
-    }).join('') : '<option value="">Load season data first</option>';
+    }).join('');
+    select.innerHTML = '<option value="">' + (teams.length ? item.label : 'Load season data first') + '</option>' + options;
     if (prior && teams.some(function (team) { return team.name === prior; })) select.value = prior;
   });
   const defaultTeam = teams[0] || null;
-  if (!state.focusTeam || !teamByKey(state.focusTeam)) state.focusTeam = defaultTeam ? defaultTeam.name : null;
+  if (!teamByKey(state.focusTeam)) state.focusTeam = null;
   ids('team-select').value = currentFocus() ? currentFocus().name : '';
   if (!state.compareA || !teamByKey(state.compareA)) state.compareA = defaultTeam ? defaultTeam.name : null;
   if (!state.compareB || !teamByKey(state.compareB)) {
@@ -160,9 +239,12 @@ function renderHero() {
   const through = state.model.meta.resultsThrough;
   ids('hero-week').textContent = season + ' / SEASON';
   ids('hero-team-count').textContent = teams.length.toLocaleString();
+  ids('hero-team-label').textContent = teams.length ? 'TEAMS IN FILE' : 'NO DATA FILE YET';
   ids('hero-mark').textContent = 'CFB';
   ids('hero-heading').textContent = 'FBS + FCS field';
-  ids('hero-detail').textContent = fbsTeams.length.toLocaleString() + ' FBS · ' + fcsTeams.length.toLocaleString() + ' FCS · all conferences';
+  ids('hero-detail').textContent = teams.length
+    ? fbsTeams.length.toLocaleString() + ' FBS · ' + fcsTeams.length.toLocaleString() + ' FCS · all conferences'
+    : 'Load the season file to see the full field';
   ids('hero-game-count').textContent = games.toLocaleString() + ' GAMES';
   ids('hero-asof').textContent = through ? 'THROUGH ' + shortDate(through).toUpperCase() : (games ? 'RESULTS LOADED' : teams.length ? 'SCHEDULE LOADED' : 'LOAD DATASET');
   ids('field-team-count').textContent = teams.length.toLocaleString();
@@ -176,20 +258,22 @@ function renderHero() {
 function renderDossier() {
   const team = currentFocus();
   if (!team) {
+    applyTeamTheme(null);
     ids('team-monogram').textContent = 'CF';
-    ids('team-name').textContent = 'Load season data';
+    ids('team-name').textContent = 'Select a team';
     ids('team-conference').textContent = 'FBS + FCS · ALL CONFERENCES';
     ids('team-record').textContent = '—';
     ids('team-fbs-record').textContent = '—';
     ids('team-fcs-record').textContent = '—';
     ids('team-points').textContent = '— / —';
     ids('schedule-count').textContent = 'NO TEAM DATA';
-    ids('schedule-list').innerHTML = '<div class="schedule-empty">Import a season dataset to explore any team’s schedule.</div>';
+    ids('schedule-list').innerHTML = '<div class="schedule-empty">' + (state.model.allTeams.length ? 'Choose a team above or from the rankings board to explore its schedule.' : 'Import a season dataset to explore any team’s schedule.') + '</div>';
     ids('trace-intro').textContent = 'Load a complete FBS + FCS season file to see a team’s performance trace.';
     ids('margin-chart').innerHTML = '<div class="schedule-empty">No team data loaded.</div>';
-    ids('team-insight').textContent = 'The team explorer is ready for the full season dataset.';
+    ids('team-insight').textContent = state.model.allTeams.length ? 'Select a team to open its season profile.' : 'The team explorer is ready for the full season dataset.';
     return;
   }
+  applyTeamTheme(team);
   const games = teamGames(team.name);
   const played = games.filter(completed);
   const totalF = team.overallPointsFor;
@@ -295,7 +379,8 @@ function renderBoard() {
     const teamsNeeded = Math.max(0, 100 - state.model.ratedTeamCount);
     const preview = filteredBoardTeams().filter(function (team) { return team.wins + team.losses + team.ties > 0; }).slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
     const previewRows = preview.map(function (team) {
-      return '<tr><td><span class="rank-team">' + escapeHtml(team.name) + '</span></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td><td class="rank-record">' + escapeHtml(formatRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fbsRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fcsRecord(team)) + '</td><td class="rank-power">NOT RANKED</td></tr>';
+      const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
+      return '<tr><td><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile"><span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td><td class="rank-record">' + escapeHtml(formatRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fbsRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fcsRecord(team)) + '</td><td class="rank-power">NOT RANKED</td></tr>';
     }).join('');
     const filters = selectedBoardFilters();
     const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -307,16 +392,24 @@ function renderBoard() {
     board.innerHTML = note + header + table;
     return;
   }
-  const filtered = filteredBoardTeams().filter(function (team) { return team.composite !== null; });
+  const filtered = filteredBoardTeams().slice().sort(function (a, b) {
+    if (a.composite === null && b.composite !== null) return 1;
+    if (b.composite === null && a.composite !== null) return -1;
+    if (a.composite === null && b.composite === null) return a.name.localeCompare(b.name);
+    return (b.composite || 0) - (a.composite || 0);
+  });
+  let rankedCount = 0;
   const rows = filtered.map(function (team, index) {
     const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
-    return '<tr><td><span class="rank-number">' + String(index + 1).padStart(3, '0') + '</span><span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td class="rank-power">' + (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1) + '</td><td>' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td class="rank-index">' + formatNumber(team.index, 1) + '</td><td>' + team.evidence + '<span class="rank-confidence"><i style="width:' + team.evidence + '%"></i></span></td></tr>';
+    const rank = team.composite === null ? '—' : String(++rankedCount).padStart(3, '0');
+    const modelLabel = team.composite === null ? 'NOT RANKED' : formatNumber(team.index, 1);
+    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile"><span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td>' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td class="rank-index">' + modelLabel + '</td><td>' + team.evidence + '<span class="rank-confidence"><i style="width:' + team.evidence + '%"></i></span></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
   const groupLabel = filters.tier === 'power' ? ' · Power Four' : filters.tier === 'other' ? ' · Other FBS' : '';
   const conferenceLabel = filters.conference === 'all' ? '' : ' · ' + filters.conference;
-  const count = '<div class="board-result-count">' + filtered.length + ' teams shown' + escapeHtml(' · ' + divisionLabel + groupLabel + conferenceLabel) + '</div>';
+  const count = '<div class="board-result-count">' + filtered.length + ' teams shown · ' + rankedCount + ' rated' + escapeHtml(' · ' + divisionLabel + groupLabel + conferenceLabel) + '</div>';
   if (!rows) {
     board.innerHTML = count + '<div class="board-lock"><strong>No teams match those filters.</strong><p>Choose another subdivision, tier, or conference.</p></div>';
     return;
@@ -357,6 +450,120 @@ function renderCompare() {
   }).join('');
   const footnote = state.model.broadCoverage ? 'Model values use the current FBS + FCS results graph and current lens weights.' : 'Power, opponent quality, and expected wins remain unavailable until the FBS + FCS results graph is broad enough.';
   ids('compare-content').innerHTML = rows + '<div class="compare-empty">' + escapeHtml(a.name) + ' · ' + escapeHtml(formatRecord(a)) + ' overall · ' + escapeHtml(fbsRecord(a)) + ' vs FBS · ' + escapeHtml(fcsRecord(a)) + ' vs FCS<br>' + escapeHtml(b.name) + ' · ' + escapeHtml(formatRecord(b)) + ' overall · ' + escapeHtml(fbsRecord(b)) + ' vs FBS · ' + escapeHtml(fcsRecord(b)) + ' vs FCS<br>' + escapeHtml(footnote) + '</div>';
+}
+
+function seededRandom(seedText) {
+  let seed = 2166136261;
+  String(seedText).split('').forEach(function (character) {
+    seed = Math.imul(seed ^ character.charCodeAt(0), 16777619);
+  });
+  return function () {
+    let value = seed += 0x6D2B79F5;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function normalSample(random) {
+  const first = Math.max(random(), 1e-10);
+  return Math.sqrt(-2 * Math.log(first)) * Math.cos(2 * Math.PI * random());
+}
+
+function logisticSample(random) {
+  const value = Math.min(1 - 1e-10, Math.max(1e-10, random()));
+  return WIN_PROBABILITY_SCALE * Math.log(value / (1 - value));
+}
+
+function scoringSummary(team) {
+  const games = team.games.filter(isRatedGame);
+  const points = games.reduce(function (summary, game) {
+    const ownScore = teamKey(game.homeTeam) === teamKey(team.name) ? game.homePoints : game.awayPoints;
+    const opponentScore = teamKey(game.homeTeam) === teamKey(team.name) ? game.awayPoints : game.homePoints;
+    summary.for += ownScore;
+    summary.against += opponentScore;
+    return summary;
+  }, { for: 0, against: 0 });
+  return {
+    games: games.length,
+    forPerGame: games.length ? points.for / games.length : null,
+    againstPerGame: games.length ? points.against / games.length : null
+  };
+}
+
+function marginRangeLabel(teamA, teamB, low, high) {
+  if (low >= 0) return teamA.name + ' by ' + formatNumber(low, 0) + ' to ' + formatNumber(high, 0);
+  if (high <= 0) return teamB.name + ' by ' + formatNumber(Math.abs(high), 0) + ' to ' + formatNumber(Math.abs(low), 0);
+  return teamB.name + ' by ' + formatNumber(Math.abs(low), 0) + ' to ' + teamA.name + ' by ' + formatNumber(high, 0);
+}
+
+function runMatchupSimulation() {
+  const output = ids('simulation-result');
+  const teamA = teamByKey(ids('sim-a').value);
+  const teamB = teamByKey(ids('sim-b').value);
+  if (!teamA || !teamB) {
+    output.innerHTML = '<div class="simulation-empty">Choose two teams to run a hypothetical matchup.</div>';
+    return;
+  }
+  if (teamKey(teamA.name) === teamKey(teamB.name)) {
+    output.innerHTML = '<div class="simulation-empty">Choose two different teams to simulate a matchup.</div>';
+    return;
+  }
+  const summaryA = scoringSummary(teamA);
+  const summaryB = scoringSummary(teamB);
+  if (!summaryA.games || !summaryB.games || teamA.power === null || teamB.power === null) {
+    output.innerHTML = '<div class="simulation-empty">Both teams need at least one completed FBS or FCS game in the loaded data.</div>';
+    return;
+  }
+
+  const venue = ids('sim-venue').value;
+  const homeAdvantage = venue === 'a-home' ? HOME_FIELD_POINTS : venue === 'b-home' ? -HOME_FIELD_POINTS : 0;
+  const predictedMargin = teamA.power - teamB.power + homeAdvantage;
+  const ratedGames = state.model.ratedGames;
+  const leaguePoints = ratedGames.reduce(function (sum, game) { return sum + game.homePoints + game.awayPoints; }, 0) / (ratedGames.length * 2);
+  const expectedA = leaguePoints + (summaryA.forPerGame - leaguePoints) * summaryA.games / (summaryA.games + 4);
+  const expectedDefenseB = leaguePoints + (summaryB.againstPerGame - leaguePoints) * summaryB.games / (summaryB.games + 4);
+  const expectedB = leaguePoints + (summaryB.forPerGame - leaguePoints) * summaryB.games / (summaryB.games + 4);
+  const expectedDefenseA = leaguePoints + (summaryA.againstPerGame - leaguePoints) * summaryA.games / (summaryA.games + 4);
+  const projectedTotal = Math.max(0, (expectedA + expectedDefenseB + expectedB + expectedDefenseA) / 2);
+  const projectedScoreA = Math.max(0, (projectedTotal + predictedMargin) / 2);
+  const projectedScoreB = Math.max(0, (projectedTotal - predictedMargin) / 2);
+  const totalScores = ratedGames.map(function (game) { return game.homePoints + game.awayPoints; });
+  const leagueTotalMean = totalScores.reduce(function (sum, total) { return sum + total; }, 0) / (totalScores.length || 1);
+  const totalVariance = totalScores.reduce(function (sum, total) { return sum + Math.pow(total - leagueTotalMean, 2); }, 0) / (totalScores.length || 1);
+  const totalSpread = Math.max(7, Math.min(20, Math.sqrt(totalVariance)));
+  const ratingSpread = Math.sqrt(Math.pow(9 / Math.sqrt(summaryA.games + 2), 2) + Math.pow(9 / Math.sqrt(summaryB.games + 2), 2));
+  const random = seededRandom([state.model.meta.season, state.model.meta.resultsThrough, teamA.name, teamB.name, venue, teamA.power, teamB.power].join('|'));
+  let winsA = 0;
+  let winsB = 0;
+  const margins = [];
+  for (let run = 0; run < SIMULATION_RUNS; run += 1) {
+    const margin = predictedMargin + normalSample(random) * ratingSpread + logisticSample(random);
+    const total = Math.max(0, projectedTotal + normalSample(random) * totalSpread);
+    const scoreA = Math.max(0, Math.round((total + margin) / 2));
+    const scoreB = Math.max(0, Math.round((total - margin) / 2));
+    margins.push(scoreA - scoreB);
+    if (scoreA > scoreB) winsA += 1;
+    else if (scoreB > scoreA) winsB += 1;
+    else if (random() < 0.5) winsA += 1;
+    else winsB += 1;
+  }
+  margins.sort(function (a, b) { return a - b; });
+  const lowMargin = margins[Math.floor((SIMULATION_RUNS - 1) * 0.1)];
+  const highMargin = margins[Math.floor((SIMULATION_RUNS - 1) * 0.9)];
+  const chanceA = winsA / SIMULATION_RUNS * 100;
+  const chanceB = winsB / SIMULATION_RUNS * 100;
+  const venueLabel = venue === 'a-home' ? teamA.name + ' home' : venue === 'b-home' ? teamB.name + ' home' : 'Neutral site';
+  const sampleLabel = state.model.broadCoverage
+    ? 'Broad FBS + FCS coverage is available.'
+    : 'Early sample: ' + state.model.ratedGameCount + ' completed games across ' + state.model.ratedTeamCount + ' teams. Treat this as exploratory.';
+  const baseline = standardWinProbability(predictedMargin) * 100;
+  output.innerHTML = '<div class="simulation-result-grid">' +
+    '<div class="simulation-probability"><span>' + escapeHtml(teamA.name) + ' WIN CHANCE</span><strong>' + chanceA.toFixed(1) + '%</strong><small>Base model: ' + baseline.toFixed(1) + '%</small></div>' +
+    '<div class="simulation-probability"><span>' + escapeHtml(teamB.name) + ' WIN CHANCE</span><strong>' + chanceB.toFixed(1) + '%</strong><small>' + escapeHtml(venueLabel) + '</small></div>' +
+    '<div class="simulation-score"><span>PROJECTED SCORE · ' + SIMULATION_RUNS.toLocaleString() + ' RUNS</span><strong>' + escapeHtml(teamA.name) + ' ' + formatNumber(projectedScoreA, 1) + ' <i>—</i> ' + formatNumber(projectedScoreB, 1) + ' ' + escapeHtml(teamB.name) + '</strong><small>Model margin: ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' points</small></div>' +
+    '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Includes game variation and more rating uncertainty when a team has fewer results.</small></div>' +
+    '</div><p class="simulation-method">' + escapeHtml(sampleLabel) + ' The spread uses opponent-adjusted power and the selected venue. The score total blends team scoring and points allowed with the full-field average. Injuries, weather, and matchup-specific play styles are not modeled.</p>';
 }
 
 function updateWeightsDisplay() {
@@ -410,11 +617,21 @@ function setDataset(raw, message, persist) {
   updateWeightsDisplay();
   renderBoard();
   renderCompare();
+  ids('simulation-result').innerHTML = '<div class="simulation-empty">Choose two teams and run a hypothetical matchup.</div>';
   ids('data-updated').textContent = 'SEASON DATA / ' + (raw.meta && (raw.meta.season || raw.meta.asOf) || 'UNKNOWN');
   if (message) {
     ids('import-message').className = 'import-message';
     ids('import-message').textContent = message;
   }
+}
+
+function selectFocusTeam(name, scrollToProfile) {
+  const team = teamByKey(name);
+  state.focusTeam = team ? team.name : null;
+  ids('team-select').value = team ? team.name : '';
+  renderDossier();
+  renderBoard();
+  if (team && scrollToProfile) ids('dossier').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function loadBundled() {
@@ -435,8 +652,7 @@ async function initialize() {
 
 document.addEventListener('change', async function (event) {
   if (event.target.id === 'team-select') {
-    state.focusTeam = event.target.value;
-    renderDossier();
+    selectFocusTeam(event.target.value, false);
   } else if (event.target.id === 'compare-a') {
     state.compareA = event.target.value; renderCompare();
   } else if (event.target.id === 'compare-b') {
@@ -467,6 +683,15 @@ document.addEventListener('input', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  const teamButton = event.target.closest('[data-select-team]');
+  if (teamButton) {
+    selectFocusTeam(teamButton.dataset.selectTeam, true);
+    return;
+  }
+  if (event.target.id === 'simulate-matchup') {
+    runMatchupSimulation();
+    return;
+  }
   if (event.target.id === 'reset-data') {
     try {
       localStorage.removeItem(STORAGE_KEY);

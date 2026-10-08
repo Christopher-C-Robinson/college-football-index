@@ -15,9 +15,10 @@
         <span class="brand-mark" aria-hidden="true">CF</span>
         <span class="brand-name">CFB <b>INDEX</b></span>
       </a>
+      <span id="team-brand-context" class="team-brand-context" hidden></span>
       <nav class="main-nav" aria-label="Main navigation">
+        <a href="#rankings">All-team rankings</a>
         <a href="#dossier">Team explorer</a>
-        <a href="#rankings">Model board</a>
         <a href="#method">Method</a>
       </nav>
       <div class="header-actions">
@@ -33,13 +34,13 @@
           <h1 id="hero-title">Every team.<br><em>In schedule context.</em></h1>
           <p class="hero-deck">Compare teams across subdivisions and conferences using opponent-adjusted results, efficiency, résumé, and evidence depth.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#dossier">Explore a team <span aria-hidden="true">↓</span></a>
+            <a class="button button-primary" href="#rankings">View all-team rankings <span aria-hidden="true">↓</span></a>
             <a class="text-link" href="#method">How the model works <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <div class="hero-file" aria-label="All-team season coverage">
           <div class="file-topline"><span>THE FULL FIELD</span><span id="hero-week">2026 / SEASON</span></div>
-          <div class="file-record"><span id="hero-team-count">0</span><small>TEAMS IN FILE</small></div>
+          <div class="file-record"><span id="hero-team-count">0</span><small id="hero-team-label">NO DATA FILE YET</small></div>
           <div class="file-team">
             <span class="team-avatar" id="hero-mark">CFB</span>
             <div><strong id="hero-heading">FBS + FCS field</strong><small id="hero-detail">All teams · all conferences</small></div>
@@ -59,45 +60,10 @@
         <p class="snapshot-note" id="field-note">Load the FBS + FCS season dataset to populate the whole-field analysis.</p>
       </section>
 
-      <section id="dossier" class="section-shell section-block">
-        <div class="section-heading">
-          <div><p class="eyebrow eyebrow-dark">01 / TEAM EXPLORER</p><h2>Read the whole season.</h2></div>
-          <div class="heading-controls">
-            <label class="select-label" for="team-select">TEAM</label>
-            <select id="team-select" class="select-control" aria-label="Select a team"></select>
-          </div>
-        </div>
-
-        <div class="team-file-heading">
-          <div class="team-identity">
-            <span class="team-monogram" id="team-monogram">CF</span>
-            <div><p class="team-conference" id="team-conference">FBS + FCS · ALL CONFERENCES</p><h3 id="team-name">Select a team</h3></div>
-          </div>
-          <div class="team-record-block"><strong id="team-record">—</strong><span>OVERALL</span></div>
-          <div class="team-record-block"><strong id="team-fbs-record">—</strong><span>VS FBS</span></div>
-          <div class="team-record-block"><strong id="team-fcs-record">—</strong><span>VS FCS</span></div>
-          <div class="team-record-block"><strong id="team-points">—</strong><span>POINTS FOR / AGAINST</span></div>
-        </div>
-
-        <div class="dossier-grid">
-          <article class="panel schedule-panel">
-            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">GAME BY GAME</p><h3>Schedule ledger</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
-            <div id="schedule-list" class="schedule-list"></div>
-          </article>
-          <article class="panel form-panel">
-            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">PERFORMANCE TRACE</p><h3>Score margin, week by week</h3></div><span class="panel-tag">RAW RESULT</span></div>
-            <p class="panel-intro" id="trace-intro">Each point is a completed game. FBS and FCS schedules are connected through cross-division matchups.</p>
-            <div id="margin-chart" class="chart-wrap"></div>
-            <div class="chart-legend"><span><i class="legend-dot legend-win"></i> Win</span><span><i class="legend-dot legend-rust"></i> Loss</span><span class="legend-caption">Hover or focus a point for the matchup</span></div>
-            <div class="mini-insight" id="team-insight"></div>
-          </article>
-        </div>
-      </section>
-
       <section id="rankings" class="analysis-section">
         <div class="section-shell section-block">
           <div class="section-heading section-heading-light">
-            <div><p class="eyebrow">02 / THE MODEL BOARD</p><h2>Power is more than the scoreboard.</h2><p class="section-deck">Three lenses keep the ranking honest: opponent-adjusted scoring, on-field efficiency, and résumé quality.</p></div>
+            <div><p class="eyebrow">01 / THE MODEL BOARD</p><h2>Power is more than the scoreboard.</h2><p class="section-deck">Three lenses keep the ranking honest: opponent-adjusted scoring, on-field efficiency, and résumé quality.</p></div>
             <div class="model-stamp"><span class="stamp-ring">CF</span><span>MODEL<br>v1.0</span></div>
           </div>
 
@@ -133,6 +99,53 @@
             <div class="compare-heading"><div><p class="eyebrow">MATCHUP LENS</p><h3>Compare two teams, metric by metric.</h3></div><div class="compare-selects"><select id="compare-a" class="select-control select-light" aria-label="First team"></select><span>VS</span><select id="compare-b" class="select-control select-light" aria-label="Second team"></select></div></div>
             <div id="compare-content" class="compare-content"></div>
           </div>
+
+          <div class="simulation-section">
+            <div class="simulation-heading"><div><p class="eyebrow">WHAT-IF SPORTS</p><h3>Simulate a hypothetical matchup.</h3><p>Choose any two FBS or FCS teams, then set the site.</p></div><span class="simulation-run-count">10,000 outcomes</span></div>
+            <div class="simulation-controls">
+              <label><span>TEAM A</span><select id="sim-a" class="select-control select-light" aria-label="First simulation team"></select></label>
+              <span class="simulation-vs" aria-hidden="true">VS</span>
+              <label><span>TEAM B</span><select id="sim-b" class="select-control select-light" aria-label="Second simulation team"></select></label>
+              <label><span>VENUE</span><select id="sim-venue" class="select-control select-light" aria-label="Simulation venue"><option value="neutral">Neutral site</option><option value="a-home">Team A home</option><option value="b-home">Team B home</option></select></label>
+              <button id="simulate-matchup" class="button button-primary" type="button">Run simulation <span aria-hidden="true">↗</span></button>
+            </div>
+            <div id="simulation-result" class="simulation-result" aria-live="polite"><div class="simulation-empty">Choose two teams and run a hypothetical matchup.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dossier" class="section-shell section-block">
+        <div class="section-heading">
+          <div><p class="eyebrow eyebrow-dark">02 / TEAM EXPLORER</p><h2>Read the whole season.</h2></div>
+          <div class="heading-controls">
+            <label class="select-label" for="team-select">TEAM</label>
+            <select id="team-select" class="select-control" aria-label="Select a team"></select>
+          </div>
+        </div>
+
+        <div class="team-file-heading">
+          <div class="team-identity">
+            <span class="team-monogram" id="team-monogram">CF</span>
+            <div><p class="team-conference" id="team-conference">FBS + FCS · ALL CONFERENCES</p><h3 id="team-name">Select a team</h3></div>
+          </div>
+          <div class="team-record-block"><strong id="team-record">—</strong><span>OVERALL</span></div>
+          <div class="team-record-block"><strong id="team-fbs-record">—</strong><span>VS FBS</span></div>
+          <div class="team-record-block"><strong id="team-fcs-record">—</strong><span>VS FCS</span></div>
+          <div class="team-record-block"><strong id="team-points">—</strong><span>POINTS FOR / AGAINST</span></div>
+        </div>
+
+        <div class="dossier-grid">
+          <article class="panel schedule-panel">
+            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">GAME BY GAME</p><h3>Schedule ledger</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
+            <div id="schedule-list" class="schedule-list"></div>
+          </article>
+          <article class="panel form-panel">
+            <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">PERFORMANCE TRACE</p><h3>Score margin, week by week</h3></div><span class="panel-tag">RAW RESULT</span></div>
+            <p class="panel-intro" id="trace-intro">Each point is a completed game. FBS and FCS schedules are connected through cross-division matchups.</p>
+            <div id="margin-chart" class="chart-wrap"></div>
+            <div class="chart-legend"><span><i class="legend-dot legend-win"></i> Win</span><span><i class="legend-dot legend-rust"></i> Loss</span><span class="legend-caption">Hover or focus a point for the matchup</span></div>
+            <div class="mini-insight" id="team-insight"></div>
+          </article>
         </div>
       </section>
 
@@ -146,14 +159,14 @@
           <article class="method-card"><span class="method-index">B</span><h3>Separate proof from projection</h3><p>Power ratings use adjusted scoring. Résumé scores use opponent quality and actual wins versus expected wins. Efficiency is a distinct box-score lens.</p><small>FBS AND FCS RESULTS BOTH COUNT IN THE MODEL</small></article>
           <article class="method-card"><span class="method-index">C</span><h3>Show the evidence depth</h3><p>Every team gets a sample-size indicator based on games and available box scores. Early-season ratings stay visibly provisional.</p><small>NO AP POLL OR COACHES POLL INPUTS</small></article>
         </div>
-        <p class="method-footnote">This is a transparent starting model, not a claim that one formula captures the whole sport. It will improve as we compare its predictions with actual outcomes and add richer play-by-play data.</p>
+        <p class="method-footnote">This is a transparent starting model, not a claim that one formula captures the whole sport. What-If simulations use adjusted power for the spread, the selected venue, scoring and points-allowed rates for the total, and wider rating uncertainty for teams with fewer results. They do not model injuries, weather, or matchup-specific play styles.</p>
       </section>
 
       <section id="data" class="data-section">
         <div class="section-shell section-block data-grid">
           <div><p class="eyebrow">04 / DATA ROOM</p><h2>Bring the full field.</h2><p class="section-deck">Load a season dataset covering every FBS and FCS team. The same opponent graph and model apply across every conference.</p>
-            <div class="data-steps"><div><b>1</b><span>Get a <a href="https://collegefootballdata.com/key" target="_blank" rel="noreferrer">free CFBD API key</a> from CollegeFootballData.com.</span></div><div><b>2</b><span>Run the local sync script. It asks for your key in a hidden prompt and downloads FBS and FCS results.</span></div><div><b>3</b><span>Load the generated JSON here, or publish that file with the static site.</span></div></div>
-            <p class="data-source-note">Data source: CollegeFootballData.com API. The free tier is rate-limited. Refreshing a season uses a small number of calls, based on weeks with completed games.</p>
+            <div class="data-steps"><div><b>1</b><span>Get a <a href="https://collegefootballdata.com/key" target="_blank" rel="noreferrer">free CFBD API key</a> from CollegeFootballData.com.</span></div><div><b>2</b><span>Run the local sync script. It asks for your key in a hidden prompt and downloads FBS and FCS results, team metadata, and colors.</span></div><div><b>3</b><span>Load the generated JSON here, or publish that file with the static site so every visitor sees the same data.</span></div></div>
+            <p class="data-source-note">Data source: CollegeFootballData.com API. Its free tier is rate-limited. A season refresh uses two schedule requests, one team-metadata request, and two requests per completed week.</p>
           </div>
           <div class="data-box">
             <div class="data-box-top"><span class="data-box-icon" aria-hidden="true">↥</span><span class="eyebrow">SEASON DATASET</span></div>
