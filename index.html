@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#172333">
     <meta name="description" content="A transparent, schedule-adjusted analysis of every FBS and FCS college football team.">
     <title>College Football Index — FBS + FCS Team Analysis</title>
-    <link rel="stylesheet" href="./styles.css">
-    <script type="module" src="./js/app.js"></script>
+    <link rel="stylesheet" href="./styles.css?v=91863d9352f8">
+    <script type="module" src="./js/app.js?v=16222ec6d132"></script>
   </head>
   <body>
     <header class="site-header">
@@ -88,9 +88,9 @@
             <aside class="weight-panel panel panel-dark">
               <div class="panel-heading"><div><p class="eyebrow">YOUR MODEL</p><h3>Set the lens weights</h3></div><span class="weight-icon" aria-hidden="true">≋</span></div>
               <p class="panel-intro">Adjust what matters most. Missing metrics are removed from the blend and the remaining weights scale up.</p>
-              <div class="weight-control"><div><label for="weight-power">Game power</label><output id="weight-power-value">55%</output></div><input id="weight-power" data-weight="power" type="range" min="0" max="100" value="55"></div>
-              <div class="weight-control"><div><label for="weight-efficiency">Efficiency</label><output id="weight-efficiency-value">30%</output></div><input id="weight-efficiency" data-weight="efficiency" type="range" min="0" max="100" value="30"></div>
-              <div class="weight-control"><div><label for="weight-resume">Résumé</label><output id="weight-resume-value">15%</output></div><input id="weight-resume" data-weight="resume" type="range" min="0" max="100" value="15"></div>
+              <div class="weight-control"><div><label for="weight-power">Game power</label><output id="weight-power-value" for="weight-power">55%</output></div><div class="weight-adjust-row"><button id="weight-power-decrease" class="weight-step" type="button" data-weight-target="power" data-weight-step="-1" aria-controls="weight-power" aria-label="Decrease game power weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-power" data-weight="power" type="range" min="0" max="100" step="1" value="55"><button id="weight-power-increase" class="weight-step" type="button" data-weight-target="power" data-weight-step="1" aria-controls="weight-power" aria-label="Increase game power weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
+              <div class="weight-control"><div><label for="weight-efficiency">Efficiency</label><output id="weight-efficiency-value" for="weight-efficiency">30%</output></div><div class="weight-adjust-row"><button id="weight-efficiency-decrease" class="weight-step" type="button" data-weight-target="efficiency" data-weight-step="-1" aria-controls="weight-efficiency" aria-label="Decrease efficiency weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-efficiency" data-weight="efficiency" type="range" min="0" max="100" step="1" value="30"><button id="weight-efficiency-increase" class="weight-step" type="button" data-weight-target="efficiency" data-weight-step="1" aria-controls="weight-efficiency" aria-label="Increase efficiency weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
+              <div class="weight-control"><div><label for="weight-resume">Résumé</label><output id="weight-resume-value" for="weight-resume">15%</output></div><div class="weight-adjust-row"><button id="weight-resume-decrease" class="weight-step" type="button" data-weight-target="resume" data-weight-step="-1" aria-controls="weight-resume" aria-label="Decrease résumé weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-resume" data-weight="resume" type="range" min="0" max="100" step="1" value="15"><button id="weight-resume-increase" class="weight-step" type="button" data-weight-target="resume" data-weight-step="1" aria-controls="weight-resume" aria-label="Increase résumé weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
               <div class="weight-note"><span class="weight-note-mark">i</span><span>The board is a comparison tool, not a playoff committee ranking or win probability.</span></div>
               <button id="export-rankings" class="button button-outline button-full" type="button" disabled>Export model board <span aria-hidden="true">↓</span></button>
             </aside>
@@ -102,15 +102,15 @@
           </div>
 
           <div class="simulation-section">
-            <div class="simulation-heading"><div><p class="eyebrow">MATCHUP SIMULATOR</p><h3>Simulate a hypothetical matchup.</h3><p>Choose any two FBS or FCS teams, then set the site.</p></div><span class="simulation-run-count">10,000 outcomes</span></div>
+            <div class="simulation-heading"><div><p class="eyebrow">MATCHUP SIMULATOR</p><h3>Simulate a hypothetical matchup.</h3><p>Results update automatically when you change a team or venue.</p></div><span class="simulation-run-count">10,000 outcomes</span></div>
             <div class="simulation-controls">
               <label><span>TEAM A</span><select id="sim-a" class="select-control select-light" aria-label="First simulation team"></select></label>
               <span class="simulation-vs" aria-hidden="true">VS</span>
               <label><span>TEAM B</span><select id="sim-b" class="select-control select-light" aria-label="Second simulation team"></select></label>
               <label><span>VENUE</span><select id="sim-venue" class="select-control select-light" aria-label="Simulation venue"><option value="neutral">Neutral site</option><option value="a-home">Team A home</option><option value="b-home">Team B home</option></select></label>
-              <button id="simulate-matchup" class="button button-primary" type="button">Run simulation <span aria-hidden="true">↗</span></button>
+              <button id="simulate-matchup" class="button button-primary" type="button">Run again <span aria-hidden="true">↗</span></button>
             </div>
-            <div id="simulation-result" class="simulation-result" aria-live="polite"><div class="simulation-empty">Choose two teams and run a hypothetical matchup.</div></div>
+            <div id="simulation-result" class="simulation-result" aria-live="polite"><div class="simulation-empty">Choose two teams to see a hypothetical matchup.</div></div>
           </div>
         </div>
       </section>

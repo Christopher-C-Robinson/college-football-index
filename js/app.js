@@ -1,6 +1,8 @@
 import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION, MODEL_PARAMETERS } from './model.js';
 import { simulateMatchup } from './prediction.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
+import { enhanceSearchableSelects } from './searchable-select.js';
+import { rankBoardTeams, boardMatchup } from './board-order.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -228,7 +230,7 @@ function populateSelectors() {
     const select = ids(item.id);
     const prior = select.value;
     const options = teams.map(function (team) {
-      return '<option value="' + escapeHtml(team.name) + '">' + escapeHtml(team.name) + '</option>';
+      return '<option value="' + escapeHtml(team.name) + '" data-search="' + escapeHtml([team.abbreviation, team.conference].filter(Boolean).join(' ')) + '">' + escapeHtml(team.name) + '</option>';
     }).join('');
     select.innerHTML = '<option value="">' + (teams.length ? item.label : 'Load season data first') + '</option>' + options;
     if (prior && teams.some(function (team) { return team.name === prior; })) select.value = prior;
@@ -380,7 +382,7 @@ function renderTrace(team, games) {
 }
 
 function renderInsight(team, games) {
-  if (!games.length) { ids('team-insight').textContent = 'No completed games in the imported schedule.'; return; }
+  if (!games.length) { ids('team-insight').textContent = 'No completed games in this schedule.'; return; }
   const rated = games.filter(isRatedGame);
   const average = rated.length ? rated.reduce(function (sum, game) { return sum + margin(game, team.name); }, 0) / rated.length : null;
   const shutouts = rated.filter(function (game) { return opponentScore(game, team.name) === 0; }).length;
@@ -390,10 +392,24 @@ function renderInsight(team, games) {
   ids('team-insight').innerHTML = text;
 }
 
-function renderBoard() {
+function syncMatchupsWithBoard(orderedTeams) {
+  const matchup = boardMatchup(orderedTeams, state.model.broadCoverage);
+  state.compareA = matchup.teamA || null;
+  state.compareB = matchup.teamB || null;
+  for (const [id, value] of [['compare-a', matchup.teamA], ['compare-b', matchup.teamB],
+    ['sim-a', matchup.teamA], ['sim-b', matchup.teamB], ['sim-venue', matchup.venue]]) {
+    ids(id).value = value;
+    ids(id).dispatchEvent(new Event('searchable-select:refresh'));
+  }
+  renderCompare();
+  runMatchupSimulation();
+}
+
+function renderBoard(resetMatchups = false) {
   const board = ids('board-content');
   const modelReady = state.model.broadCoverage;
   ids('export-rankings').disabled = !modelReady;
+  if (resetMatchups && !modelReady) syncMatchupsWithBoard([]);
   if (!state.model.ratedGameCount) {
     const message = state.model.allTeams.length ? 'The schedule is loaded, but no completed FBS/FCS games are available yet.' : 'Import the complete FBS + FCS dataset to start the all-team comparison.';
     board.innerHTML = '<div class="board-lock"><strong>All-team ratings are waiting for game results.</strong><p>' + escapeHtml(message) + ' Both subdivisions will be compared across conference schedules.</p><a href="#data">Open the data room.</a></div>';
@@ -417,12 +433,8 @@ function renderBoard() {
     board.innerHTML = note + header + table;
     return;
   }
-  const filtered = filteredBoardTeams().slice().sort(function (a, b) {
-    if (a.composite === null && b.composite !== null) return 1;
-    if (b.composite === null && a.composite !== null) return -1;
-    if (a.composite === null && b.composite === null) return a.name.localeCompare(b.name);
-    return (b.composite || 0) - (a.composite || 0);
-  });
+  const filtered = rankBoardTeams(filteredBoardTeams());
+  if (resetMatchups) syncMatchupsWithBoard(filtered);
   let rankedCount = 0;
   const rows = filtered.map(function (team, index) {
     const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
@@ -460,7 +472,7 @@ function renderCompare() {
   const a = teamByKey(ids('compare-a').value || state.compareA);
   const b = teamByKey(ids('compare-b').value || state.compareB);
   if (!a || !b) {
-    ids('compare-content').innerHTML = '<div class="compare-empty">Load season data with at least two teams to compare their profiles.</div>';
+    ids('compare-content').innerHTML = '<div class="compare-empty">Choose two teams above to compare their profiles.</div>';
     return;
   }
   const metricsA = compareMetrics(a);
@@ -486,6 +498,10 @@ function marginRangeLabel(teamA, teamB, low, high) {
 
 function runMatchupSimulation() {
   const output = ids('simulation-result');
+  if (!state.model) {
+    output.innerHTML = '<div class="simulation-empty">Loading team data for the matchup.</div>';
+    return;
+  }
   const teamA = teamByKey(ids('sim-a').value);
   const teamB = teamByKey(ids('sim-b').value);
   if (!teamA || !teamB) {
@@ -537,7 +553,13 @@ function updateWeightsDisplay() {
   const total = state.weights.power + state.weights.efficiency + state.weights.resume || 1;
   ['power', 'efficiency', 'resume'].forEach(function (name) {
     const value = state.weights[name];
-    ids('weight-' + name + '-value').textContent = Math.round(value / total * 100) + '%';
+    ids('weight-' + name + '-value').textContent = Number((value / total * 100).toFixed(1)) + '%';
+    const input = ids('weight-' + name);
+    input.setAttribute('aria-valuetext', value + ' points; ' + Number((value / total * 100).toFixed(1)) + '% of the blend');
+    for (const direction of ['decrease', 'increase']) {
+      const button = ids('weight-' + name + '-' + direction);
+      if (button) button.disabled = direction === 'decrease' ? value <= Number(input.min) : value >= Number(input.max);
+    }
   });
 }
 
@@ -545,8 +567,7 @@ function refreshModel() {
   state.model = buildModel(state.raw, state.weights);
   setStatus();
   updateWeightsDisplay();
-  renderBoard();
-  renderCompare();
+  renderBoard(true);
   const focus = currentFocus();
   if (focus) { renderTrace(focus, teamGames(focus.name).filter(completed)); renderInsight(focus, teamGames(focus.name).filter(completed)); }
 }
@@ -556,7 +577,7 @@ function csvCell(value) { return '"' + String(value === undefined || value === n
 function exportRankings() {
   if (!state.model.broadCoverage) return;
   const rows = [['Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Power (pts/game)', 'Opponent Power', 'Expected Wins', 'Wins Above Expectation', 'Efficiency Index', 'Composite Index', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Model Version', 'Dataset Source', 'Generated At']];
-  filteredBoardTeams().filter(function (team) { return team.composite !== null; }).sort(function (a, b) { return b.composite - a.composite; }).forEach(function (team, index) {
+  rankBoardTeams(filteredBoardTeams()).filter(function (team) { return team.composite !== null; }).forEach(function (team, index) {
     rows.push([index + 1, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), formatNumber(team.expectedWins, 2), formatNumber(team.winsAboveExpectation, 2), formatNumber(team.efficiency, 2), formatNumber(team.index, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, MODEL_VERSION, state.source, state.model.meta.generatedAt || '']);
   });
   const content = rows.map(function (row) { return row.map(csvCell).join(','); }).join('\n');
@@ -585,9 +606,7 @@ function setDataset(raw, message, persist, source = 'imported') {
   renderHero();
   renderDossier();
   updateWeightsDisplay();
-  renderBoard();
-  renderCompare();
-  ids('simulation-result').innerHTML = '<div class="simulation-empty">Choose two teams and run a hypothetical matchup.</div>';
+  renderBoard(true);
   renderDatasetStatus();
   ids('data-updated').textContent = 'SEASON DATA / ' + (raw.meta && (raw.meta.season || raw.meta.asOf) || 'UNKNOWN');
   if (message || storageWarning) {
@@ -600,6 +619,7 @@ function selectFocusTeam(name, scrollToProfile) {
   const team = teamByKey(name);
   state.focusTeam = team ? team.name : null;
   ids('team-select').value = team ? team.name : '';
+  ids('team-select').dispatchEvent(new Event('searchable-select:refresh'));
   renderDossier();
   renderBoard();
   if (team && scrollToProfile) ids('dossier').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -625,7 +645,7 @@ async function initialize() {
     state.publicDataset = validateDataset(await loadBundled());
   } catch (error) {
     state.publicUnavailable = true;
-    if (!imported) throw error;
+    if (!imported && !state.raw) throw error;
   }
   // A user may finish uploading while the public network request is pending.
   if (state.raw) { renderDatasetStatus(); return; }
@@ -639,12 +659,14 @@ document.addEventListener('change', async function (event) {
     state.compareA = event.target.value; renderCompare();
   } else if (event.target.id === 'compare-b') {
     state.compareB = event.target.value; renderCompare();
+  } else if (['sim-a', 'sim-b', 'sim-venue'].includes(event.target.id)) {
+    runMatchupSimulation();
   } else if (event.target.id === 'division-filter') {
-    updateConferenceOptions(); renderBoard();
+    updateConferenceOptions(); renderBoard(true);
   } else if (event.target.id === 'tier-filter') {
-    updateConferenceOptions(); renderBoard();
+    updateConferenceOptions(); renderBoard(true);
   } else if (event.target.id === 'conference-filter') {
-    renderBoard();
+    renderBoard(true);
   } else if (event.target.id === 'data-file' && event.target.files && event.target.files[0]) {
     const file = event.target.files[0];
     try {
@@ -665,12 +687,22 @@ document.addEventListener('input', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  const weightButton = event.target.closest('[data-weight-target][data-weight-step]');
+  if (weightButton) {
+    const input = ids('weight-' + weightButton.dataset.weightTarget);
+    const value = Math.min(Number(input.max), Math.max(Number(input.min), Number(input.value) + Number(weightButton.dataset.weightStep)));
+    if (value !== Number(input.value)) {
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    return;
+  }
   const teamButton = event.target.closest('[data-select-team]');
   if (teamButton) {
     selectFocusTeam(teamButton.dataset.selectTeam, true);
     return;
   }
-  if (event.target.id === 'simulate-matchup') {
+  if (event.target.closest('#simulate-matchup')) {
     runMatchupSimulation();
     return;
   }
@@ -690,6 +722,7 @@ document.addEventListener('click', async function (event) {
   if (event.target.id === 'export-rankings') exportRankings();
 });
 
+enhanceSearchableSelects();
 initialize().catch(function (error) {
   const message = ids('import-message');
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }
