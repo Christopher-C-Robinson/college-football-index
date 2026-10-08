@@ -25,6 +25,30 @@ function usableForecast(row) {
   return forecast;
 }
 
+function primaryColor(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.trim().match(/^#?([a-f\d]{3}|[a-f\d]{6})$/i);
+  if (!match) return null;
+  const hex = match[1].length === 3 ? [...match[1]].map(character => character + character).join('') : match[1];
+  return [0, 2, 4].map(offset => Number.parseInt(hex.slice(offset, offset + 2), 16)).join(', ');
+}
+
+function winnerPresentation(row, teamName, forecast, actual) {
+  if (row.status === 'canceled') return { label: 'Canceled · no winner' };
+  if (row.status === 'final') {
+    if (!actual) return { label: 'Final result unavailable' };
+    if (actual.for === actual.against) return { label: 'Tied game · no winner' };
+    const selectedWon = actual.for > actual.against;
+    return { kind: 'actual', color: primaryColor(selectedWon ? row.matchup?.team?.color : row.matchup?.opponent?.color),
+      label: 'Winner: ' + (selectedWon ? teamName : row.opponentName) };
+  }
+  if (!forecast) return { label: 'No model favorite available' };
+  if (forecast.winProbability === 0.5) return { label: 'Model toss-up · 50.0% each' };
+  const selectedFavored = forecast.winProbability > 0.5;
+  return { kind: 'predicted', color: primaryColor(selectedFavored ? row.matchup?.team?.color : row.matchup?.opponent?.color),
+    label: 'Model favorite: ' + (selectedFavored ? teamName : row.opponentName) + ' · ' + number((selectedFavored ? forecast.winProbability : 1 - forecast.winProbability) * 100) + '% win chance' };
+}
+
 function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisionSize, rankingsReady = false) {
   const division = String(classification || '').toUpperCase();
   if (!['FBS', 'FCS'].includes(division)) return '<span class="forecast-rank is-unranked">Not ranked in FBS/FCS</span>';
@@ -124,9 +148,12 @@ function renderRow(row, teamName, rankingsReady) {
   const status = { final: 'Final', upcoming: 'Scheduled', unplayed: 'Not final', canceled: 'Canceled' }[row.status] || 'Scheduled';
   const sitePrefix = row.site === 'Away' ? '@ ' : 'vs. ';
   const actualLabel = actual ? '<span class="forecast-outcome' + (actual.outcome === 'L' ? ' is-loss' : '') + '">' + escapeHtml(actual.outcome) + '</span>' : '';
-  return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + '" role="listitem">' +
+  const winner = winnerPresentation(row, teamName, forecast, actual);
+  const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
+  const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
+  return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p></div><span class="forecast-game-status">' + status + ' ' + actualLabel + '</span></div>' +
+    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p><p class="forecast-winner-label">' + escapeHtml(winner.label) + '</p></div><span class="forecast-game-status">' + status + ' ' + actualLabel + '</span></div>' +
     '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + matchupContext(row, teamName, forecast) + '</div>' +
     (forecast ? forecastSource(forecast, teamName, row.opponentName) : '') + '</article>';
 }

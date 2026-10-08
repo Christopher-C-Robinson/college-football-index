@@ -38,6 +38,7 @@ function matchupTeam(team, name, effectivePower) {
   const power = finite(effectivePower) ? effectivePower : team?.power;
   return {
     name,
+    color: team?.color || null,
     record: modeled ? team.wins + '–' + team.losses + (team.ties ? '–' + team.ties : '') : null,
     ratedGames: modeled ? team.coverage?.results ?? null : null,
     power: modeled && finite(power) ? power : null,

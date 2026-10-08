@@ -190,14 +190,23 @@ h1, h2, h3, p { margin-top: 0; }
 .forecast-method-details > summary:focus-visible { outline: 2px solid var(--blue-mid); outline-offset: 2px; }
 .forecast-method-details > p { margin: 7px 0 0; }
 .forecast-ledger { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
-.forecast-game { min-width: 0; border: 1px solid var(--line); background: var(--paper); padding: 20px; }
+.forecast-game { min-width: 0; border: 1px solid var(--line); border-top-width: 4px; background: var(--paper); padding: 20px; }
+.forecast-game.is-winner-actual { border-top-color: rgb(var(--game-winner-rgb)); border-left: 4px solid rgb(var(--game-winner-rgb)); }
+.forecast-game.is-winner-predicted { border-top-color: rgba(var(--game-winner-rgb), .28); border-left: 4px solid rgba(var(--game-winner-rgb), .28); }
 .forecast-game-heading { display: grid; grid-template-columns: 95px minmax(0, 1fr) auto; align-items: start; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.is-winner-actual .forecast-game-heading, .is-winner-predicted .forecast-game-heading { margin: -20px -20px 0; padding: 20px; }
+.is-winner-actual .forecast-game-heading { background: rgba(var(--game-winner-rgb), .08); }
+.is-winner-predicted .forecast-game-heading { background: rgba(var(--game-winner-rgb), .025); }
 .forecast-date { color: var(--ink-soft); font: 10px/1.6 var(--mono); }
 .forecast-date > time, .forecast-date > span { display: block; }
 .forecast-date > span { margin-top: 3px; }
 .forecast-opponent h4 { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.35; }
 .forecast-opponent .forecast-rank { min-height: 24px; padding: 4px 7px; font-size: 9px; }
 .forecast-opponent p { color: #657168; font-size: 11px; line-height: 1.55; margin: 6px 0 0; overflow-wrap: anywhere; }
+.forecast-opponent .forecast-winner-label { display: flex; align-items: center; gap: 7px; margin-top: 9px; color: var(--ink-soft); font-size: 11px; font-weight: 600; }
+.is-winner-actual .forecast-winner-label::before, .is-winner-predicted .forecast-winner-label::before { content: ''; flex: none; width: 11px; height: 11px; border: 1px solid rgba(23, 35, 51, .25); }
+.is-winner-actual .forecast-winner-label::before { background: rgb(var(--game-winner-rgb)); }
+.is-winner-predicted .forecast-winner-label::before { background: rgba(var(--game-winner-rgb), .28); }
 .forecast-game-status { display: inline-flex; align-items: center; gap: 7px; padding: 6px 8px; border: 1px solid var(--line); color: var(--ink-soft); font: 10px var(--mono); white-space: nowrap; }
 .forecast-outcome { color: var(--blue-mid); font-weight: 500; }
 .forecast-outcome.is-loss { color: var(--rust); }
@@ -263,6 +272,7 @@ h1, h2, h3, p { margin-top: 0; }
 @media (max-width: 600px) {
   .forecast-game { padding: 15px; }
   .forecast-game-heading { grid-template-columns: 72px minmax(0, 1fr); gap: 12px; }
+  .is-winner-actual .forecast-game-heading, .is-winner-predicted .forecast-game-heading { margin: -15px -15px 0; padding: 15px; }
   .forecast-date { font-size: 9px; }
   .forecast-opponent h4 { font-size: 16px; }
   .forecast-game-status { grid-column: 2; justify-self: start; }
