@@ -128,7 +128,7 @@ h1, h2, h3, p { margin-top: 0; }
 .chart-empty { height: 174px; display: grid; place-items: center; border-top: 1px solid #ecece5; color: #899187; font-size: 11px; text-align: center; line-height: 1.6; }
 .chart-legend { display: flex; align-items: center; gap: 16px; color: #838c83; font: 8px var(--mono); }
 .legend-dot { width: 6px; height: 6px; display: inline-block; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-.legend-green { background: var(--blue-mid); }.legend-rust { background: var(--rust); }
+.legend-win { background: var(--blue-mid); }.legend-rust { background: var(--rust); }
 .chart-caption { margin-left: auto; color: #9aa197; }
 .mini-insight { min-height: 49px; margin-top: 17px; border-top: 1px solid #e3e7e9; padding-top: 12px; color: #58645b; font-size: 10px; line-height: 1.6; }
 .mini-insight strong { color: var(--blue); }

@@ -2,6 +2,8 @@
 
 A neutral, transparent analysis site for every FBS and FCS team. One connected game graph lets fans compare results across subdivisions, conferences, and schedules. Every team uses the same model, filters, and evidence standards.
 
+**Live site:** [College Football Index](https://christopher-c-robinson.github.io/college-football-index/)
+
 ## What it measures
 
 - **Game power:** iterative opponent-adjusted scoring across FBS and FCS, with a 2.5-point home-field adjustment, a 28-point margin cap, and a two-game prior toward the combined field average.
