@@ -33,7 +33,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible
 .brand-mark { width: 31px; height: 31px; background: var(--blue); color: var(--team-ink); display: grid; place-items: center; font: 500 10px var(--mono); letter-spacing: -1px; }
 .brand-name { font: 500 12px var(--mono); letter-spacing: 1.2px; }
 .brand-name b { font-weight: 500; color: var(--blue-mid); }
-.team-brand-context { align-items: center; justify-content: center; min-height: 27px; padding: 0 9px; border: 1px solid var(--team-secondary); background: var(--blue-light); color: var(--blue-mid); font: 8px var(--mono); letter-spacing: .6px; white-space: nowrap; }
+.team-brand-context { display: inline-flex; align-items: center; justify-content: center; min-height: 27px; padding: 0 9px; border: 1px solid var(--team-secondary); background: var(--blue-light); color: var(--blue-mid); font: 8px var(--mono); letter-spacing: .6px; white-space: nowrap; }
 .team-brand-context[hidden] { display: none; }
 .main-nav { display: flex; align-items: center; gap: 29px; font-size: 12px; font-weight: 600; color: #657168; }
 .main-nav a:hover, .text-link:hover { color: var(--blue-mid); }
