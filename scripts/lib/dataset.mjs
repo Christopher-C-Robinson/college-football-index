@@ -1,6 +1,8 @@
 import { readFile, writeFile, rename, mkdir, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { gunzip } from 'node:zlib';
+import { promisify } from 'node:util';
 import { MODEL_VERSION, SCHEMA_VERSION } from '../../js/config.js';
 
 export const RATED_SEASON_TYPES = ['regular', 'postseason', 'spring_regular', 'spring_postseason'];
@@ -10,9 +12,14 @@ const idOf = row => row?.id ?? row?.gameId;
 const validScore = value => Number.isInteger(value) && value >= 0;
 const completed = game => game?.completed === true && validScore(game.homePoints) && validScore(game.awayPoints);
 const rated = game => completed(game) && RATED_SEASON_TYPES.includes(game.seasonType) && divisionOne(game.homeClassification) && divisionOne(game.awayClassification);
+const gunzipAsync = promisify(gunzip);
 
 export async function readJson(path, { optional = false } = {}) {
-  try { return JSON.parse(await readFile(path, 'utf8')); }
+  try {
+    const bytes = await readFile(path);
+    const json = String(path).endsWith('.gz') ? await gunzipAsync(bytes) : bytes;
+    return JSON.parse(json.toString('utf8'));
+  }
   catch (error) { if (optional && error.code === 'ENOENT') return null; throw error; }
 }
 

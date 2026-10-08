@@ -29,7 +29,7 @@ The script downloads regular-season **and postseason** FBS/FCS schedules, season
 
 An explicit year takes precedence. Without one, January–July selects the prior football season, keeping January bowls/playoffs with their fall season. The API key comes from `CFBD_API_KEY` or a hidden interactive prompt. The existing repository secret is already configured.
 
-The `Update season data and publish site` workflow refreshes daily at 10:23 UTC during August–January, commits validated data, and requests a GitHub Pages rebuild. Choose `task: refresh` for a manual public update. Tests and bundled-data validation gate publication. Never commit the API key.
+The `Update season data and publish site` workflow refreshes daily at 10:23 UTC during August–January, commits validated data, and requests a GitHub Pages rebuild. Choose `task: refresh` for a manual public update. Tests and bundled-data validation gate automated data commits; PR checks validate source changes before merge. GitHub Pages separately publishes the `main` branch. Never commit the API key.
 
 The workflow works with this repository's current GitHub Pages branch publishing setup. Regular pushes to `main` publish the site as before; after a scheduled or manual data commit, the workflow explicitly requests a Pages rebuild. The repository and generated game data are public; the API key stays in GitHub's secret store and is not included in the website.
 

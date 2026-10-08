@@ -34,21 +34,58 @@ export async function promptForApiKey() {
   });
 }
 
-export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = new Date(), fetchImpl = fetch, reserveCalls = 50 } = {}) {
+export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = new Date(), fetchImpl = fetch, reserveCalls = 50,
+  minimumIntervalMs = 500, maxRetries = 3, clock = () => Date.now(), wait = milliseconds => new Promise(resolveWait => setTimeout(resolveWait, milliseconds)) } = {}) {
   if (!apiKey) throw new Error('CFBD_API_KEY is required.');
   if (!cacheDirectory) throw new Error('A history cache directory is required.');
+  if (!Number.isFinite(minimumIntervalMs) || minimumIntervalMs < 0) throw new Error('Request interval must be nonnegative.');
+  if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 5) throw new Error('Retry count must be an integer from 0 to 5.');
   let apiCalls = 0;
   let remainingCalls = null;
+  let lastRequestAt = null;
+
+  function retryDelay(response, attempt) {
+    const retryAfter = response?.headers?.get?.('retry-after');
+    let delay = Math.min(1000 * 2 ** attempt, 10_000);
+    if (retryAfter !== undefined && retryAfter !== null && String(retryAfter).trim() !== '') {
+      const seconds = Number(retryAfter);
+      const timestamp = Date.parse(retryAfter);
+      if (Number.isFinite(seconds) && seconds >= 0) delay = seconds * 1000;
+      else if (Number.isFinite(timestamp)) delay = Math.max(0, timestamp - clock());
+    }
+    if (delay > 60_000) throw new Error('CFBD requested a retry delay longer than 60 seconds; collection stopped for a later retry.');
+    return delay;
+  }
 
   async function fetchJson(endpoint, params = {}) {
-    if (endpoint !== '/info' && remainingCalls !== null && remainingCalls <= reserveCalls) throw new Error('Stopping CFBD collection with ' + remainingCalls + ' calls remaining to preserve the ' + reserveCalls + '-call refresh reserve.');
     const url = new URL('https://api.collegefootballdata.com' + endpoint);
     for (const [name, value] of Object.entries(params)) url.searchParams.set(name, String(value));
-    apiCalls += 1;
-    const response = await fetchImpl(url, { headers: { Authorization: 'Bearer ' + apiKey }, signal: AbortSignal.timeout(30_000) });
-    if (!response.ok) throw new Error('CFBD request failed (' + response.status + ') for ' + endpoint + '.');
-    if (remainingCalls !== null) remainingCalls -= 1;
-    return response.json();
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      if (endpoint !== '/info' && remainingCalls !== null && remainingCalls <= reserveCalls) throw new Error('Stopping CFBD collection with ' + remainingCalls + ' calls remaining to preserve the ' + reserveCalls + '-call refresh reserve.');
+      const throttle = lastRequestAt === null ? 0 : Math.max(0, lastRequestAt + minimumIntervalMs - clock());
+      if (throttle > 0) await wait(throttle);
+      lastRequestAt = clock();
+      apiCalls += 1;
+      // Failed requests may still count against quota; reserve conservatively before each attempt.
+      if (remainingCalls !== null) remainingCalls -= 1;
+      let response;
+      try {
+        response = await fetchImpl(url, { headers: { Authorization: 'Bearer ' + apiKey }, signal: AbortSignal.timeout(30_000) });
+      } catch (error) {
+        const retryable = ['AbortError', 'TimeoutError', 'TypeError'].includes(error.name)
+          || ['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN', 'ECONNREFUSED'].includes(error.code || error.cause?.code);
+        if (!retryable || attempt === maxRetries) throw new Error('CFBD network request failed for ' + endpoint + ' after ' + (attempt + 1) + ' attempts.');
+        console.warn('Retrying CFBD ' + endpoint + ' after a network failure (attempt ' + (attempt + 2) + '/' + (maxRetries + 1) + ').');
+        await wait(retryDelay(null, attempt));
+        continue;
+      }
+      if (response.ok) return response.json();
+      const retryable = response.status === 429 || response.status >= 500 && response.status <= 599;
+      if (!retryable || attempt === maxRetries) throw new Error('CFBD request failed (' + response.status + ') for ' + endpoint + ' after ' + (attempt + 1) + ' attempts.');
+      const delay = retryDelay(response, attempt);
+      console.warn('Retrying CFBD ' + endpoint + ' after HTTP ' + response.status + ' (attempt ' + (attempt + 2) + '/' + (maxRetries + 1) + ').');
+      await wait(delay);
+    }
   }
 
   async function getUsage() {

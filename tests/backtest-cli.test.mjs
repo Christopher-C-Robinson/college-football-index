@@ -5,8 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { gzipSync } from 'node:zlib';
 import { fingerprint } from '../scripts/lib/backtest.mjs';
-import { assertValidDataset } from '../scripts/lib/dataset.mjs';
+import { assertValidDataset, readJson } from '../scripts/lib/dataset.mjs';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 const cli = join(projectRoot, 'scripts', 'backtest.mjs');
@@ -109,4 +110,55 @@ test('CLI rejects a missing historical venue season before writing predictions',
   assert.equal(rejected.status, 1);
   assert.match(rejected.stderr, /Missing venue warmup archives for season 2025: 2022/);
   await assert.rejects(readFile(paths.report, 'utf8'), { code: 'ENOENT' });
+});
+
+test('JSON reader preserves compressed archive content and optional missing-file behavior', async t => {
+  const paths = await fixture(t);
+  const plain = join(paths.history, '2025.json');
+  const compressed = plain + '.gz';
+  await writeFile(compressed, gzipSync(await readFile(plain)));
+  const dataset = await readJson(plain);
+  const restored = await readJson(compressed);
+  assert.deepEqual(restored, dataset);
+  assert.equal(fingerprint(restored), fingerprint(dataset));
+  assert.equal(await readJson(join(paths.history, 'missing.json.gz'), { optional: true }), null);
+  await writeFile(compressed, 'invalid gzip');
+  await assert.rejects(readJson(compressed, { optional: true }));
+});
+
+test('CLI replays mixed and all-compressed season archives identically', async t => {
+  const paths = await fixture(t);
+  const plainRun = run(paths);
+  assert.equal(plainRun.status, 0, plainRun.stderr);
+  const original = await readFile(paths.report, 'utf8');
+  for (const seasons of [[2021, 2023, 2025], [2022, 2024]]) {
+    for (const season of seasons) {
+      const plain = join(paths.history, `${season}.json`);
+      await writeFile(plain + '.gz', gzipSync(await readFile(plain)));
+      await rm(plain);
+    }
+    const replay = run(paths);
+    assert.equal(replay.status, 0, replay.stderr);
+    assert.match(replay.stdout, /predictions unchanged/);
+    assert.equal(await readFile(paths.report, 'utf8'), original);
+  }
+});
+
+test('CLI rejects duplicate plain and compressed archives for the same season', async t => {
+  const paths = await fixture(t);
+  const plain = join(paths.history, '2025.json');
+  await writeFile(plain + '.gz', gzipSync(await readFile(plain)));
+  const rejected = run(paths);
+  assert.equal(rejected.status, 1);
+  assert.match(rejected.stderr, /Duplicate history archives for season 2025/);
+  await assert.rejects(readFile(paths.report, 'utf8'), { code: 'ENOENT' });
+});
+
+test('CLI rejects a season file whose metadata names a different year', async t => {
+  const paths = await fixture(t);
+  await writeFile(join(paths.history, '2021.json.gz'), gzipSync(JSON.stringify(archive(2022))));
+  await rm(join(paths.history, '2021.json'));
+  const rejected = run(paths);
+  assert.equal(rejected.status, 1);
+  assert.match(rejected.stderr, /2021\.json\.gz does not match its metadata season 2022/);
 });

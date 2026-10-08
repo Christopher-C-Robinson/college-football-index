@@ -5,7 +5,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inferSeason, resolveSeason } from '../scripts/lib/season.mjs';
 import { assertValidDataset, validateDataset, deduplicateGames, readJson } from '../scripts/lib/dataset.mjs';
-import { createCfbdClient } from '../scripts/lib/cfbd.mjs';
+import { createCfbdClient as clientWithPacing } from '../scripts/lib/cfbd.mjs';
+
+// Most integrity tests exercise data behavior; pacing tests inject a virtual clock below.
+const createCfbdClient = options => clientWithPacing({ minimumIntervalMs: 0, ...options });
 
 const now = new Date('2026-10-08T12:00:00Z');
 function game(overrides = {}) {
@@ -185,4 +188,86 @@ test('unexpectedly missing many historical boxes cannot create an unbounded dail
   const retry = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, now: new Date('2026-10-16T12:00:00Z'), fetchImpl: fakeProvider(games, calls, { omitStats: true }) });
   await retry.fetchSeasonDataset(2026);
   assert.equal(calls.length, 11);
+});
+
+function virtualTime() {
+  let elapsed = Date.parse('2026-10-08T12:00:00Z');
+  const waits = [];
+  return { waits, clock: () => elapsed, wait: async milliseconds => { waits.push(milliseconds); elapsed += milliseconds; } };
+}
+
+test('sequential CFBD attempts are paced without delaying the test clock', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  const starts = [];
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, minimumIntervalMs: 500, ...time,
+    fetchImpl: async () => { starts.push(time.clock()); return { ok: true, json: async () => [] }; } });
+  await client.request('/games', { year: 2026 });
+  await client.request('/games', { year: 2025 });
+  assert.equal(starts[1] - starts[0], 500);
+  assert.deepEqual(time.waits, [500]);
+});
+
+test('HTTP 429 honors Retry-After seconds then succeeds with counted attempts', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  let attempts = 0;
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, minimumIntervalMs: 500, ...time,
+    fetchImpl: async () => ++attempts === 1 ? { ok: false, status: 429, headers: new Headers({ 'Retry-After': '2' }) } : { ok: true, json: async () => [] } });
+  assert.deepEqual(await client.request('/games', { year: 2026 }), []);
+  assert.deepEqual(time.waits, [2000]);
+  assert.equal(client.apiCalls, 2);
+});
+
+test('Retry-After dates and transient timeouts receive bounded retries', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  let attempts = 0;
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, ...time, fetchImpl: async () => {
+    attempts += 1;
+    if (attempts === 1) return { ok: false, status: 503, headers: new Headers({ 'Retry-After': new Date(time.clock() + 3000).toUTCString() }) };
+    if (attempts === 2) { const error = new Error('timeout'); error.name = 'TimeoutError'; throw error; }
+    return { ok: true, json: async () => [] };
+  } });
+  await client.request('/games', { year: 2026 });
+  assert.deepEqual(time.waits, [3000, 2000]);
+  assert.equal(client.apiCalls, 3);
+});
+
+test('repeated rate limiting stops at the configured retry bound', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, maxRetries: 2, ...time,
+    fetchImpl: async () => ({ ok: false, status: 429, headers: new Headers() }) });
+  await assert.rejects(client.request('/games', { year: 2026 }), /429.*after 3 attempts/);
+  assert.equal(client.apiCalls, 3);
+  assert.deepEqual(time.waits, [1000, 2000]);
+});
+
+test('invalid response shapes and long Retry-After values are not retried', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  const malformed = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, ...time, fetchImpl: async () => ({ ok: true, json: async () => ({ unexpected: true }) }) });
+  await assert.rejects(malformed.request('/games', { year: 2026 }), /must be an array/);
+  assert.equal(malformed.apiCalls, 1);
+  const paused = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, ...time, fetchImpl: async () => ({ ok: false, status: 429, headers: new Headers({ 'Retry-After': '120' }) }) });
+  await assert.rejects(paused.request('/games', { year: 2026 }), /longer than 60 seconds/);
+  assert.equal(paused.apiCalls, 1);
+  assert.deepEqual(time.waits, []);
+});
+
+test('failed attempts consume the conservative quota budget and retries respect the reserve', async t => {
+  const cacheDirectory = await directory(t);
+  const time = virtualTime();
+  let gameAttempts = 0;
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, ...time, fetchImpl: async url => {
+    if (new URL(url).pathname === '/info') return { ok: true, json: async () => ({ remainingCalls: 51, monthlyLimit: 1000 }) };
+    gameAttempts += 1;
+    return { ok: false, status: 429, headers: new Headers() };
+  } });
+  await client.getUsage();
+  await assert.rejects(client.request('/games', { year: 2026 }), /refresh reserve/);
+  assert.equal(gameAttempts, 1);
+  assert.equal(client.remainingCalls, 50);
+  assert.equal(client.apiCalls, 2);
 });

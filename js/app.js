@@ -121,7 +121,7 @@ function fcsRecord(team) {
   return team ? recordText(team.fcsWins, team.fcsLosses, team.fcsTies) : '0-0';
 }
 function visibleTeams() {
-  return state.model.allTeams.filter(function (team) { return team.games.length > 0; })
+  return state.model.allTeams.filter(function (team) { return team.games.length > 0 && ['fbs', 'fcs'].includes(String(team.classification).toLowerCase()); })
     .slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
 }
 function currentFocus() { return teamByKey(state.focusTeam) || null; }

@@ -21,11 +21,18 @@ function argumentsFor(argv) {
 
 try {
   const options = argumentsFor(process.argv.slice(2));
-  const files = (await readdir(options.history)).filter(file => /^\d{4}\.json$/.test(file)).sort();
+  const files = (await readdir(options.history)).filter(file => /^\d{4}\.json(?:\.gz)?$/.test(file)).sort();
+  const seasonFiles = new Map();
+  for (const file of files) {
+    const season = Number(file.slice(0, 4));
+    if (seasonFiles.has(season)) throw new Error('Duplicate history archives for season ' + season + ': ' + seasonFiles.get(season) + ' and ' + file + '. Keep one source file per season.');
+    seasonFiles.set(season, file);
+  }
   const archives = [];
   for (const file of files) {
     const archive = await readJson(join(options.history, file));
     assertValidDataset(archive);
+    if (archive.meta.season !== Number(file.slice(0, 4))) throw new Error('History archive ' + file + ' does not match its metadata season ' + archive.meta.season + '.');
     archives.push(archive);
   }
   for (let season = options.from; season <= options.to; season += 1) {
