@@ -1,6 +1,7 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { estimateHomeField } from '../js/model.js';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const projectDirectory = resolve(scriptDirectory, '..');
@@ -59,17 +60,37 @@ async function request(endpoint, params) {
   return response.json();
 }
 
-const schedules = [];
-for (const classification of ['fbs', 'fcs']) {
-  const result = await request('/games', { year: year, seasonType: 'regular', classification: classification });
-  if (Array.isArray(result)) schedules.push(...result);
+async function fetchSeasonSchedule(season) {
+  const schedules = [];
+  for (const classification of ['fbs', 'fcs']) {
+    const result = await request('/games', { year: season, seasonType: 'regular', classification: classification });
+    if (Array.isArray(result)) schedules.push(...result);
+  }
+  return schedules;
+}
+
+function uniqueGames(schedules) {
+  const gamesById = new Map();
+  schedules.forEach(function (game) {
+    const id = game.id || [game.season, game.startDate, game.homeTeam, game.awayTeam].join('|');
+    gamesById.set(String(id), game);
+  });
+  return Array.from(gamesById.values()).sort(function (a, b) {
+    return String(a.startDate || '').localeCompare(String(b.startDate || ''));
+  });
+}
+
+const seasonsForHomeField = Array.from({ length: 5 }, function (_, index) { return year - 4 + index; });
+const historySchedules = [];
+let currentSchedules = [];
+for (const season of seasonsForHomeField) {
+  const seasonGames = await fetchSeasonSchedule(season);
+  historySchedules.push(...seasonGames);
+  if (season === year) currentSchedules = seasonGames;
 }
 const teamMetadata = await request('/teams', { year: year });
-const gamesById = new Map();
-schedules.forEach(function (game) { gamesById.set(String(game.id), game); });
-const games = Array.from(gamesById.values()).sort(function (a, b) {
-  return String(a.startDate || '').localeCompare(String(b.startDate || ''));
-});
+const games = uniqueGames(currentSchedules);
+const homeField = estimateHomeField(uniqueGames(historySchedules), year);
 const completedWeeks = Array.from(new Set(games.filter(function (game) {
   return game.completed && Number.isFinite(Number(game.week));
 }).map(function (game) { return Number(game.week); }))).sort(function (a, b) { return a - b; });
@@ -104,12 +125,14 @@ const dataset = {
     resultsThrough: resultsThrough,
     generatedAt: new Date().toISOString(),
     provider: 'CollegeFootballData.com API',
-    scope: 'Regular-season FBS + FCS schedule/results and team box scores',
+    scope: 'Current regular-season FBS + FCS schedule/results and team box scores, plus five seasons of home-field history',
+    homeFieldSeasons: seasonsForHomeField,
     starter: false,
     completeD1: true,
     apiCalls: apiCalls
   },
   games: games,
+  homeField: homeField,
   teamMetadata: Array.isArray(teamMetadata) ? teamMetadata.filter(function (team) {
     return ['fbs', 'fcs'].includes(String(team.classification || '').toLowerCase());
   }) : [],
@@ -120,5 +143,6 @@ const outputPath = resolve(projectDirectory, 'data', 'current-season.json');
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, JSON.stringify(dataset, null, 2) + '\n', 'utf8');
 console.log('Saved ' + games.length + ' scheduled games and ' + teamStats.length + ' team box-score entries to data/current-season.json.');
-console.log('CFBD API calls: ' + apiCalls + ' (two schedule requests, one team-metadata request, plus two per completed week).');
+console.log('Home-field model: ' + homeField.gamesUsed + ' completed FBS/FCS games across ' + homeField.seasons.length + ' seasons; league estimate ' + homeField.leaguePoints.toFixed(1) + ' points.');
+console.log('CFBD API calls: ' + apiCalls + ' (two schedule requests per season across five seasons, one metadata request, plus two per completed current-season week).');
 console.log('As of ' + dataset.meta.asOf + '. Keep the API key out of project files and source control.');

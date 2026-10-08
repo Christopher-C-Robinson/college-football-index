@@ -64,7 +64,7 @@
         <div class="section-shell section-block">
           <div class="section-heading section-heading-light">
             <div><p class="eyebrow">01 / THE MODEL BOARD</p><h2>Power is more than the scoreboard.</h2><p class="section-deck">Three lenses keep the ranking honest: opponent-adjusted scoring, on-field efficiency, and résumé quality.</p></div>
-            <div class="model-stamp"><span class="stamp-ring">CF</span><span>MODEL<br>v1.0</span></div>
+            <div class="model-stamp"><span class="stamp-ring">CF</span><span>MODEL<br>v1.1</span></div>
           </div>
 
           <div class="lens-row">
@@ -132,6 +132,7 @@
           <div class="team-record-block"><strong id="team-fbs-record">—</strong><span>VS FBS</span></div>
           <div class="team-record-block"><strong id="team-fcs-record">—</strong><span>VS FCS</span></div>
           <div class="team-record-block"><strong id="team-points">—</strong><span>POINTS FOR / AGAINST</span></div>
+          <div class="team-record-block"><strong id="team-home-field">—</strong><span>HOME-ROAD SWING</span><small id="team-home-field-sample">No team selected</small></div>
         </div>
 
         <div class="dossier-grid">
@@ -155,18 +156,18 @@
           <a class="text-link method-link" href="#data">See the data recipe <span aria-hidden="true">↗</span></a>
         </div>
         <div class="method-grid">
-          <article class="method-card"><span class="method-index">A</span><h3>Build the opponent graph</h3><p>Every completed FBS and FCS game links two teams. Cross-division games connect the schedules, so results can be compared on one field.</p><small>HOME FIELD: 2.5 PTS · MARGIN CAP: 28 PTS · PRIOR: 2 GAMES</small></article>
+          <article class="method-card"><span class="method-index">A</span><h3>Build the opponent graph</h3><p>Every completed FBS and FCS game links two teams. Cross-division games connect the schedules, so results can be compared on one field.</p><small>HOME FIELD: FIVE SEASONS · OPPONENT-ADJUSTED · SHRUNK</small></article>
           <article class="method-card"><span class="method-index">B</span><h3>Separate proof from projection</h3><p>Power ratings use adjusted scoring. Résumé scores use opponent quality and actual wins versus expected wins. Efficiency is a distinct box-score lens.</p><small>FBS AND FCS RESULTS BOTH COUNT IN THE MODEL</small></article>
           <article class="method-card"><span class="method-index">C</span><h3>Show the evidence depth</h3><p>Every team gets a sample-size indicator based on games and available box scores. Early-season ratings stay visibly provisional.</p><small>NO AP POLL OR COACHES POLL INPUTS</small></article>
         </div>
-        <p class="method-footnote">This is a transparent starting model, not a claim that one formula captures the whole sport. What-If simulations use adjusted power for the spread, the selected venue, scoring and points-allowed rates for the total, and wider rating uncertainty for teams with fewer results. They do not model injuries, weather, or matchup-specific play styles.</p>
+        <p class="method-footnote">This is a transparent starting model, not a claim that one formula captures the whole sport. Home and road effects are estimated from opponent-adjusted scoring residuals over five seasons, with recent seasons weighted more and small samples pulled toward the field average. Neutral-site games receive no venue adjustment. What-If simulations use adjusted power for the spread, the selected venue, scoring and points-allowed rates for the total, and wider rating uncertainty for teams with fewer results. They do not model injuries, weather, or matchup-specific play styles.</p>
       </section>
 
       <section id="data" class="data-section">
         <div class="section-shell section-block data-grid">
           <div><p class="eyebrow">04 / DATA ROOM</p><h2>Bring the full field.</h2><p class="section-deck">Load a season dataset covering every FBS and FCS team. The same opponent graph and model apply across every conference.</p>
-            <div class="data-steps"><div><b>1</b><span>Get a <a href="https://collegefootballdata.com/key" target="_blank" rel="noreferrer">free CFBD API key</a> from CollegeFootballData.com.</span></div><div><b>2</b><span>Run the local sync script. It asks for your key in a hidden prompt and downloads FBS and FCS results, team metadata, and colors.</span></div><div><b>3</b><span>Load the generated JSON here, or publish that file with the static site so every visitor sees the same data.</span></div></div>
-            <p class="data-source-note">Data source: CollegeFootballData.com API. Its free tier is rate-limited. A season refresh uses two schedule requests, one team-metadata request, and two requests per completed week.</p>
+            <div class="data-steps"><div><b>1</b><span>Get a <a href="https://collegefootballdata.com/key" target="_blank" rel="noreferrer">free CFBD API key</a> from CollegeFootballData.com.</span></div><div><b>2</b><span>Run the local sync script. It downloads the current FBS and FCS season plus four prior schedules to estimate each team’s home-road effect.</span></div><div><b>3</b><span>Load the generated JSON here, or publish that file with the static site so every visitor sees the same data.</span></div></div>
+            <p class="data-source-note">Data source: CollegeFootballData.com API. The scheduled refresh uses five seasons of schedule data for home-field estimates plus current-season team metadata and box scores. The key stays in the GitHub Actions secret store.</p>
           </div>
           <div class="data-box">
             <div class="data-box-top"><span class="data-box-icon" aria-hidden="true">↥</span><span class="eyebrow">SEASON DATASET</span></div>

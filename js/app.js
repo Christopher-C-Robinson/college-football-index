@@ -1,4 +1,4 @@
-import { buildModel, recordText, shortDate, formatNumber, standardWinProbability, HOME_FIELD_POINTS, WIN_PROBABILITY_SCALE } from './model.js';
+import { buildModel, recordText, shortDate, formatNumber, standardWinProbability, WIN_PROBABILITY_SCALE } from './model.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -266,6 +266,8 @@ function renderDossier() {
     ids('team-fbs-record').textContent = '—';
     ids('team-fcs-record').textContent = '—';
     ids('team-points').textContent = '— / —';
+    ids('team-home-field').textContent = '—';
+    ids('team-home-field-sample').textContent = 'No team selected';
     ids('schedule-count').textContent = 'NO TEAM DATA';
     ids('schedule-list').innerHTML = '<div class="schedule-empty">' + (state.model.allTeams.length ? 'Choose a team above or from the rankings board to explore its schedule.' : 'Import a season dataset to explore any team’s schedule.') + '</div>';
     ids('trace-intro').textContent = 'Load a complete FBS + FCS season file to see a team’s performance trace.';
@@ -285,6 +287,10 @@ function renderDossier() {
   ids('team-fbs-record').textContent = fbsRecord(team);
   ids('team-fcs-record').textContent = fcsRecord(team);
   ids('team-points').textContent = totalF + ' / ' + totalA;
+  ids('team-home-field').textContent = (team.homeFieldPoints >= 0 ? '+' : '') + formatNumber(team.homeFieldPoints, 1) + ' PTS';
+  ids('team-home-field-sample').textContent = team.homeFieldHomeGames || team.homeFieldRoadGames
+    ? 'HOME ' + team.homeFieldHomeGames + ' · ROAD ' + team.homeFieldRoadGames + ' GAMES'
+    : 'Field baseline · no history';
   ids('schedule-count').textContent = String(played.length) + ' FINAL · ' + String(games.length - played.length) + ' UPCOMING';
   const sorted = games.sort(function (a, b) { return String(a.startDate || '').localeCompare(String(b.startDate || '')); });
   if (!sorted.length) {
@@ -321,8 +327,12 @@ function renderTrace(team, games) {
   const points = games.map(function (game) {
     const rawMargin = margin(game, team.name);
     const ratedOpponent = isRatedGame(game);
-    const opponent = teamByKey(opponentName(game, team.name));
-    const homeEdge = game.neutralSite ? 0 : (isAway(game, team.name) ? -2.5 : 2.5);
+    const opponentNameValue = opponentName(game, team.name);
+    const opponent = teamByKey(opponentNameValue);
+    const isRoad = isAway(game, team.name);
+    const homeEdge = game.neutralSite ? 0 : isRoad
+      ? -state.model.homeEdge(opponentNameValue, team.name)
+      : state.model.homeEdge(team.name, opponentNameValue);
     const adjusted = state.model.broadCoverage && ratedOpponent && opponent && team.power !== null && opponent.power !== null
       ? rawMargin - (team.power - opponent.power + homeEdge)
       : rawMargin;
@@ -426,7 +436,8 @@ function compareMetrics(team) {
     { label: 'EXPECTED WINS', value: team.expectedWins, display: rated.length ? formatNumber(team.expectedWins, 1) : '—', scale: rated.length ? Math.max(4, Math.min(96, team.expectedWins / rated.length * 100)) : null },
     { label: 'WINS ABOVE EXPECTATION', value: team.winsAboveExpectation, display: rated.length ? (team.winsAboveExpectation >= 0 ? '+' : '') + formatNumber(team.winsAboveExpectation, 1) : '—', scale: rated.length ? Math.max(4, Math.min(96, 50 + team.winsAboveExpectation * 15)) : null },
     { label: 'EFFICIENCY INDEX', value: team.efficiency, display: team.efficiency === null ? 'NO BOXSCORE' : (team.efficiency >= 0 ? '+' : '') + formatNumber(team.efficiency, 2), scale: team.efficiency === null ? null : Math.max(4, Math.min(96, 50 + team.efficiency * 15)) },
-    { label: 'RAW MARGIN / GAME', value: avgMargin, display: avgMargin === null ? '—' : (avgMargin >= 0 ? '+' : '') + formatNumber(avgMargin, 1), scale: avgMargin === null ? null : Math.max(4, Math.min(96, 50 + avgMargin * 1.3)) }
+    { label: 'RAW MARGIN / GAME', value: avgMargin, display: avgMargin === null ? '—' : (avgMargin >= 0 ? '+' : '') + formatNumber(avgMargin, 1), scale: avgMargin === null ? null : Math.max(4, Math.min(96, 50 + avgMargin * 1.3)) },
+    { label: 'HOME-ROAD SWING', value: team.homeFieldPoints, display: team.homeFieldPoints === null ? '—' : (team.homeFieldPoints >= 0 ? '+' : '') + formatNumber(team.homeFieldPoints, 1) + ' pts', scale: team.homeFieldPoints === null ? null : Math.max(4, Math.min(96, 50 + team.homeFieldPoints * 3)) }
   ];
 }
 
@@ -517,7 +528,8 @@ function runMatchupSimulation() {
   }
 
   const venue = ids('sim-venue').value;
-  const homeAdvantage = venue === 'a-home' ? HOME_FIELD_POINTS : venue === 'b-home' ? -HOME_FIELD_POINTS : 0;
+  const homeAdvantage = venue === 'a-home' ? state.model.homeEdge(teamA.name, teamB.name)
+    : venue === 'b-home' ? -state.model.homeEdge(teamB.name, teamA.name) : 0;
   const predictedMargin = teamA.power - teamB.power + homeAdvantage;
   const ratedGames = state.model.ratedGames;
   const leaguePoints = ratedGames.reduce(function (sum, game) { return sum + game.homePoints + game.awayPoints; }, 0) / (ratedGames.length * 2);

@@ -103,6 +103,7 @@ h1, h2, h3, p { margin-top: 0; }
 .team-record-block { min-width: 70px; display: flex; flex-direction: column; gap: 5px; }
 .team-record-block strong { font: 600 20px var(--serif); }
 .team-record-block span { color: #8a9389; font: 8px var(--mono); letter-spacing: .55px; white-space: nowrap; }
+.team-record-block small { color: #8a9389; font: 7px var(--mono); letter-spacing: .2px; white-space: nowrap; }
 .dossier-grid { display: grid; grid-template-columns: 1.03fr .97fr; gap: 16px; }
 .panel { background: var(--paper); border: 1px solid var(--line); padding: 23px; }
 .panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }

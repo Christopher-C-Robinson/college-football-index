@@ -67,7 +67,8 @@ function addTeam(teams, name, conference, classification) {
       games: [], wins: 0, losses: 0, ties: 0, fbsWins: 0, fbsLosses: 0, fbsTies: 0,
       fcsWins: 0, fcsLosses: 0, fcsTies: 0, overallPointsFor: 0, overallPointsAgainst: 0,
       opponents: [], expectedWins: 0, winsAboveExpectation: 0, opponentPower: null, power: null,
-      efficiency: null, resume: null, composite: null, evidence: 0, metrics: null
+      efficiency: null, resume: null, composite: null, evidence: 0, metrics: null,
+      homeFieldPoints: null, homeFieldHomeGames: 0, homeFieldRoadGames: 0
     });
   }
   const team = teams.get(normalized);
@@ -91,6 +92,173 @@ function clamp(value, min, max) {
 
 function marginForGame(game) {
   return clamp(score(game, 'home') - score(game, 'away'), -28, 28);
+}
+
+export function estimateHomeField(historyGames, referenceSeason) {
+  const source = Array.isArray(historyGames) ? historyGames : [];
+  const requestedSeason = number(referenceSeason);
+  const knownSeasons = source.map(function (game) {
+    return number(game.season === undefined ? game.year : game.season) || number(text(game.startDate).slice(0, 4));
+  }).filter(Number.isFinite).map(Math.trunc);
+  const latestSeason = Number.isFinite(requestedSeason) ? Math.trunc(requestedSeason) : Math.max(0, ...knownSeasons);
+  const firstSeason = latestSeason ? latestSeason - 4 : 0;
+  const unique = new Map();
+
+  source.forEach(function (game) {
+    const seasonValue = number(game.season === undefined ? game.year : game.season) || number(text(game.startDate).slice(0, 4));
+    if (!Number.isFinite(seasonValue)) return;
+    const season = Math.trunc(seasonValue);
+    if (season < firstSeason || season > latestSeason) return;
+    const homeTeam = text(game.homeTeam || game.home);
+    const awayTeam = text(game.awayTeam || game.away);
+    if (!homeTeam || !awayTeam || !isDivisionTeam(game.homeClassification) || !isDivisionTeam(game.awayClassification)) return;
+    const homePoints = number(game.homePoints === undefined ? game.homeScore : game.homePoints);
+    const awayPoints = number(game.awayPoints === undefined ? game.awayScore : game.awayPoints);
+    if (homePoints === null || awayPoints === null) return;
+    const homeKey = key(homeTeam);
+    const awayKey = key(awayTeam);
+    if (!homeKey || !awayKey) return;
+    const id = text(game.id) || [season, text(game.startDate), homeKey, awayKey].join('|');
+    if (unique.has(id)) return;
+    unique.set(id, {
+      season: season,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      homeKey: homeKey,
+      awayKey: awayKey,
+      neutral: game.neutralSite === true,
+      margin: clamp(homePoints - awayPoints, -28, 28),
+      weight: Math.pow(0.75, latestSeason - season)
+    });
+  });
+
+  const rows = Array.from(unique.values());
+  const seasons = Array.from(new Set(rows.map(function (game) { return game.season; }))).sort(function (a, b) { return a - b; });
+  const emptyResult = {
+    method: 'five-season opponent-adjusted home and road effects with partial pooling',
+    referenceSeason: latestSeason || null,
+    firstSeason: firstSeason || null,
+    seasons: seasons,
+    recencyFactor: 0.75,
+    priorGames: 12,
+    gamesUsed: 0,
+    leaguePoints: HOME_FIELD_POINTS,
+    teams: []
+  };
+  if (!rows.length) return emptyResult;
+
+  const rating = new Map();
+  const seasonKeys = new Map();
+  const teamNames = new Map();
+  rows.forEach(function (game) {
+    const homeRatingKey = game.season + '|' + game.homeKey;
+    const awayRatingKey = game.season + '|' + game.awayKey;
+    rating.set(homeRatingKey, 0);
+    rating.set(awayRatingKey, 0);
+    if (!seasonKeys.has(game.season)) seasonKeys.set(game.season, new Set());
+    seasonKeys.get(game.season).add(homeRatingKey);
+    seasonKeys.get(game.season).add(awayRatingKey);
+    if (!teamNames.has(game.homeKey)) teamNames.set(game.homeKey, game.homeTeam);
+    if (!teamNames.has(game.awayKey)) teamNames.set(game.awayKey, game.awayTeam);
+    game.homeRatingKey = homeRatingKey;
+    game.awayRatingKey = awayRatingKey;
+  });
+
+  const teamKeys = Array.from(teamNames.keys());
+  const homeEffect = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const roadEffect = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const homeWeights = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const roadWeights = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const homeGames = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const roadGames = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  rows.forEach(function (game) {
+    if (game.neutral) return;
+    homeWeights.set(game.homeKey, homeWeights.get(game.homeKey) + game.weight);
+    roadWeights.set(game.awayKey, roadWeights.get(game.awayKey) + game.weight);
+    homeGames.set(game.homeKey, homeGames.get(game.homeKey) + 1);
+    roadGames.set(game.awayKey, roadGames.get(game.awayKey) + 1);
+  });
+
+  const sitePriorGames = 12;
+  const leaguePriorGames = 24;
+  let leaguePoints = HOME_FIELD_POINTS;
+  for (let iteration = 0; iteration < 80; iteration += 1) {
+    const ratingSums = new Map(Array.from(rating.keys()).map(function (ratingKey) { return [ratingKey, 0]; }));
+    const ratingWeights = new Map(Array.from(rating.keys()).map(function (ratingKey) { return [ratingKey, 0]; }));
+    rows.forEach(function (game) {
+      const venue = game.neutral ? 0 : leaguePoints + homeEffect.get(game.homeKey) - roadEffect.get(game.awayKey);
+      ratingSums.set(game.homeRatingKey, ratingSums.get(game.homeRatingKey) + game.weight * (game.margin - venue + rating.get(game.awayRatingKey)));
+      ratingSums.set(game.awayRatingKey, ratingSums.get(game.awayRatingKey) + game.weight * (-game.margin + venue + rating.get(game.homeRatingKey)));
+      ratingWeights.set(game.homeRatingKey, ratingWeights.get(game.homeRatingKey) + game.weight);
+      ratingWeights.set(game.awayRatingKey, ratingWeights.get(game.awayRatingKey) + game.weight);
+    });
+
+    const nextRating = new Map();
+    ratingSums.forEach(function (sum, ratingKey) {
+      nextRating.set(ratingKey, sum / (ratingWeights.get(ratingKey) + 2));
+    });
+    seasonKeys.forEach(function (keys) {
+      const average = Array.from(keys).reduce(function (sum, ratingKey) { return sum + nextRating.get(ratingKey); }, 0) / keys.size;
+      keys.forEach(function (ratingKey) { nextRating.set(ratingKey, nextRating.get(ratingKey) - average); });
+    });
+    rating.clear();
+    nextRating.forEach(function (value, ratingKey) { rating.set(ratingKey, value); });
+
+    let globalSum = 0;
+    let globalWeight = 0;
+    const homeSums = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+    const roadSums = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+    rows.forEach(function (game) {
+      if (game.neutral) return;
+      const residual = game.margin - (rating.get(game.homeRatingKey) - rating.get(game.awayRatingKey));
+      const h = homeEffect.get(game.homeKey);
+      const r = roadEffect.get(game.awayKey);
+      globalSum += game.weight * (residual - h + r);
+      globalWeight += game.weight;
+      homeSums.set(game.homeKey, homeSums.get(game.homeKey) + game.weight * (residual - leaguePoints + r));
+      roadSums.set(game.awayKey, roadSums.get(game.awayKey) + game.weight * (leaguePoints + h - residual));
+    });
+
+    let nextLeaguePoints = (globalSum + leaguePriorGames * HOME_FIELD_POINTS) / (globalWeight + leaguePriorGames);
+    const nextHomeEffect = new Map();
+    const nextRoadEffect = new Map();
+    teamKeys.forEach(function (teamKey) {
+      nextHomeEffect.set(teamKey, homeSums.get(teamKey) / (homeWeights.get(teamKey) + sitePriorGames));
+      nextRoadEffect.set(teamKey, roadSums.get(teamKey) / (roadWeights.get(teamKey) + sitePriorGames));
+    });
+    const totalHomeWeight = teamKeys.reduce(function (sum, teamKey) { return sum + homeWeights.get(teamKey); }, 0);
+    const totalRoadWeight = teamKeys.reduce(function (sum, teamKey) { return sum + roadWeights.get(teamKey); }, 0);
+    const homeMean = totalHomeWeight ? teamKeys.reduce(function (sum, teamKey) { return sum + nextHomeEffect.get(teamKey) * homeWeights.get(teamKey); }, 0) / totalHomeWeight : 0;
+    const roadMean = totalRoadWeight ? teamKeys.reduce(function (sum, teamKey) { return sum + nextRoadEffect.get(teamKey) * roadWeights.get(teamKey); }, 0) / totalRoadWeight : 0;
+    nextLeaguePoints += homeMean - roadMean;
+    teamKeys.forEach(function (teamKey) {
+      homeEffect.set(teamKey, nextHomeEffect.get(teamKey) - homeMean);
+      roadEffect.set(teamKey, nextRoadEffect.get(teamKey) - roadMean);
+    });
+    leaguePoints = nextLeaguePoints;
+  }
+
+  return {
+    ...emptyResult,
+    firstSeason: seasons[0] || firstSeason || null,
+    seasons: seasons,
+    gamesUsed: rows.length,
+    leaguePoints: Number(leaguePoints.toFixed(3)),
+    teams: teamKeys.map(function (teamKey) {
+      const homeAdjustment = homeEffect.get(teamKey) || 0;
+      const roadAdjustment = roadEffect.get(teamKey) || 0;
+      return {
+        name: teamNames.get(teamKey),
+        homeAdjustment: Number(homeAdjustment.toFixed(3)),
+        roadAdjustment: Number(roadAdjustment.toFixed(3)),
+        homeFieldPoints: Number((leaguePoints + homeAdjustment + roadAdjustment).toFixed(3)),
+        homeGames: homeGames.get(teamKey) || 0,
+        roadGames: roadGames.get(teamKey) || 0,
+        effectiveHomeGames: Number((homeWeights.get(teamKey) || 0).toFixed(2)),
+        effectiveRoadGames: Number((roadWeights.get(teamKey) || 0).toFixed(2))
+      };
+    }).sort(function (a, b) { return a.name.localeCompare(b.name); })
+  };
 }
 
 function teamStatsIndex(statGames) {
@@ -222,6 +390,29 @@ export function buildModel(rawData, requestedWeights) {
     team.abbreviation = text(metadata.abbreviation);
   });
 
+  const homeFieldEstimate = data.homeField && typeof data.homeField === 'object' ? data.homeField : null;
+  const leagueHomeField = homeFieldEstimate && number(homeFieldEstimate.leaguePoints) !== null
+    ? number(homeFieldEstimate.leaguePoints) : HOME_FIELD_POINTS;
+  const homeFieldByTeam = new Map();
+  (homeFieldEstimate && Array.isArray(homeFieldEstimate.teams) ? homeFieldEstimate.teams : []).forEach(function (entry) {
+    const teamKey = key(entry.name || entry.school);
+    if (teamKey) homeFieldByTeam.set(teamKey, entry);
+  });
+  function homeEdge(homeTeam, awayTeam) {
+    const homeEstimate = homeFieldByTeam.get(key(homeTeam));
+    const awayEstimate = homeFieldByTeam.get(key(awayTeam));
+    const homeAdjustment = homeEstimate ? number(homeEstimate.homeAdjustment) || 0 : 0;
+    const roadAdjustment = awayEstimate ? number(awayEstimate.roadAdjustment) || 0 : 0;
+    return clamp(leagueHomeField + homeAdjustment - roadAdjustment, -5, 12);
+  }
+  teams.forEach(function (team, teamName) {
+    const estimate = homeFieldByTeam.get(teamName);
+    team.homeFieldPoints = estimate && number(estimate.homeFieldPoints) !== null
+      ? number(estimate.homeFieldPoints) : leagueHomeField;
+    team.homeFieldHomeGames = estimate ? number(estimate.homeGames) || 0 : 0;
+    team.homeFieldRoadGames = estimate ? number(estimate.roadGames) || 0 : 0;
+  });
+
   const ratedGames = games.filter(function (game) {
     return isCompleted(game) && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
   });
@@ -270,7 +461,6 @@ export function buildModel(rawData, requestedWeights) {
     gameCount.set(key(game.homeTeam), (gameCount.get(key(game.homeTeam)) || 0) + 1);
     gameCount.set(key(game.awayTeam), (gameCount.get(key(game.awayTeam)) || 0) + 1);
   });
-  const homeField = HOME_FIELD_POINTS;
   const prior = 2;
   for (let iteration = 0; iteration < 60; iteration += 1) {
     const sums = new Map(ratingTeams.map(function (teamName) { return [teamName, 0]; }));
@@ -278,7 +468,7 @@ export function buildModel(rawData, requestedWeights) {
       const homeName = key(game.homeTeam);
       const awayName = key(game.awayTeam);
       const margin = marginForGame(game);
-      const location = game.neutralSite ? 0 : homeField;
+      const location = game.neutralSite ? 0 : homeEdge(game.homeTeam, game.awayTeam);
       sums.set(homeName, sums.get(homeName) + margin - location + (rating.get(awayName) || 0));
       sums.set(awayName, sums.get(awayName) - margin + location + (rating.get(homeName) || 0));
     });
@@ -297,7 +487,7 @@ export function buildModel(rawData, requestedWeights) {
     const home = teams.get(key(game.homeTeam));
     const away = teams.get(key(game.awayTeam));
     if (!home || !away) return;
-    const predictedMargin = (rating.get(key(game.homeTeam)) || 0) - (rating.get(key(game.awayTeam)) || 0) + (game.neutralSite ? 0 : homeField);
+    const predictedMargin = (rating.get(key(game.homeTeam)) || 0) - (rating.get(key(game.awayTeam)) || 0) + (game.neutralSite ? 0 : homeEdge(game.homeTeam, game.awayTeam));
     const probability = 1 / (1 + Math.exp(-predictedMargin / 7.5));
     home.expectedWins += probability;
     away.expectedWins += 1 - probability;
@@ -371,6 +561,8 @@ export function buildModel(rawData, requestedWeights) {
     meta: data.meta || {}, raw: data, games: games, completedGames: completedGames,
     teams: teams, allTeams: allTeams, ratedGames: ratedGames, broadCoverage: broadCoverage,
     ratedTeamCount: ratedTeamCount, ratedGameCount: ratedGames.length,
+    homeField: homeFieldEstimate || { leaguePoints: HOME_FIELD_POINTS, seasons: [], gamesUsed: 0, teams: [] },
+    homeEdge: homeEdge,
     weights: weights, defaultWeights: DEFAULTS
   };
 }
