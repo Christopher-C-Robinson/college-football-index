@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#172333">
     <meta name="description" content="A transparent, schedule-adjusted analysis of every FBS and FCS college football team.">
     <title>College Football Index — FBS + FCS Team Analysis</title>
-    <link rel="stylesheet" href="./styles.css?v=606045d86e7d">
-    <script type="module" src="./js/app.js?v=c5065e9d20be"></script>
+    <link rel="stylesheet" href="./styles.css?v=5dba475c1769">
+    <script type="module" src="./js/app.js?v=b6d51cc59297"></script>
   </head>
   <body>
     <header class="site-header">
@@ -29,6 +29,7 @@
 
     <main id="top">
       <section id="dataset-provenance" class="dataset-provenance section-shell" aria-label="Dataset source and freshness" aria-live="polite"><p>Loading public snapshot and checking any saved import…</p></section>
+      <section id="model-fit" class="model-fit section-shell" aria-labelledby="model-fit-title" aria-live="polite"><div class="model-fit-heading"><div><p class="model-fit-kicker">Completed games · current snapshot</p><h2 id="model-fit-title">Current model fit</h2></div><span class="model-fit-scope-tag">FBS + FCS</span></div><p class="model-fit-state">Preparing completed-game comparisons…</p></section>
       <section class="hero section-shell" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-line"></span> FBS + FCS · ONE FIELD</p>
@@ -91,7 +92,7 @@
               <div class="weight-control"><div><label for="weight-power">Game power</label><output id="weight-power-value" for="weight-power">55%</output></div><div class="weight-adjust-row"><button id="weight-power-decrease" class="weight-step" type="button" data-weight-target="power" data-weight-step="-1" aria-controls="weight-power" aria-label="Decrease game power weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-power" data-weight="power" type="range" min="0" max="100" step="1" value="55"><button id="weight-power-increase" class="weight-step" type="button" data-weight-target="power" data-weight-step="1" aria-controls="weight-power" aria-label="Increase game power weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
               <div class="weight-control"><div><label for="weight-efficiency">Efficiency</label><output id="weight-efficiency-value" for="weight-efficiency">30%</output></div><div class="weight-adjust-row"><button id="weight-efficiency-decrease" class="weight-step" type="button" data-weight-target="efficiency" data-weight-step="-1" aria-controls="weight-efficiency" aria-label="Decrease efficiency weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-efficiency" data-weight="efficiency" type="range" min="0" max="100" step="1" value="30"><button id="weight-efficiency-increase" class="weight-step" type="button" data-weight-target="efficiency" data-weight-step="1" aria-controls="weight-efficiency" aria-label="Increase efficiency weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
               <div class="weight-control"><div><label for="weight-resume">Résumé</label><output id="weight-resume-value" for="weight-resume">15%</output></div><div class="weight-adjust-row"><button id="weight-resume-decrease" class="weight-step" type="button" data-weight-target="resume" data-weight-step="-1" aria-controls="weight-resume" aria-label="Decrease résumé weight by 1 point"><span aria-hidden="true">‹</span></button><input id="weight-resume" data-weight="resume" type="range" min="0" max="100" step="1" value="15"><button id="weight-resume-increase" class="weight-step" type="button" data-weight-target="resume" data-weight-step="1" aria-controls="weight-resume" aria-label="Increase résumé weight by 1 point"><span aria-hidden="true">›</span></button></div></div>
-              <div class="weight-note"><span class="weight-note-mark">i</span><span>The board is a comparison tool, not a playoff committee ranking or win probability.</span></div>
+              <div class="weight-note"><span class="weight-note-mark">i</span><span>Weights change the ranking blend. Matchup predictions use game power and venue, so these sliders do not change a fixed matchup’s forecast.</span></div>
               <button id="export-rankings" class="button button-outline button-full" type="button" disabled>Export model board <span aria-hidden="true">↓</span></button>
             </aside>
           </div>

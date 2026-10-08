@@ -5,6 +5,8 @@ import { enhanceSearchableSelects } from './searchable-select.js';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
 import { buildSeasonProjections } from './season-projections.js';
 import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote } from './season-projections-view.js';
+import { buildModelFit } from './model-fit.js';
+import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -12,6 +14,8 @@ const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
 const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
 const seasonAnalysisCache = new Map();
+const modelFitCache = new WeakMap();
+let modelFitRequest = 0;
 const ids = function (id) { return document.getElementById(id); };
 
 function escapeHtml(value) {
@@ -214,6 +218,39 @@ function renderDatasetStatus() {
   const stamp = ids('model-version');
   if (stamp) stamp.textContent = 'v' + MODEL_VERSION;
   ids('dataset-source').textContent = info.sourceLabel.toUpperCase();
+}
+
+async function updateModelFit() {
+  const panel = ids('model-fit');
+  if (!panel) return;
+  const raw = state.raw;
+  const model = state.model;
+  const request = ++modelFitRequest;
+  const current = () => request === modelFitRequest && state.raw === raw;
+  const cached = modelFitCache.get(raw);
+  if (cached) {
+    panel.innerHTML = renderModelFit(cached);
+    panel.setAttribute('aria-busy', 'false');
+    return;
+  }
+  panel.setAttribute('aria-busy', 'true');
+  panel.innerHTML = renderModelFitProgress({ completed: 0, total: model.ratedGameCount });
+  try {
+    const report = await buildModelFit(model, {
+      isCanceled: () => !current(),
+      onProgress: progress => {
+        if (current()) panel.innerHTML = renderModelFitProgress(progress);
+      }
+    });
+    if (!current() || !report) return;
+    modelFitCache.set(raw, report);
+    panel.innerHTML = renderModelFit(report);
+    panel.setAttribute('aria-busy', 'false');
+  } catch (error) {
+    if (!current()) return;
+    panel.innerHTML = renderModelFitError(error.message || 'Could not compare the current model with completed results.');
+    panel.setAttribute('aria-busy', 'false');
+  }
 }
 
 function populateSelectors() {
@@ -610,6 +647,9 @@ function setDataset(raw, message, persist, source = 'imported') {
   updateWeightsDisplay();
   renderBoard(true);
   renderDatasetStatus();
+  // Ranking weights do not change the predictor. Recompute whole-field fit
+  // only for dataset changes, keeping any old async result off a new snapshot.
+  updateModelFit();
   ids('data-updated').textContent = 'SEASON DATA / ' + (raw.meta && (raw.meta.season || raw.meta.asOf) || 'UNKNOWN');
   if (message || storageWarning) {
     ids('import-message').className = 'import-message';
@@ -735,4 +775,6 @@ initialize().catch(function (error) {
   if (status) { status.className = 'data-status is-limited'; status.innerHTML = '<span class="status-dot"></span> Data unavailable'; }
   const provenance = ids('dataset-provenance');
   if (provenance) { provenance.className = 'dataset-provenance section-shell is-warning'; provenance.textContent = 'Public snapshot unavailable. ' + error.message; }
+  const fit = ids('model-fit');
+  if (fit) { fit.innerHTML = renderModelFitError('Load a season dataset to compare model projections with completed games.'); fit.setAttribute('aria-busy', 'false'); }
 });
