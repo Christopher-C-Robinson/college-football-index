@@ -1,6 +1,9 @@
+import { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
+
+export { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
 const DEFAULTS = { power: 55, efficiency: 30, resume: 15 };
-export const HOME_FIELD_POINTS = 2.5;
-export const WIN_PROBABILITY_SCALE = 7.5;
+export const HOME_FIELD_POINTS = MODEL_PARAMETERS.homeFieldBaseline;
+export const WIN_PROBABILITY_SCALE = MODEL_PARAMETERS.winProbabilityScale;
 
 function text(value) {
   return value === undefined || value === null ? '' : String(value).trim();
@@ -16,16 +19,19 @@ function number(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function ratio(value) {
+function conversionCounts(value) {
   const input = text(value);
-  const match = input.match(/(-?\d+(?:\.\d+)?)\s*[-/]\s*(-?\d+(?:\.\d+)?)/);
+  const match = input.match(/^(\d+)\s*[-/]\s*(\d+)$/);
   if (match) {
+    const made = Number(match[1]);
     const attempts = Number(match[2]);
-    return attempts > 0 ? Number(match[1]) / attempts : null;
+    if (made > attempts) return null;
+    return { made: made, attempts: attempts, rate: attempts > 0 ? made / attempts : null };
   }
   const parsed = number(input);
   if (parsed === null) return null;
-  return parsed > 1 ? parsed / 100 : parsed;
+  const rate = parsed > 1 ? parsed / 100 : parsed;
+  return rate >= 0 && rate <= 1 ? { made: null, attempts: null, rate: rate } : null;
 }
 
 function rowStat(row, aliases) {
@@ -46,15 +52,20 @@ function rowStat(row, aliases) {
 }
 
 function score(game, side) {
-  return number(game[side + 'Points']);
+  return number(game[side + 'Points'] === undefined ? game[side + 'Score'] : game[side + 'Points']);
 }
 
-function isCompleted(game) {
-  return game.completed === true || (score(game, 'home') !== null && score(game, 'away') !== null);
+export function isCompletedGame(game) {
+  if (!game || typeof game !== 'object' || score(game, 'home') === null || score(game, 'away') === null) return false;
+  return Object.prototype.hasOwnProperty.call(game, 'completed') ? game.completed === true : true;
 }
 
 function isDivisionTeam(value) {
   return key(value) === 'fbs' || key(value) === 'fcs';
+}
+
+export function isRatedGame(game) {
+  return isCompletedGame(game) && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
 }
 
 function addTeam(teams, name, conference, classification) {
@@ -69,7 +80,9 @@ function addTeam(teams, name, conference, classification) {
       opponents: [], expectedWins: 0, winsAboveExpectation: 0, opponentPower: null, power: null,
       efficiency: null, resume: null, composite: null, evidence: 0, metrics: null,
       homeFieldPoints: null, homeBoostPoints: null, roadBoostPoints: null,
-      homeFieldHomeGames: 0, homeFieldRoadGames: 0
+      homeFieldHomeGames: 0, homeFieldRoadGames: 0,
+      ratedWins: 0, ratedLosses: 0, ratedTies: 0,
+      coverage: { results: 0, boxScores: 0, boxScorePercent: 0 }
     });
   }
   const team = teams.get(normalized);
@@ -91,21 +104,23 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function marginForGame(game) {
-  return clamp(score(game, 'home') - score(game, 'away'), -28, 28);
+function marginForGame(game, parameters) {
+  return clamp(score(game, 'home') - score(game, 'away'), -parameters.marginCap, parameters.marginCap);
 }
 
-export function estimateHomeField(historyGames, referenceSeason) {
+export function estimateHomeField(historyGames, referenceSeason, parameterOverrides) {
+  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
   const source = Array.isArray(historyGames) ? historyGames : [];
   const requestedSeason = number(referenceSeason);
   const knownSeasons = source.map(function (game) {
     return number(game.season === undefined ? game.year : game.season) || number(text(game.startDate).slice(0, 4));
   }).filter(Number.isFinite).map(Math.trunc);
   const latestSeason = Number.isFinite(requestedSeason) ? Math.trunc(requestedSeason) : Math.max(0, ...knownSeasons);
-  const firstSeason = latestSeason ? latestSeason - 4 : 0;
+  const firstSeason = latestSeason ? latestSeason - parameters.venueSeasons + 1 : 0;
   const unique = new Map();
 
   source.forEach(function (game) {
+    if (!isRatedGame(game)) return;
     const seasonValue = number(game.season === undefined ? game.year : game.season) || number(text(game.startDate).slice(0, 4));
     if (!Number.isFinite(seasonValue)) return;
     const season = Math.trunc(seasonValue);
@@ -128,8 +143,8 @@ export function estimateHomeField(historyGames, referenceSeason) {
       homeKey: homeKey,
       awayKey: awayKey,
       neutral: game.neutralSite === true,
-      margin: clamp(homePoints - awayPoints, -28, 28),
-      weight: Math.pow(0.75, latestSeason - season)
+      margin: clamp(homePoints - awayPoints, -parameters.marginCap, parameters.marginCap),
+      weight: Math.pow(parameters.venueRecencyFactor, latestSeason - season)
     });
   });
 
@@ -140,10 +155,10 @@ export function estimateHomeField(historyGames, referenceSeason) {
     referenceSeason: latestSeason || null,
     firstSeason: firstSeason || null,
     seasons: seasons,
-    recencyFactor: 0.75,
-    priorGames: 12,
+    recencyFactor: parameters.venueRecencyFactor,
+    priorGames: parameters.venuePriorGames,
     gamesUsed: 0,
-    leaguePoints: HOME_FIELD_POINTS,
+    leaguePoints: parameters.homeFieldBaseline,
     teams: []
   };
   if (!rows.length) return emptyResult;
@@ -180,10 +195,10 @@ export function estimateHomeField(historyGames, referenceSeason) {
     roadGames.set(game.awayKey, roadGames.get(game.awayKey) + 1);
   });
 
-  const sitePriorGames = 12;
-  const leaguePriorGames = 24;
-  let leaguePoints = HOME_FIELD_POINTS;
-  for (let iteration = 0; iteration < 80; iteration += 1) {
+  const sitePriorGames = parameters.venuePriorGames;
+  const leaguePriorGames = parameters.leagueVenuePriorGames;
+  let leaguePoints = parameters.homeFieldBaseline;
+  for (let iteration = 0; iteration < parameters.venueIterations; iteration += 1) {
     const ratingSums = new Map(Array.from(rating.keys()).map(function (ratingKey) { return [ratingKey, 0]; }));
     const ratingWeights = new Map(Array.from(rating.keys()).map(function (ratingKey) { return [ratingKey, 0]; }));
     rows.forEach(function (game) {
@@ -196,7 +211,7 @@ export function estimateHomeField(historyGames, referenceSeason) {
 
     const nextRating = new Map();
     ratingSums.forEach(function (sum, ratingKey) {
-      nextRating.set(ratingKey, sum / (ratingWeights.get(ratingKey) + 2));
+      nextRating.set(ratingKey, sum / (ratingWeights.get(ratingKey) + parameters.powerPriorGames));
     });
     seasonKeys.forEach(function (keys) {
       const average = Array.from(keys).reduce(function (sum, ratingKey) { return sum + nextRating.get(ratingKey); }, 0) / keys.size;
@@ -220,7 +235,7 @@ export function estimateHomeField(historyGames, referenceSeason) {
       roadSums.set(game.awayKey, roadSums.get(game.awayKey) + game.weight * (leaguePoints + h - residual));
     });
 
-    let nextLeaguePoints = (globalSum + leaguePriorGames * HOME_FIELD_POINTS) / (globalWeight + leaguePriorGames);
+    let nextLeaguePoints = (globalSum + leaguePriorGames * parameters.homeFieldBaseline) / (globalWeight + leaguePriorGames);
     const nextHomeEffect = new Map();
     const nextRoadEffect = new Map();
     teamKeys.forEach(function (teamKey) {
@@ -281,81 +296,115 @@ function getSideStats(index, game, teamName) {
   return index.get(text(game.id) + '|' + key(teamName)) || null;
 }
 
+function offensivePlays(row) {
+  const explicit = number(rowStat(row, ['totalPlays', 'offensivePlays', 'plays']));
+  if (explicit !== null && explicit > 0) return explicit;
+  const rushes = number(rowStat(row, ['rushingAttempts']));
+  const passes = conversionCounts(rowStat(row, ['completionAttempts']));
+  return rushes !== null && rushes >= 0 && passes && passes.attempts !== null && rushes + passes.attempts > 0
+    ? rushes + passes.attempts : null;
+}
+
+function accumulateYpp(stats, prefix, yards, plays, ypp) {
+  if (plays !== null && plays > 0 && (yards !== null || ypp !== null)) {
+    stats[prefix + 'Yards'] += yards !== null ? yards : ypp * plays;
+    stats[prefix + 'Plays'] += plays;
+    stats[prefix + 'YppGames'] += 1;
+    return true;
+  }
+  if (ypp !== null) {
+    stats[prefix + 'RateOnlySum'] += ypp;
+    stats[prefix + 'RateOnlyGames'] += 1;
+    return true;
+  }
+  return false;
+}
+
 function rawEfficiency(teams, games, statsIndex) {
   const accumulators = new Map();
   teams.forEach(function (team, teamKey) {
     if (isDivisionTeam(team.classification)) accumulators.set(teamKey, {
       games: 0, offenseYards: 0, offensePlays: 0, defenseYards: 0, defensePlays: 0,
-      offenseYppWeighted: 0, offenseYppPlays: 0, defenseYppWeighted: 0, defenseYppPlays: 0,
+      offenseYppGames: 0, defenseYppGames: 0,
+      offenseRateOnlySum: 0, offenseRateOnlyGames: 0, defenseRateOnlySum: 0, defenseRateOnlyGames: 0,
       thirdMade: 0, thirdAttempts: 0, thirdAllowed: 0, thirdAllowedAttempts: 0,
-      turnovers: 0, opponentTurnovers: 0, statGames: 0
+      thirdGames: 0, thirdAllowedGames: 0, thirdPercentageOnlyGames: 0, thirdAllowedPercentageOnlyGames: 0,
+      turnovers: 0, opponentTurnovers: 0, turnoverGames: 0, statGames: 0
     });
   });
 
   games.forEach(function (game) {
-    if (!isCompleted(game) || !isDivisionTeam(game.homeClassification) || !isDivisionTeam(game.awayClassification)) return;
+    if (!isRatedGame(game)) return;
     const home = accumulators.get(key(game.homeTeam));
     const away = accumulators.get(key(game.awayTeam));
     if (!home || !away) return;
     const homeStats = getSideStats(statsIndex, game, game.homeTeam);
     const awayStats = getSideStats(statsIndex, game, game.awayTeam);
-    if (!homeStats || !awayStats) return;
+    if (!homeStats && !awayStats) return;
     const rows = [
       { own: home, ownRow: homeStats, opp: away, oppRow: awayStats },
       { own: away, ownRow: awayStats, opp: home, oppRow: homeStats }
     ];
     rows.forEach(function (pair) {
       const ownYards = number(rowStat(pair.ownRow, ['totalYards', 'totalOffensiveYards']));
-      const ownPlays = number(rowStat(pair.ownRow, ['totalPlays', 'offensivePlays', 'plays']));
+      const ownPlays = offensivePlays(pair.ownRow);
       const ownYpp = number(rowStat(pair.ownRow, ['yardsPerPlay', 'yardsPerPlayAllowed']));
       const oppYards = number(rowStat(pair.oppRow, ['totalYards', 'totalOffensiveYards']));
-      const oppPlays = number(rowStat(pair.oppRow, ['totalPlays', 'offensivePlays', 'plays']));
+      const oppPlays = offensivePlays(pair.oppRow);
       const oppYpp = number(rowStat(pair.oppRow, ['yardsPerPlay', 'yardsPerPlayAllowed']));
-      const ownThird = ratio(rowStat(pair.ownRow, ['thirdDownEff', 'thirdDownConversion']));
-      const oppThird = ratio(rowStat(pair.oppRow, ['thirdDownEff', 'thirdDownConversion']));
+      const ownThird = conversionCounts(rowStat(pair.ownRow, ['thirdDownEff', 'thirdDownConversion']));
+      const oppThird = conversionCounts(rowStat(pair.oppRow, ['thirdDownEff', 'thirdDownConversion']));
       const ownTurnovers = number(rowStat(pair.ownRow, ['turnovers', 'totalTurnovers']));
       const oppTurnovers = number(rowStat(pair.oppRow, ['turnovers', 'totalTurnovers']));
       pair.own.games += 1;
-      if (ownYards !== null && ownPlays !== null && ownPlays > 0) {
-        pair.own.offenseYards += ownYards;
-        pair.own.offensePlays += ownPlays;
-      } else if (ownYpp !== null) {
-        pair.own.offenseYppWeighted += ownYpp * (ownPlays || 1);
-        pair.own.offenseYppPlays += ownPlays || 1;
-      }
-      if (oppYards !== null && oppPlays !== null && oppPlays > 0) {
-        pair.own.defenseYards += oppYards;
-        pair.own.defensePlays += oppPlays;
-      } else if (oppYpp !== null) {
-        pair.own.defenseYppWeighted += oppYpp * (oppPlays || 1);
-        pair.own.defenseYppPlays += oppPlays || 1;
-      }
-      if (ownThird !== null) { pair.own.thirdMade += ownThird; pair.own.thirdAttempts += 1; }
-      if (oppThird !== null) { pair.own.thirdAllowed += oppThird; pair.own.thirdAllowedAttempts += 1; }
-      if (ownTurnovers !== null && oppTurnovers !== null) {
+      let usable = accumulateYpp(pair.own, 'offense', ownYards, ownPlays, ownYpp);
+      usable = accumulateYpp(pair.own, 'defense', oppYards, oppPlays, oppYpp) || usable;
+      if (ownThird && ownThird.attempts > 0) {
+        pair.own.thirdMade += ownThird.made;
+        pair.own.thirdAttempts += ownThird.attempts;
+        pair.own.thirdGames += 1;
+        usable = true;
+      } else if (ownThird && ownThird.attempts === null) pair.own.thirdPercentageOnlyGames += 1;
+      if (oppThird && oppThird.attempts > 0) {
+        pair.own.thirdAllowed += oppThird.made;
+        pair.own.thirdAllowedAttempts += oppThird.attempts;
+        pair.own.thirdAllowedGames += 1;
+        usable = true;
+      } else if (oppThird && oppThird.attempts === null) pair.own.thirdAllowedPercentageOnlyGames += 1;
+      if (ownTurnovers !== null && ownTurnovers >= 0 && oppTurnovers !== null && oppTurnovers >= 0) {
         pair.own.turnovers += ownTurnovers;
         pair.own.opponentTurnovers += oppTurnovers;
+        pair.own.turnoverGames += 1;
+        usable = true;
       }
-      pair.own.statGames += 1;
+      if (usable) pair.own.statGames += 1;
     });
   });
 
   const metrics = new Map();
   accumulators.forEach(function (stats, name) {
-    const offYpp = stats.offensePlays ? stats.offenseYards / stats.offensePlays : (stats.offenseYppPlays ? stats.offenseYppWeighted / stats.offenseYppPlays : null);
-    const defYpp = stats.defensePlays ? stats.defenseYards / stats.defensePlays : (stats.defenseYppPlays ? stats.defenseYppWeighted / stats.defenseYppPlays : null);
+    const offYpp = stats.offensePlays ? stats.offenseYards / stats.offensePlays : (stats.offenseRateOnlyGames ? stats.offenseRateOnlySum / stats.offenseRateOnlyGames : null);
+    const defYpp = stats.defensePlays ? stats.defenseYards / stats.defensePlays : (stats.defenseRateOnlyGames ? stats.defenseRateOnlySum / stats.defenseRateOnlyGames : null);
     metrics.set(name, {
       games: stats.games, statGames: stats.statGames,
       offenseYpp: offYpp, defenseYpp: defYpp,
       thirdDown: stats.thirdAttempts ? stats.thirdMade / stats.thirdAttempts : null,
       thirdDownAllowed: stats.thirdAllowedAttempts ? stats.thirdAllowed / stats.thirdAllowedAttempts : null,
-      turnoverMargin: stats.statGames ? (stats.opponentTurnovers - stats.turnovers) / stats.statGames : null
+      turnoverMargin: stats.turnoverGames ? (stats.opponentTurnovers - stats.turnovers) / stats.turnoverGames : null,
+      coverage: {
+        offenseYpp: { games: stats.offensePlays ? stats.offenseYppGames : stats.offenseRateOnlyGames, plays: stats.offensePlays || null, method: stats.offensePlays ? 'play-weighted' : stats.offenseRateOnlyGames ? 'game-average' : null, rateOnlyGames: stats.offenseRateOnlyGames },
+        defenseYpp: { games: stats.defensePlays ? stats.defenseYppGames : stats.defenseRateOnlyGames, plays: stats.defensePlays || null, method: stats.defensePlays ? 'play-weighted' : stats.defenseRateOnlyGames ? 'game-average' : null, rateOnlyGames: stats.defenseRateOnlyGames },
+        thirdDown: { games: stats.thirdGames, made: stats.thirdMade, attempts: stats.thirdAttempts, percentageOnlyGames: stats.thirdPercentageOnlyGames },
+        thirdDownAllowed: { games: stats.thirdAllowedGames, made: stats.thirdAllowed, attempts: stats.thirdAllowedAttempts, percentageOnlyGames: stats.thirdAllowedPercentageOnlyGames },
+        turnoverMargin: { games: stats.turnoverGames }
+      }
     });
   });
   return metrics;
 }
 
-export function buildModel(rawData, requestedWeights) {
+export function buildModel(rawData, requestedWeights, parameterOverrides) {
+  const parameters = Object.freeze({ ...MODEL_PARAMETERS, ...(parameterOverrides || {}) });
   const data = rawData && typeof rawData === 'object' ? rawData : {};
   const games = (Array.isArray(data.games) ? data.games : []).map(function (game) {
     return {
@@ -363,7 +412,7 @@ export function buildModel(rawData, requestedWeights) {
       homeTeam: text(game.homeTeam || game.home), awayTeam: text(game.awayTeam || game.away),
       homePoints: number(game.homePoints === undefined ? game.homeScore : game.homePoints),
       awayPoints: number(game.awayPoints === undefined ? game.awayScore : game.awayPoints),
-      completed: game.completed === true || (number(game.homePoints === undefined ? game.homeScore : game.homePoints) !== null && number(game.awayPoints === undefined ? game.awayScore : game.awayPoints) !== null)
+      completed: isCompletedGame(game)
     };
   });
   const teams = new Map();
@@ -395,7 +444,7 @@ export function buildModel(rawData, requestedWeights) {
 
   const homeFieldEstimate = data.homeField && typeof data.homeField === 'object' ? data.homeField : null;
   const leagueHomeField = homeFieldEstimate && number(homeFieldEstimate.leaguePoints) !== null
-    ? number(homeFieldEstimate.leaguePoints) : HOME_FIELD_POINTS;
+    ? number(homeFieldEstimate.leaguePoints) : parameters.homeFieldBaseline;
   const homeFieldByTeam = new Map();
   (homeFieldEstimate && Array.isArray(homeFieldEstimate.teams) ? homeFieldEstimate.teams : []).forEach(function (entry) {
     const teamKey = key(entry.name || entry.school);
@@ -406,7 +455,7 @@ export function buildModel(rawData, requestedWeights) {
     const awayEstimate = homeFieldByTeam.get(key(awayTeam));
     const homeAdjustment = homeEstimate ? number(homeEstimate.homeAdjustment) || 0 : 0;
     const roadAdjustment = awayEstimate ? number(awayEstimate.roadAdjustment) || 0 : 0;
-    return clamp(leagueHomeField + homeAdjustment - roadAdjustment, -5, 12);
+    return clamp(leagueHomeField + homeAdjustment - roadAdjustment, parameters.venueMinPoints, parameters.venueMaxPoints);
   }
   teams.forEach(function (team, teamName) {
     const estimate = homeFieldByTeam.get(teamName);
@@ -420,13 +469,11 @@ export function buildModel(rawData, requestedWeights) {
     team.homeFieldRoadGames = estimate ? number(estimate.roadGames) || 0 : 0;
   });
 
-  const ratedGames = games.filter(function (game) {
-    return isCompleted(game) && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
-  });
+  const ratedGames = games.filter(isRatedGame);
   const ratedTeams = new Set();
   ratedGames.forEach(function (game) { ratedTeams.add(key(game.homeTeam)); ratedTeams.add(key(game.awayTeam)); });
 
-  games.filter(isCompleted).forEach(function (game) {
+  games.filter(isCompletedGame).forEach(function (game) {
     const home = teams.get(key(game.homeTeam));
     const away = teams.get(key(game.awayTeam));
     if (!home || !away) return;
@@ -458,6 +505,9 @@ export function buildModel(rawData, requestedWeights) {
     if (isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification)) {
       home.opponents.push(key(game.awayTeam));
       away.opponents.push(key(game.homeTeam));
+      if (homeScore > awayScore) { home.ratedWins += 1; away.ratedLosses += 1; }
+      else if (homeScore < awayScore) { away.ratedWins += 1; home.ratedLosses += 1; }
+      else { home.ratedTies += 1; away.ratedTies += 1; }
     }
   });
 
@@ -468,13 +518,13 @@ export function buildModel(rawData, requestedWeights) {
     gameCount.set(key(game.homeTeam), (gameCount.get(key(game.homeTeam)) || 0) + 1);
     gameCount.set(key(game.awayTeam), (gameCount.get(key(game.awayTeam)) || 0) + 1);
   });
-  const prior = 2;
-  for (let iteration = 0; iteration < 60; iteration += 1) {
+  const prior = parameters.powerPriorGames;
+  for (let iteration = 0; iteration < parameters.powerIterations; iteration += 1) {
     const sums = new Map(ratingTeams.map(function (teamName) { return [teamName, 0]; }));
     ratedGames.forEach(function (game) {
       const homeName = key(game.homeTeam);
       const awayName = key(game.awayTeam);
-      const margin = marginForGame(game);
+      const margin = marginForGame(game, parameters);
       const location = game.neutralSite ? 0 : homeEdge(game.homeTeam, game.awayTeam);
       sums.set(homeName, sums.get(homeName) + margin - location + (rating.get(awayName) || 0));
       sums.set(awayName, sums.get(awayName) - margin + location + (rating.get(homeName) || 0));
@@ -495,19 +545,20 @@ export function buildModel(rawData, requestedWeights) {
     const away = teams.get(key(game.awayTeam));
     if (!home || !away) return;
     const predictedMargin = (rating.get(key(game.homeTeam)) || 0) - (rating.get(key(game.awayTeam)) || 0) + (game.neutralSite ? 0 : homeEdge(game.homeTeam, game.awayTeam));
-    const probability = 1 / (1 + Math.exp(-predictedMargin / 7.5));
+    const probability = standardWinProbability(predictedMargin, parameters.winProbabilityScale);
     home.expectedWins += probability;
     away.expectedWins += 1 - probability;
   });
 
   teams.forEach(function (team, teamName) {
     team.power = rating.has(teamName) ? rating.get(teamName) : null;
-    team.winsAboveExpectation = team.wins - team.expectedWins;
+    team.winsAboveExpectation = team.ratedWins + team.ratedTies / 2 - team.expectedWins;
     const opponents = team.opponents.map(function (opponent) { return rating.get(opponent); }).filter(Number.isFinite);
     team.opponentPower = opponents.length ? opponents.reduce(function (sum, value) { return sum + value; }, 0) / opponents.length : null;
-    const d1Count = team.wins + team.losses + team.ties;
+    const d1Count = gameCount.get(teamName) || 0;
     const depth = Math.min(1, d1Count / 8) * 0.75 + (Math.min(1, d1Count ? d1Count / 4 : 0) * 0.25);
     team.evidence = Math.round(depth * 100);
+    team.coverage.results = d1Count;
   });
 
   const efficiencies = rawEfficiency(teams, games, teamStatsIndex(data.teamStats));
@@ -522,6 +573,8 @@ export function buildModel(rawData, requestedWeights) {
     const metric = efficiencies.get(teamName);
     if (metric) {
       team.metrics = metric;
+      team.coverage.boxScores = metric.statGames;
+      team.coverage.boxScorePercent = team.coverage.results ? Math.round(metric.statGames / team.coverage.results * 100) : 0;
       const parts = [];
       const off = zByMetric.get('offenseYpp').get(teamName);
       const def = zByMetric.get('defenseYpp').get(teamName);
@@ -560,7 +613,7 @@ export function buildModel(rawData, requestedWeights) {
     if (b.composite === null && a.composite !== null) return -1;
     return (b.composite || 0) - (a.composite || 0);
   });
-  const completedGames = games.filter(isCompleted).sort(function (a, b) {
+  const completedGames = games.filter(isCompletedGame).sort(function (a, b) {
     return text(a.startDate).localeCompare(text(b.startDate));
   });
 
@@ -568,9 +621,10 @@ export function buildModel(rawData, requestedWeights) {
     meta: data.meta || {}, raw: data, games: games, completedGames: completedGames,
     teams: teams, allTeams: allTeams, ratedGames: ratedGames, broadCoverage: broadCoverage,
     ratedTeamCount: ratedTeamCount, ratedGameCount: ratedGames.length,
-    homeField: homeFieldEstimate || { leaguePoints: HOME_FIELD_POINTS, seasons: [], gamesUsed: 0, teams: [] },
+    homeField: homeFieldEstimate || { leaguePoints: parameters.homeFieldBaseline, seasons: [], gamesUsed: 0, teams: [] },
     homeEdge: homeEdge,
-    weights: weights, defaultWeights: DEFAULTS
+    weights: weights, defaultWeights: DEFAULTS,
+    modelVersion: MODEL_VERSION, schemaVersion: SCHEMA_VERSION, parameters: parameters
   };
 }
 
@@ -601,6 +655,6 @@ export function formatNumber(value, digits) {
   return value.toFixed(precision);
 }
 
-export function standardWinProbability(predictedMargin) {
-  return 1 / (1 + Math.exp(-predictedMargin / WIN_PROBABILITY_SCALE));
+export function standardWinProbability(predictedMargin, scale = WIN_PROBABILITY_SCALE) {
+  return 1 / (1 + Math.exp(-predictedMargin / scale));
 }

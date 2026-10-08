@@ -1,10 +1,12 @@
-import { buildModel, recordText, shortDate, formatNumber, standardWinProbability, WIN_PROBABILITY_SCALE } from './model.js';
+import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION } from './model.js';
+import { simulateMatchup } from './prediction.js';
+import { datasetStatus, validateDataset } from './dataset-status.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
 const SIMULATION_RUNS = 10000;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
-const state = { raw: null, model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
+const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
 const ids = function (id) { return document.getElementById(id); };
 
 function escapeHtml(value) {
@@ -15,16 +17,12 @@ function escapeHtml(value) {
 
 function teamKey(value) { return String(value || '').toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
 function teamByKey(value) { return state.model.teams.get(teamKey(value)); }
-function completed(game) { return game.completed === true && Number.isFinite(game.homePoints) && Number.isFinite(game.awayPoints); }
+const completed = isCompletedGame;
 function winnerScore(game, teamName) { return teamKey(game.homeTeam) === teamKey(teamName) ? game.homePoints : game.awayPoints; }
 function opponentScore(game, teamName) { return teamKey(game.homeTeam) === teamKey(teamName) ? game.awayPoints : game.homePoints; }
 function opponentName(game, teamName) { return teamKey(game.homeTeam) === teamKey(teamName) ? game.awayTeam : game.homeTeam; }
 function isAway(game, teamName) { return teamKey(game.homeTeam) !== teamKey(teamName); }
 function isFbsGame(game) { return String(game.homeClassification).toLowerCase() === 'fbs' && String(game.awayClassification).toLowerCase() === 'fbs'; }
-function isRatedGame(game) {
-  const allowed = ['fbs', 'fcs'];
-  return completed(game) && allowed.includes(String(game.homeClassification).toLowerCase()) && allowed.includes(String(game.awayClassification).toLowerCase());
-}
 function margin(game, teamName) { return winnerScore(game, teamName) - opponentScore(game, teamName); }
 function compactName(name) {
   const value = String(name || '');
@@ -198,6 +196,23 @@ function setStatus() {
     badge.className = 'model-ready-badge is-limited';
     badge.textContent = 'EARLY SAMPLE';
   }
+}
+
+function renderDatasetStatus() {
+  const info = datasetStatus(state.raw, { source: state.source, publicDataset: state.publicDataset, publicUnavailable: state.publicUnavailable });
+  const status = ids('dataset-provenance');
+  status.className = 'dataset-provenance section-shell' + (info.warning ? ' is-warning' : '');
+  const timestamp = info.generatedAt ? 'Generated ' + info.generatedAt : 'Generation date not recorded';
+  const through = info.resultsThrough ? 'Results through ' + info.resultsThrough : 'Results date not recorded';
+  const datasetVersion = info.datasetModelVersion ? 'Dataset model v' + info.datasetModelVersion : 'Dataset model version not recorded';
+  status.innerHTML = '<div class="dataset-provenance-heading"><strong>' + escapeHtml(info.sourceLabel) + ' · ' + escapeHtml(info.season) + '</strong><span>MODEL v' + escapeHtml(MODEL_VERSION) + '</span></div>' +
+    '<p>' + escapeHtml(timestamp) + ' · ' + escapeHtml(through) + '</p>' +
+    '<p class="dataset-provenance-detail">' + escapeHtml(info.provider) + ' · ' + escapeHtml(datasetVersion) + (info.schemaVersion ? ' · Schema ' + escapeHtml(info.schemaVersion) : '') + '</p>' +
+    (info.notice ? '<p class="dataset-notice">' + escapeHtml(info.notice) + '</p>' : '') +
+    (info.source === 'imported' ? '<button type="button" class="text-button" data-return-public>Return to public snapshot</button>' : '');
+  const stamp = ids('model-version');
+  if (stamp) stamp.textContent = 'v' + MODEL_VERSION;
+  ids('dataset-source').textContent = info.sourceLabel.toUpperCase();
 }
 
 function populateSelectors() {
@@ -413,7 +428,7 @@ function renderBoard() {
     const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
     const rank = team.composite === null ? '—' : String(++rankedCount).padStart(3, '0');
     const modelLabel = team.composite === null ? 'NOT RANKED' : formatNumber(team.index, 1);
-    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile"><span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td>' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td class="rank-index">' + modelLabel + '</td><td>' + team.evidence + '<span class="rank-confidence"><i style="width:' + team.evidence + '%"></i></span></td></tr>';
+    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile"><span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td>' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td class="rank-index">' + modelLabel + '</td><td>' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -424,7 +439,7 @@ function renderBoard() {
     board.innerHTML = count + '<div class="board-lock"><strong>No teams match those filters.</strong><p>Choose another subdivision, tier, or conference.</p></div>';
     return;
   }
-  board.innerHTML = count + '<div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>TEAM</th><th>OVERALL W-L</th><th>POWER / PTS</th><th>OPP POWER</th><th>INDEX</th><th>EVIDENCE</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  board.innerHTML = count + '<div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>TEAM</th><th>OVERALL W-L</th><th>POWER / PTS</th><th>OPP POWER</th><th>INDEX</th><th>RESULTS / BOX SCORES</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 
 function compareMetrics(team) {
@@ -463,45 +478,6 @@ function renderCompare() {
   ids('compare-content').innerHTML = rows + '<div class="compare-empty">' + escapeHtml(a.name) + ' · ' + escapeHtml(formatRecord(a)) + ' overall · ' + escapeHtml(fbsRecord(a)) + ' vs FBS · ' + escapeHtml(fcsRecord(a)) + ' vs FCS<br>' + escapeHtml(b.name) + ' · ' + escapeHtml(formatRecord(b)) + ' overall · ' + escapeHtml(fbsRecord(b)) + ' vs FBS · ' + escapeHtml(fcsRecord(b)) + ' vs FCS<br>' + escapeHtml(footnote) + '</div>';
 }
 
-function seededRandom(seedText) {
-  let seed = 2166136261;
-  String(seedText).split('').forEach(function (character) {
-    seed = Math.imul(seed ^ character.charCodeAt(0), 16777619);
-  });
-  return function () {
-    let value = seed += 0x6D2B79F5;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function normalSample(random) {
-  const first = Math.max(random(), 1e-10);
-  return Math.sqrt(-2 * Math.log(first)) * Math.cos(2 * Math.PI * random());
-}
-
-function logisticSample(random) {
-  const value = Math.min(1 - 1e-10, Math.max(1e-10, random()));
-  return WIN_PROBABILITY_SCALE * Math.log(value / (1 - value));
-}
-
-function scoringSummary(team) {
-  const games = team.games.filter(isRatedGame);
-  const points = games.reduce(function (summary, game) {
-    const ownScore = teamKey(game.homeTeam) === teamKey(team.name) ? game.homePoints : game.awayPoints;
-    const opponentScore = teamKey(game.homeTeam) === teamKey(team.name) ? game.awayPoints : game.homePoints;
-    summary.for += ownScore;
-    summary.against += opponentScore;
-    return summary;
-  }, { for: 0, against: 0 });
-  return {
-    games: games.length,
-    forPerGame: games.length ? points.for / games.length : null,
-    againstPerGame: games.length ? points.against / games.length : null
-  };
-}
-
 function marginRangeLabel(teamA, teamB, low, high) {
   if (low >= 0) return teamA.name + ' by ' + formatNumber(low, 0) + ' to ' + formatNumber(high, 0);
   if (high <= 0) return teamB.name + ' by ' + formatNumber(Math.abs(high), 0) + ' to ' + formatNumber(Math.abs(low), 0);
@@ -520,61 +496,40 @@ function runMatchupSimulation() {
     output.innerHTML = '<div class="simulation-empty">Choose two different teams to simulate a matchup.</div>';
     return;
   }
-  const summaryA = scoringSummary(teamA);
-  const summaryB = scoringSummary(teamB);
-  if (!summaryA.games || !summaryB.games || teamA.power === null || teamB.power === null) {
-    output.innerHTML = '<div class="simulation-empty">Both teams need at least one completed FBS or FCS game in the loaded data.</div>';
+  const venue = ids('sim-venue').value;
+  const reversed = venue === 'b-home';
+  let prediction;
+  try {
+    prediction = simulateMatchup(state.model, {
+      homeTeam: reversed ? teamB.name : teamA.name,
+      awayTeam: reversed ? teamA.name : teamB.name,
+      neutralSite: venue === 'neutral'
+    }, { runs: SIMULATION_RUNS, seed: [state.model.meta.season, state.model.meta.resultsThrough, teamA.name, teamB.name, venue].join('|') });
+  } catch (error) {
+    output.innerHTML = '<div class="simulation-empty">' + escapeHtml(error.message || 'Both teams need completed FBS or FCS results in the loaded data.') + '</div>';
     return;
   }
-
-  const venue = ids('sim-venue').value;
-  const homeAdvantage = venue === 'a-home' ? state.model.homeEdge(teamA.name, teamB.name)
-    : venue === 'b-home' ? -state.model.homeEdge(teamB.name, teamA.name) : 0;
-  const predictedMargin = teamA.power - teamB.power + homeAdvantage;
-  const ratedGames = state.model.ratedGames;
-  const leaguePoints = ratedGames.reduce(function (sum, game) { return sum + game.homePoints + game.awayPoints; }, 0) / (ratedGames.length * 2);
-  const expectedA = leaguePoints + (summaryA.forPerGame - leaguePoints) * summaryA.games / (summaryA.games + 4);
-  const expectedDefenseB = leaguePoints + (summaryB.againstPerGame - leaguePoints) * summaryB.games / (summaryB.games + 4);
-  const expectedB = leaguePoints + (summaryB.forPerGame - leaguePoints) * summaryB.games / (summaryB.games + 4);
-  const expectedDefenseA = leaguePoints + (summaryA.againstPerGame - leaguePoints) * summaryA.games / (summaryA.games + 4);
-  const projectedTotal = Math.max(0, (expectedA + expectedDefenseB + expectedB + expectedDefenseA) / 2);
-  const projectedScoreA = Math.max(0, (projectedTotal + predictedMargin) / 2);
-  const projectedScoreB = Math.max(0, (projectedTotal - predictedMargin) / 2);
-  const totalScores = ratedGames.map(function (game) { return game.homePoints + game.awayPoints; });
-  const leagueTotalMean = totalScores.reduce(function (sum, total) { return sum + total; }, 0) / (totalScores.length || 1);
-  const totalVariance = totalScores.reduce(function (sum, total) { return sum + Math.pow(total - leagueTotalMean, 2); }, 0) / (totalScores.length || 1);
-  const totalSpread = Math.max(7, Math.min(20, Math.sqrt(totalVariance)));
-  const ratingSpread = Math.sqrt(Math.pow(9 / Math.sqrt(summaryA.games + 2), 2) + Math.pow(9 / Math.sqrt(summaryB.games + 2), 2));
-  const random = seededRandom([state.model.meta.season, state.model.meta.resultsThrough, teamA.name, teamB.name, venue, teamA.power, teamB.power].join('|'));
-  let winsA = 0;
-  let winsB = 0;
-  const margins = [];
-  for (let run = 0; run < SIMULATION_RUNS; run += 1) {
-    const margin = predictedMargin + normalSample(random) * ratingSpread + logisticSample(random);
-    const total = Math.max(0, projectedTotal + normalSample(random) * totalSpread);
-    const scoreA = Math.max(0, Math.round((total + margin) / 2));
-    const scoreB = Math.max(0, Math.round((total - margin) / 2));
-    margins.push(scoreA - scoreB);
-    if (scoreA > scoreB) winsA += 1;
-    else if (scoreB > scoreA) winsB += 1;
-    else if (random() < 0.5) winsA += 1;
-    else winsB += 1;
+  if (!prediction) {
+    output.innerHTML = '<div class="simulation-empty">Both teams need completed FBS or FCS results in the loaded data.</div>';
+    return;
   }
-  margins.sort(function (a, b) { return a - b; });
-  const lowMargin = margins[Math.floor((SIMULATION_RUNS - 1) * 0.1)];
-  const highMargin = margins[Math.floor((SIMULATION_RUNS - 1) * 0.9)];
-  const chanceA = winsA / SIMULATION_RUNS * 100;
-  const chanceB = winsB / SIMULATION_RUNS * 100;
+  const predictedMargin = reversed ? -prediction.predictedMargin : prediction.predictedMargin;
+  const projectedScoreA = reversed ? prediction.projectedAwayScore : prediction.projectedHomeScore;
+  const projectedScoreB = reversed ? prediction.projectedHomeScore : prediction.projectedAwayScore;
+  const lowMargin = reversed ? -prediction.marginHigh80 : prediction.marginLow80;
+  const highMargin = reversed ? -prediction.marginLow80 : prediction.marginHigh80;
+  const chanceA = (reversed ? 1 - prediction.simulatedHomeWinProbability : prediction.simulatedHomeWinProbability) * 100;
+  const chanceB = 100 - chanceA;
   const venueLabel = venue === 'a-home' ? teamA.name + ' home' : venue === 'b-home' ? teamB.name + ' home' : 'Neutral site';
   const sampleLabel = state.model.broadCoverage
     ? 'Broad FBS + FCS coverage is available.'
     : 'Early sample: ' + state.model.ratedGameCount + ' completed games across ' + state.model.ratedTeamCount + ' teams. Treat this as exploratory.';
-  const baseline = standardWinProbability(predictedMargin) * 100;
+  const baseline = (reversed ? 1 - prediction.homeWinProbability : prediction.homeWinProbability) * 100;
   output.innerHTML = '<div class="simulation-result-grid">' +
     '<div class="simulation-probability"><span>' + escapeHtml(teamA.name) + ' WIN CHANCE</span><strong>' + chanceA.toFixed(1) + '%</strong><small>Base model: ' + baseline.toFixed(1) + '%</small></div>' +
     '<div class="simulation-probability"><span>' + escapeHtml(teamB.name) + ' WIN CHANCE</span><strong>' + chanceB.toFixed(1) + '%</strong><small>' + escapeHtml(venueLabel) + '</small></div>' +
-    '<div class="simulation-score"><span>PROJECTED SCORE · ' + SIMULATION_RUNS.toLocaleString() + ' RUNS</span><strong>' + escapeHtml(teamA.name) + ' ' + formatNumber(projectedScoreA, 1) + ' <i>—</i> ' + formatNumber(projectedScoreB, 1) + ' ' + escapeHtml(teamB.name) + '</strong><small>Model margin: ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' points</small></div>' +
-    '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Includes game variation and more rating uncertainty when a team has fewer results.</small></div>' +
+    '<div class="simulation-score"><span>PROJECTED SCORE · ' + SIMULATION_RUNS.toLocaleString() + ' RUNS</span><strong>' + escapeHtml(teamA.name) + ' ' + formatNumber(projectedScoreA, 0) + ' <i>—</i> ' + formatNumber(projectedScoreB, 0) + ' ' + escapeHtml(teamB.name) + '</strong><small>Model margin: ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' points</small></div>' +
+    '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Exploratory range from the current model; historical coverage has not been calibrated.</small></div>' +
     '</div><p class="simulation-method">' + escapeHtml(sampleLabel) + ' The spread uses opponent-adjusted power and the selected venue. The score total blends team scoring and points allowed with the full-field average. Injuries, weather, and matchup-specific play styles are not modeled.</p>';
 }
 
@@ -600,9 +555,9 @@ function csvCell(value) { return '"' + String(value === undefined || value === n
 
 function exportRankings() {
   if (!state.model.broadCoverage) return;
-  const rows = [['Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Power (pts/game)', 'Opponent Power', 'Expected Wins', 'Wins Above Expectation', 'Efficiency Index', 'Composite Index', 'Evidence Depth']];
-  filteredBoardTeams().filter(function (team) { return team.composite !== null; }).forEach(function (team, index) {
-    rows.push([index + 1, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), formatNumber(team.expectedWins, 2), formatNumber(team.winsAboveExpectation, 2), formatNumber(team.efficiency, 2), formatNumber(team.index, 2), team.evidence + '%']);
+  const rows = [['Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Power (pts/game)', 'Opponent Power', 'Expected Wins', 'Wins Above Expectation', 'Efficiency Index', 'Composite Index', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Model Version', 'Dataset Source', 'Generated At']];
+  filteredBoardTeams().filter(function (team) { return team.composite !== null; }).sort(function (a, b) { return b.composite - a.composite; }).forEach(function (team, index) {
+    rows.push([index + 1, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), formatNumber(team.expectedWins, 2), formatNumber(team.winsAboveExpectation, 2), formatNumber(team.efficiency, 2), formatNumber(team.index, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, MODEL_VERSION, state.source, state.model.meta.generatedAt || '']);
   });
   const content = rows.map(function (row) { return row.map(csvCell).join(','); }).join('\n');
   const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));
@@ -610,16 +565,19 @@ function exportRankings() {
   link.href = url; link.download = 'college-football-index-ratings-' + (state.model.meta.season || 'season') + '.csv'; link.click(); URL.revokeObjectURL(url);
 }
 
-function setDataset(raw, message, persist) {
-  if (!raw || !Array.isArray(raw.games)) throw new Error('This file needs a games array. Use the season sync script to create a compatible dataset.');
+function setDataset(raw, message, persist, source = 'imported') {
+  validateDataset(raw);
   const previousFocus = state.focusTeam;
+  let storageWarning = '';
+  const model = buildModel(raw, state.weights);
   state.raw = raw;
-  state.model = buildModel(raw, state.weights);
+  state.model = model;
+  state.source = source;
   state.focusTeam = teamByKey(previousFocus) ? teamByKey(previousFocus).name : null;
   state.compareA = null; state.compareB = null;
   if (persist) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }
-    catch (error) { ids('import-message').textContent = 'Loaded for this visit, but browser storage is full; the data will need to be uploaded again later.'; }
+    catch (error) { storageWarning = ' Loaded for this visit only; browser storage was unavailable, so upload it again on your next visit.'; }
   }
   populateSelectors();
   updateConferenceOptions();
@@ -630,10 +588,11 @@ function setDataset(raw, message, persist) {
   renderBoard();
   renderCompare();
   ids('simulation-result').innerHTML = '<div class="simulation-empty">Choose two teams and run a hypothetical matchup.</div>';
+  renderDatasetStatus();
   ids('data-updated').textContent = 'SEASON DATA / ' + (raw.meta && (raw.meta.season || raw.meta.asOf) || 'UNKNOWN');
-  if (message) {
+  if (message || storageWarning) {
     ids('import-message').className = 'import-message';
-    ids('import-message').textContent = message;
+    ids('import-message').textContent = (message || '') + storageWarning;
   }
 }
 
@@ -653,13 +612,24 @@ async function loadBundled() {
 }
 
 async function initialize() {
-  let raw = null;
+  let imported = null;
+  let invalidImport = false;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) raw = JSON.parse(saved);
-  } catch (error) { localStorage.removeItem(STORAGE_KEY); }
-  if (!raw) raw = await loadBundled();
-  setDataset(raw, '', false);
+    if (saved) imported = validateDataset(JSON.parse(saved));
+  } catch (error) {
+    invalidImport = true;
+    try { localStorage.removeItem(STORAGE_KEY); } catch (storageError) { /* Storage may be unavailable. */ }
+  }
+  try {
+    state.publicDataset = validateDataset(await loadBundled());
+  } catch (error) {
+    state.publicUnavailable = true;
+    if (!imported) throw error;
+  }
+  // A user may finish uploading while the public network request is pending.
+  if (state.raw) { renderDatasetStatus(); return; }
+  setDataset(imported || state.publicDataset, invalidImport ? 'An invalid saved import was cleared. Using the public snapshot.' : '', false, imported ? 'imported' : 'public');
 }
 
 document.addEventListener('change', async function (event) {
@@ -704,10 +674,14 @@ document.addEventListener('click', async function (event) {
     runMatchupSimulation();
     return;
   }
-  if (event.target.id === 'reset-data') {
+  if (event.target.id === 'reset-data' || event.target.closest('[data-return-public]')) {
     try {
-      localStorage.removeItem(STORAGE_KEY);
-      setDataset(await loadBundled(), 'Cleared the imported dataset.', false);
+      const bundled = validateDataset(await loadBundled());
+      state.publicDataset = bundled;
+      state.publicUnavailable = false;
+      let message = 'Using the latest public snapshot.';
+      try { localStorage.removeItem(STORAGE_KEY); } catch (storageError) { message += ' Browser storage could not be cleared; the saved import may return on your next visit.'; }
+      setDataset(bundled, message, false, 'public');
     } catch (error) {
       ids('import-message').className = 'import-message is-error';
       ids('import-message').textContent = error.message;
@@ -721,4 +695,6 @@ initialize().catch(function (error) {
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }
   const status = ids('data-status');
   if (status) { status.className = 'data-status is-limited'; status.innerHTML = '<span class="status-dot"></span> Data unavailable'; }
+  const provenance = ids('dataset-provenance');
+  if (provenance) { provenance.className = 'dataset-provenance section-shell is-warning'; provenance.textContent = 'Public snapshot unavailable. ' + error.message; }
 });

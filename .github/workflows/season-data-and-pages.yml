@@ -4,22 +4,48 @@ on:
   push:
     branches:
       - main
+  pull_request:
   schedule:
-    - cron: '23 18 * * 1'
+    - cron: '23 10 * 1,8-12 *'
   workflow_dispatch:
+    inputs:
+      task:
+        description: Refresh the public season or collect history and run the backtest
+        type: choice
+        default: refresh
+        options:
+          - refresh
+          - backtest
 
 permissions:
-  contents: write
-  pages: write
+  contents: read
 
 concurrency:
-  group: github-pages
+  group: football-data-${{ github.ref }}-${{ inputs.task || github.event_name }}
   cancel-in-progress: false
 
 jobs:
-  publish:
-    if: github.ref == 'refs/heads/main'
+  checks:
     runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Run model and data integrity tests
+        run: node --test
+      - name: Validate bundled data
+        run: node scripts/validate-data.mjs
+
+  publish:
+    needs: checks
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && inputs.task != 'backtest'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -30,6 +56,15 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+
+      - name: Restore historical schedules and completed box scores
+        if: github.event_name != 'push'
+        uses: actions/cache@v4
+        with:
+          path: .cache/history
+          key: cfbd-history-main-${{ github.run_id }}
+          restore-keys: |
+            cfbd-history-main-
 
       - name: Refresh season data
         id: sync
@@ -44,6 +79,7 @@ jobs:
           fi
 
           node scripts/sync-season.mjs
+          node scripts/validate-data.mjs
           echo "updated=true" >> "$GITHUB_OUTPUT"
 
       - name: Commit refreshed data
@@ -64,3 +100,43 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
+
+  backtest:
+    needs: checks
+    if: github.event_name == 'workflow_dispatch' && inputs.task == 'backtest'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out requested branch
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Restore historical data
+        uses: actions/cache@v4
+        with:
+          path: .cache/history
+          key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            cfbd-history-${{ github.ref_name }}-
+            cfbd-history-main-
+      - name: Collect historical schedules and box scores
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: node scripts/sync-history.mjs --from 2018 --to 2026 --stats-from 2022 --out .cache/history
+      - name: Replay pregame forecasts
+        run: node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out data/backtests
+      - name: Score pregame forecasts
+        run: node scripts/score-backtest.mjs data/backtests --out data/backtests/summary.json
+      - name: Upload raw history and backtest reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-foundation-${{ github.run_id }}
+          path: |
+            .cache/history/*.json
+            data/backtests/*.json
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 30
