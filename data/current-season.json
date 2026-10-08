@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "season": 2026,
+    "asOf": "2026-10-08",
+    "resultsThrough": null,
+    "provider": "No season data loaded",
+    "scope": "Empty starter file; import a complete FBS + FCS dataset to populate ratings",
+    "starter": false,
+    "completeD1": false
+  },
+  "games": [],
+  "teamStats": []
+}
