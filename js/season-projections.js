@@ -1,5 +1,6 @@
 import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js';
+import { rankBoardTeams } from './board-order.js';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const idOf = value => value.id ?? value.gameId;
@@ -7,61 +8,40 @@ const time = value => value ? Date.parse(value) : NaN;
 const divisionOne = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 
-// Public archives contain only forecasts, never the result used to grade them.
-export function validateForecastArchive(archive, season) {
-  if (!archive || archive.meta?.forecastFormatVersion !== 1 || Number(archive.meta.season) !== Number(season)
-    || !Array.isArray(archive.predictions)) throw new Error('The forecast archive does not match this season.');
-  const seen = new Set();
-  for (const record of archive.predictions) {
-    const id = String(idOf(record) ?? '');
-    const kickoff = time(record.startDate);
-    const cutoff = time(record.predictionGeneratedAt);
-    const generated = time(record.generatedAt);
-    if (!id || seen.has(id) || Number(record.season) !== Number(season)
-      || !key(record.homeTeam) || !key(record.awayTeam) || key(record.homeTeam) === key(record.awayTeam)
-      || ![kickoff, cutoff, generated].every(Number.isFinite) || cutoff >= kickoff || generated < cutoff
-      || !['snapshot', 'reconstructed'].includes(record.origin) || typeof record.neutralSite !== 'boolean'
-      || ![record.projectedHomeScore, record.projectedAwayScore, record.predictedMargin, record.homeWinProbability].every(finite)
-      || record.projectedHomeScore < 0 || record.projectedAwayScore < 0
-      || record.homeWinProbability < 0 || record.homeWinProbability > 1
-      || !record.modelVersion || !/^[a-f0-9]{64}$/.test(record.sourceFingerprint || '')
-      || (record.origin === 'snapshot' && (generated < cutoff || generated >= kickoff))
-      || (record.sourceResultsThrough && (!Number.isFinite(time(record.sourceResultsThrough)) || time(record.sourceResultsThrough) > cutoff))
-      || (record.maxTrainingAvailableAt && (!Number.isFinite(time(record.maxTrainingAvailableAt)) || time(record.maxTrainingAvailableAt) > cutoff))) {
-      throw new Error('A forecast archive record has invalid identity, values, or pregame timing.');
-    }
-    seen.add(id);
-  }
-  return archive;
-}
-
-function matchesGame(record, game, season) {
-  return record && Number(record.season) === Number(season)
-    && key(record.homeTeam) === key(game.homeTeam) && key(record.awayTeam) === key(game.awayTeam)
-    && Boolean(record.neutralSite) === Boolean(game.neutralSite)
-    && time(record.startDate) === time(game.startDate) && game.startTimeTBD !== true;
-}
-
-function orientForecast(prediction, home, kind, generatedAt) {
+function orientForecast(prediction, home, generatedAt) {
   return {
     for: home ? prediction.projectedHomeScore : prediction.projectedAwayScore,
     against: home ? prediction.projectedAwayScore : prediction.projectedHomeScore,
     margin: home ? prediction.predictedMargin : -prediction.predictedMargin,
     winProbability: home ? prediction.homeWinProbability : 1 - prediction.homeWinProbability,
-    kind, generatedAt,
+    kind: 'current', generatedAt,
     modelVersion: prediction.modelVersion,
-    coldStart: Boolean(prediction.homeColdStart || prediction.awayColdStart)
+    coldStart: Boolean(prediction.homeColdStart || prediction.awayColdStart),
+    preseasonFallbackVersion: prediction.preseasonFallbackVersion || null,
+    teamPriorSeason: (home ? prediction.homePriorSeason : prediction.awayPriorSeason) || null,
+    opponentPriorSeason: (home ? prediction.awayPriorSeason : prediction.homePriorSeason) || null
   };
 }
 
-export function buildSeasonProjections(model, teamName, archive = null) {
+export function buildSeasonProjections(model, teamName) {
   const team = model.teams.get(key(teamName));
   if (!team) throw new Error('Choose a team in the loaded dataset.');
   const season = model.meta.season;
   const snapshotAt = model.meta.generatedAt || null;
   const snapshotTime = time(snapshotAt);
-  const records = new Map((archive && Number(archive.meta.season) === Number(season) ? archive.predictions : [])
-    .map(record => [String(idOf(record)), record]));
+  // Full-field ranks use the same ordering and current weights as the board.
+  // Board filters select rows; they do not change an opponent's actual rank.
+  const rankedTeams = model.broadCoverage ? rankBoardTeams(model.allTeams
+    .filter(entry => divisionOne(entry.classification) && finite(entry.composite))) : [];
+  const overallRanks = new Map(rankedTeams.map((entry, index) => [key(entry.name), index + 1]));
+  const subdivisionRanks = new Map();
+  const subdivisionSizes = new Map();
+  for (const entry of rankedTeams) {
+    const classification = String(entry.classification).toLowerCase();
+    const rank = (subdivisionSizes.get(classification) || 0) + 1;
+    subdivisionSizes.set(classification, rank);
+    subdivisionRanks.set(key(entry.name), rank);
+  }
   const rawGames = new Map((model.raw.games || []).map(game => [String(idOf(game)), game]));
   const rows = team.games.slice().sort((a, b) => String(a.startDate || '').localeCompare(String(b.startDate || '')))
     .map(game => {
@@ -86,36 +66,36 @@ export function buildSeasonProjections(model, teamName, archive = null) {
         && divisionOne(game.awayClassification || model.teams.get(key(game.awayTeam))?.classification);
       let forecast = null;
       let unavailableReason = '';
-      const saved = records.get(String(idOf(game)));
       if (canceled) unavailableReason = 'Canceled game; excluded from projections.';
       else if (!rated) unavailableReason = 'Opponent outside the FBS/FCS model.';
-      else if (future) {
+      else {
         try {
-          const prediction = simulateMatchup(model, game, { allowColdStart: true });
-          forecast = orientForecast({ ...prediction, homeWinProbability: prediction.simulatedHomeWinProbability }, home, 'current', snapshotAt);
+          // At neutral sites, match the hypothetical tool with the selected
+          // team as Team A, including its reproducible Monte Carlo sample.
+          const matchup = game.neutralSite ? { ...game, homeTeam: team.name, awayTeam: opponentName } : game;
+          const prediction = simulateMatchup(model, matchup);
+          forecast = orientForecast({ ...prediction, homeWinProbability: prediction.simulatedHomeWinProbability }, game.neutralSite || home, snapshotAt);
         } catch (error) {
-          unavailableReason = 'The loaded snapshot cannot project this matchup.';
+          unavailableReason = error.message || 'The loaded snapshot cannot project this matchup.';
         }
-      } else if (matchesGame(saved, game, season)) {
-        forecast = orientForecast(saved, home, saved.origin === 'snapshot' ? 'saved' : 'reconstructed', saved.predictionGeneratedAt);
-      } else {
-        unavailableReason = done ? 'No pregame forecast is available for this game.'
-          : Number.isFinite(kickoff) && Number.isFinite(snapshotTime) ? 'Awaiting a final result; no saved pregame forecast.'
-            : 'A dated snapshot and schedule are needed for a projection.';
       }
-      const error = actual && forecast && forecast.kind !== 'current' ? {
+      const error = actual && forecast ? {
         margin: actual.margin - forecast.margin,
         teamScore: actual.for - forecast.for,
         opponentScore: actual.against - forecast.against
       } : null;
       return { gameId: idOf(game), date: game.startDate, week: game.week, opponentName, classification,
         site: game.neutralSite ? 'Neutral site' : home ? 'Home' : 'Away', venue: game.venue || '',
-        status, actual, forecast, error, unavailableReason, timeTBD: game.startTimeTBD === true };
+        status, actual, forecast, error, unavailableReason, timeTBD: game.startTimeTBD === true,
+        opponentRank: overallRanks.get(key(opponentName)) || null,
+        opponentSubdivisionRank: subdivisionRanks.get(key(opponentName)) || null,
+        rankFieldSize: rankedTeams.length, subdivisionFieldSize: subdivisionSizes.get(classification.toLowerCase()) || 0,
+        rankingsReady: model.broadCoverage };
     });
   const remaining = rows.filter(row => row.status === 'upcoming' || row.status === 'unplayed');
   const projected = remaining.filter(row => row.forecast);
-  const graded = rows.filter(row => row.error);
-  const picks = graded.filter(row => row.actual.outcome !== 'T' && row.forecast.winProbability !== 0.5);
+  const compared = rows.filter(row => row.error);
+  const picks = compared.filter(row => row.actual.outcome !== 'T' && row.forecast.winProbability !== 0.5);
   const currentWins = rows.filter(row => row.actual?.outcome === 'W').length;
   const currentLosses = rows.filter(row => row.actual?.outcome === 'L').length;
   const currentTies = rows.filter(row => row.actual?.outcome === 'T').length;
@@ -123,6 +103,12 @@ export function buildSeasonProjections(model, teamName, archive = null) {
   const fullRemainingCoverage = projected.length === remaining.length;
   return {
     teamName: team.name, season, snapshotAt, resultsThrough: model.meta.resultsThrough || null, modelVersion: model.modelVersion,
+    classification: String(team.classification || '').toUpperCase(),
+    teamRank: overallRanks.get(key(team.name)) || null,
+    teamSubdivisionRank: subdivisionRanks.get(key(team.name)) || null,
+    rankFieldSize: rankedTeams.length,
+    subdivisionFieldSize: subdivisionSizes.get(String(team.classification).toLowerCase()) || 0,
+    rankingsReady: model.broadCoverage,
     rows,
     summary: {
       remainingProjectedGames: projected.length, remainingUnmodeledGames: remaining.length - projected.length,
@@ -130,9 +116,9 @@ export function buildSeasonProjections(model, teamName, archive = null) {
       projectedWins: fullRemainingCoverage ? currentWins + expectedAdditionalWins : null,
       projectedLosses: fullRemainingCoverage ? currentLosses + remaining.length - expectedAdditionalWins : null,
       currentWins, currentLosses, currentTies, fullRemainingCoverage,
-      gradedGames: graded.length,
-      marginMae: graded.length ? graded.reduce((sum, row) => sum + Math.abs(row.error.margin), 0) / graded.length : null,
-      scoreMae: graded.length ? graded.reduce((sum, row) => sum + Math.abs(row.error.teamScore) + Math.abs(row.error.opponentScore), 0) / (2 * graded.length) : null,
+      gradedGames: compared.length,
+      marginMae: compared.length ? compared.reduce((sum, row) => sum + Math.abs(row.error.margin), 0) / compared.length : null,
+      scoreMae: compared.length ? compared.reduce((sum, row) => sum + Math.abs(row.error.teamScore) + Math.abs(row.error.opponentScore), 0) / (2 * compared.length) : null,
       correctPicks: picks.filter(row => (row.forecast.winProbability > 0.5) === (row.actual.outcome === 'W')).length,
       pickGames: picks.length
     }

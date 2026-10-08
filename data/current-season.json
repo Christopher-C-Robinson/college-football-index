@@ -275057,5 +275057,1871 @@
         "effectiveRoadGames": 14.99
       }
     ]
+  },
+  "preseason": {
+    "season": 2025,
+    "modelVersion": "2.0.0",
+    "sourceGeneratedAt": "2026-10-08T21:54:45.848Z",
+    "resultsThrough": "2026-01-20",
+    "leagueTotal": 52.81046153846154,
+    "totalStdDev": 16.384901533073702,
+    "teams": [
+      {
+        "name": "Abilene Christian",
+        "power": 1.5221222803266443,
+        "games": 14,
+        "pointsFor": 29.571428571428573,
+        "pointsAgainst": 26.428571428571427
+      },
+      {
+        "name": "Air Force",
+        "power": 0.817794272102926,
+        "games": 12,
+        "pointsFor": 29.833333333333332,
+        "pointsAgainst": 30.333333333333332
+      },
+      {
+        "name": "Akron",
+        "power": -4.671802114948969,
+        "games": 12,
+        "pointsFor": 22.25,
+        "pointsAgainst": 27.416666666666668
+      },
+      {
+        "name": "Alabama",
+        "power": 16.94338091538258,
+        "games": 15,
+        "pointsFor": 29.533333333333335,
+        "pointsAgainst": 19.2
+      },
+      {
+        "name": "Alabama A&M",
+        "power": -15.23427001919932,
+        "games": 11,
+        "pointsFor": 21.09090909090909,
+        "pointsAgainst": 35.81818181818182
+      },
+      {
+        "name": "Alabama State",
+        "power": 2.0968989584883677,
+        "games": 10,
+        "pointsFor": 41.4,
+        "pointsAgainst": 22.7
+      },
+      {
+        "name": "Alcorn State",
+        "power": -9.125866948275494,
+        "games": 11,
+        "pointsFor": 22.636363636363637,
+        "pointsAgainst": 25.272727272727273
+      },
+      {
+        "name": "App State",
+        "power": -2.092230746622734,
+        "games": 13,
+        "pointsFor": 24.153846153846153,
+        "pointsAgainst": 29.76923076923077
+      },
+      {
+        "name": "Arizona",
+        "power": 15.63396213548885,
+        "games": 13,
+        "pointsFor": 31.53846153846154,
+        "pointsAgainst": 19.307692307692307
+      },
+      {
+        "name": "Arizona State",
+        "power": 10.821236584194876,
+        "games": 13,
+        "pointsFor": 25.76923076923077,
+        "pointsAgainst": 24.46153846153846
+      },
+      {
+        "name": "Arkansas",
+        "power": 8.426775076453827,
+        "games": 12,
+        "pointsFor": 32.916666666666664,
+        "pointsAgainst": 33.833333333333336
+      },
+      {
+        "name": "Arkansas State",
+        "power": 0.0435962517888658,
+        "games": 13,
+        "pointsFor": 25.153846153846153,
+        "pointsAgainst": 27.384615384615383
+      },
+      {
+        "name": "Arkansas-Pine Bluff",
+        "power": -17.56690875678831,
+        "games": 10,
+        "pointsFor": 17.5,
+        "pointsAgainst": 38.2
+      },
+      {
+        "name": "Army",
+        "power": 5.782294717653275,
+        "games": 13,
+        "pointsFor": 23.846153846153847,
+        "pointsAgainst": 21.615384615384617
+      },
+      {
+        "name": "Auburn",
+        "power": 13.002097932859323,
+        "games": 12,
+        "pointsFor": 26.75,
+        "pointsAgainst": 20.666666666666668
+      },
+      {
+        "name": "Austin Peay",
+        "power": 1.527599135915843,
+        "games": 12,
+        "pointsFor": 35.083333333333336,
+        "pointsAgainst": 27.333333333333332
+      },
+      {
+        "name": "Ball State",
+        "power": -9.17681717032842,
+        "games": 12,
+        "pointsFor": 15.833333333333334,
+        "pointsAgainst": 29.833333333333332
+      },
+      {
+        "name": "Baylor",
+        "power": 6.0236879316630345,
+        "games": 12,
+        "pointsFor": 31.083333333333332,
+        "pointsAgainst": 32.583333333333336
+      },
+      {
+        "name": "Bethune-Cookman",
+        "power": -10.172186868331401,
+        "games": 11,
+        "pointsFor": 29.181818181818183,
+        "pointsAgainst": 34.81818181818182
+      },
+      {
+        "name": "Boise State",
+        "power": 9.610665311938675,
+        "games": 14,
+        "pointsFor": 29.857142857142858,
+        "pointsAgainst": 24.071428571428573
+      },
+      {
+        "name": "Boston College",
+        "power": 0.13099322219785575,
+        "games": 12,
+        "pointsFor": 25.416666666666668,
+        "pointsAgainst": 32.75
+      },
+      {
+        "name": "Bowling Green",
+        "power": -3.526069993037581,
+        "games": 12,
+        "pointsFor": 20.5,
+        "pointsAgainst": 24.25
+      },
+      {
+        "name": "Brown",
+        "power": -4.272512567389409,
+        "games": 10,
+        "pointsFor": 26.5,
+        "pointsAgainst": 27
+      },
+      {
+        "name": "Bryant",
+        "power": -16.044095737749114,
+        "games": 11,
+        "pointsFor": 20.727272727272727,
+        "pointsAgainst": 32.54545454545455
+      },
+      {
+        "name": "Bucknell",
+        "power": -12.708312378431916,
+        "games": 12,
+        "pointsFor": 26.083333333333332,
+        "pointsAgainst": 34.083333333333336
+      },
+      {
+        "name": "Buffalo",
+        "power": -2.6853108163338177,
+        "games": 12,
+        "pointsFor": 24,
+        "pointsAgainst": 23.5
+      },
+      {
+        "name": "Butler",
+        "power": -12.035926659990373,
+        "games": 10,
+        "pointsFor": 22.1,
+        "pointsAgainst": 27
+      },
+      {
+        "name": "BYU",
+        "power": 16.45561907016575,
+        "games": 14,
+        "pointsFor": 31.428571428571427,
+        "pointsAgainst": 19.142857142857142
+      },
+      {
+        "name": "Cal Poly",
+        "power": -3.917862849398038,
+        "games": 11,
+        "pointsFor": 24.90909090909091,
+        "pointsAgainst": 33.72727272727273
+      },
+      {
+        "name": "California",
+        "power": 2.8376812715271096,
+        "games": 13,
+        "pointsFor": 25.307692307692307,
+        "pointsAgainst": 27.153846153846153
+      },
+      {
+        "name": "Campbell",
+        "power": -10.894209574305483,
+        "games": 12,
+        "pointsFor": 24.666666666666668,
+        "pointsAgainst": 35.833333333333336
+      },
+      {
+        "name": "Central Arkansas",
+        "power": -7.8059013657599925,
+        "games": 12,
+        "pointsFor": 24.5,
+        "pointsAgainst": 35.166666666666664
+      },
+      {
+        "name": "Central Connecticut",
+        "power": -4.817795465714647,
+        "games": 12,
+        "pointsFor": 26.083333333333332,
+        "pointsAgainst": 24.25
+      },
+      {
+        "name": "Central Michigan",
+        "power": -0.6125314881292345,
+        "games": 13,
+        "pointsFor": 22.53846153846154,
+        "pointsAgainst": 23.53846153846154
+      },
+      {
+        "name": "Charleston Southern",
+        "power": -10.248313335993169,
+        "games": 12,
+        "pointsFor": 16.583333333333332,
+        "pointsAgainst": 24
+      },
+      {
+        "name": "Charlotte",
+        "power": -11.329854011401975,
+        "games": 12,
+        "pointsFor": 14.333333333333334,
+        "pointsAgainst": 36.333333333333336
+      },
+      {
+        "name": "Chattanooga",
+        "power": -10.531810082452862,
+        "games": 12,
+        "pointsFor": 28.25,
+        "pointsAgainst": 33
+      },
+      {
+        "name": "Cincinnati",
+        "power": 7.8393014751925545,
+        "games": 13,
+        "pointsFor": 30.307692307692307,
+        "pointsAgainst": 25.615384615384617
+      },
+      {
+        "name": "Clemson",
+        "power": 12.255197655076708,
+        "games": 13,
+        "pointsFor": 27.23076923076923,
+        "pointsAgainst": 20.53846153846154
+      },
+      {
+        "name": "Coastal Carolina",
+        "power": -1.9196471403507744,
+        "games": 13,
+        "pointsFor": 22.153846153846153,
+        "pointsAgainst": 33.07692307692308
+      },
+      {
+        "name": "Colgate",
+        "power": -5.759647567900055,
+        "games": 12,
+        "pointsFor": 28.333333333333332,
+        "pointsAgainst": 31
+      },
+      {
+        "name": "Colorado",
+        "power": 2.9233405139383453,
+        "games": 12,
+        "pointsFor": 20.916666666666668,
+        "pointsAgainst": 30.5
+      },
+      {
+        "name": "Colorado State",
+        "power": -4.60665758578098,
+        "games": 12,
+        "pointsFor": 18.5,
+        "pointsAgainst": 30.833333333333332
+      },
+      {
+        "name": "Columbia",
+        "power": -9.37503973468739,
+        "games": 10,
+        "pointsFor": 15.6,
+        "pointsAgainst": 27.9
+      },
+      {
+        "name": "Cornell",
+        "power": -7.492390580940161,
+        "games": 10,
+        "pointsFor": 21,
+        "pointsAgainst": 26
+      },
+      {
+        "name": "Dartmouth",
+        "power": -0.4285211392937384,
+        "games": 10,
+        "pointsFor": 26.4,
+        "pointsAgainst": 21.3
+      },
+      {
+        "name": "Davidson",
+        "power": -22.952528754732487,
+        "games": 11,
+        "pointsFor": 15.454545454545455,
+        "pointsAgainst": 43.18181818181818
+      },
+      {
+        "name": "Dayton",
+        "power": -6.660072596318342,
+        "games": 10,
+        "pointsFor": 26.8,
+        "pointsAgainst": 19.1
+      },
+      {
+        "name": "Delaware",
+        "power": -1.6042191961704453,
+        "games": 13,
+        "pointsFor": 29,
+        "pointsAgainst": 31
+      },
+      {
+        "name": "Delaware State",
+        "power": -8.222270356940019,
+        "games": 10,
+        "pointsFor": 28.1,
+        "pointsAgainst": 26
+      },
+      {
+        "name": "Drake",
+        "power": -5.56799131417848,
+        "games": 11,
+        "pointsFor": 23.90909090909091,
+        "pointsAgainst": 18.636363636363637
+      },
+      {
+        "name": "Duke",
+        "power": 11.143124052546346,
+        "games": 14,
+        "pointsFor": 34.57142857142857,
+        "pointsAgainst": 29.428571428571427
+      },
+      {
+        "name": "Duquesne",
+        "power": -6.5627041592720134,
+        "games": 11,
+        "pointsFor": 26,
+        "pointsAgainst": 26.272727272727273
+      },
+      {
+        "name": "East Carolina",
+        "power": 11.111740333177035,
+        "games": 13,
+        "pointsFor": 32.69230769230769,
+        "pointsAgainst": 20.076923076923077
+      },
+      {
+        "name": "East Tennessee State",
+        "power": -1.0723211214933956,
+        "games": 12,
+        "pointsFor": 32.5,
+        "pointsAgainst": 28.833333333333332
+      },
+      {
+        "name": "East Texas A&M",
+        "power": -11.157511999910051,
+        "games": 12,
+        "pointsFor": 25.583333333333332,
+        "pointsAgainst": 39.833333333333336
+      },
+      {
+        "name": "Eastern Illinois",
+        "power": -12.166254208517206,
+        "games": 12,
+        "pointsFor": 17.5,
+        "pointsAgainst": 29.166666666666668
+      },
+      {
+        "name": "Eastern Kentucky",
+        "power": -5.617078059662594,
+        "games": 12,
+        "pointsFor": 19.333333333333332,
+        "pointsAgainst": 24.333333333333332
+      },
+      {
+        "name": "Eastern Michigan",
+        "power": -5.007740650773915,
+        "games": 12,
+        "pointsFor": 24.083333333333332,
+        "pointsAgainst": 29.75
+      },
+      {
+        "name": "Eastern Washington",
+        "power": -5.810985743631511,
+        "games": 12,
+        "pointsFor": 23.416666666666668,
+        "pointsAgainst": 30.166666666666668
+      },
+      {
+        "name": "Elon",
+        "power": -4.945993846935584,
+        "games": 12,
+        "pointsFor": 28.75,
+        "pointsAgainst": 24.75
+      },
+      {
+        "name": "Florida",
+        "power": 8.54570011762226,
+        "games": 12,
+        "pointsFor": 21.583333333333332,
+        "pointsAgainst": 24
+      },
+      {
+        "name": "Florida A&M",
+        "power": -16.76907653991244,
+        "games": 11,
+        "pointsFor": 23.454545454545453,
+        "pointsAgainst": 34.63636363636363
+      },
+      {
+        "name": "Florida Atlantic",
+        "power": -2.625010921557882,
+        "games": 12,
+        "pointsFor": 29.5,
+        "pointsAgainst": 36.333333333333336
+      },
+      {
+        "name": "Florida International",
+        "power": -0.16721040546180801,
+        "games": 13,
+        "pointsFor": 28.53846153846154,
+        "pointsAgainst": 30
+      },
+      {
+        "name": "Florida State",
+        "power": 11.4958872755762,
+        "games": 12,
+        "pointsFor": 33,
+        "pointsAgainst": 22
+      },
+      {
+        "name": "Fordham",
+        "power": -17.155989796939085,
+        "games": 12,
+        "pointsFor": 15.916666666666666,
+        "pointsAgainst": 33.083333333333336
+      },
+      {
+        "name": "Fresno State",
+        "power": 4.638771378847012,
+        "games": 13,
+        "pointsFor": 25.76923076923077,
+        "pointsAgainst": 18.76923076923077
+      },
+      {
+        "name": "Furman",
+        "power": -8.904969227402301,
+        "games": 12,
+        "pointsFor": 24.416666666666668,
+        "pointsAgainst": 31
+      },
+      {
+        "name": "Gardner-Webb",
+        "power": -5.969748385032019,
+        "games": 12,
+        "pointsFor": 27.5,
+        "pointsAgainst": 29.75
+      },
+      {
+        "name": "Georgetown",
+        "power": -9.982151047931842,
+        "games": 12,
+        "pointsFor": 21.083333333333332,
+        "pointsAgainst": 26.666666666666668
+      },
+      {
+        "name": "Georgia",
+        "power": 22.520170182180003,
+        "games": 14,
+        "pointsFor": 32.07142857142857,
+        "pointsAgainst": 17.571428571428573
+      },
+      {
+        "name": "Georgia Southern",
+        "power": -0.2222978143388411,
+        "games": 13,
+        "pointsFor": 27.923076923076923,
+        "pointsAgainst": 32.30769230769231
+      },
+      {
+        "name": "Georgia State",
+        "power": -7.709501362725492,
+        "games": 12,
+        "pointsFor": 19.75,
+        "pointsAgainst": 37.833333333333336
+      },
+      {
+        "name": "Georgia Tech",
+        "power": 11.789346955009872,
+        "games": 13,
+        "pointsFor": 32.15384615384615,
+        "pointsAgainst": 25
+      },
+      {
+        "name": "Grambling",
+        "power": -8.398002113950678,
+        "games": 10,
+        "pointsFor": 19.7,
+        "pointsAgainst": 27.5
+      },
+      {
+        "name": "Hampton",
+        "power": -21.323249856138215,
+        "games": 11,
+        "pointsFor": 17.09090909090909,
+        "pointsAgainst": 38.18181818181818
+      },
+      {
+        "name": "Harvard",
+        "power": 6.549666328219082,
+        "games": 11,
+        "pointsFor": 36.45454545454545,
+        "pointsAgainst": 21.181818181818183
+      },
+      {
+        "name": "Hawai'i",
+        "power": 5.532722127010795,
+        "games": 13,
+        "pointsFor": 29,
+        "pointsAgainst": 24.076923076923077
+      },
+      {
+        "name": "Holy Cross",
+        "power": -7.050348086966877,
+        "games": 12,
+        "pointsFor": 20.5,
+        "pointsAgainst": 24.75
+      },
+      {
+        "name": "Houston",
+        "power": 11.062097990436353,
+        "games": 13,
+        "pointsFor": 29.076923076923077,
+        "pointsAgainst": 22.846153846153847
+      },
+      {
+        "name": "Houston Christian",
+        "power": -19.223223525626132,
+        "games": 11,
+        "pointsFor": 12.090909090909092,
+        "pointsAgainst": 33
+      },
+      {
+        "name": "Howard",
+        "power": -15.559887997236473,
+        "games": 11,
+        "pointsFor": 18.181818181818183,
+        "pointsAgainst": 25.90909090909091
+      },
+      {
+        "name": "Idaho",
+        "power": -3.4807700413867546,
+        "games": 12,
+        "pointsFor": 25.166666666666668,
+        "pointsAgainst": 26.416666666666668
+      },
+      {
+        "name": "Idaho State",
+        "power": -0.8162798095804975,
+        "games": 11,
+        "pointsFor": 27.818181818181817,
+        "pointsAgainst": 29.727272727272727
+      },
+      {
+        "name": "Illinois",
+        "power": 14.851899956222967,
+        "games": 13,
+        "pointsFor": 29.384615384615383,
+        "pointsAgainst": 23.615384615384617
+      },
+      {
+        "name": "Illinois State",
+        "power": 4.6634104372979825,
+        "games": 17,
+        "pointsFor": 30.764705882352942,
+        "pointsAgainst": 25.705882352941178
+      },
+      {
+        "name": "Incarnate Word",
+        "power": -4.496449054802908,
+        "games": 12,
+        "pointsFor": 25.666666666666668,
+        "pointsAgainst": 25.5
+      },
+      {
+        "name": "Indiana",
+        "power": 28.93528125896389,
+        "games": 16,
+        "pointsFor": 41.625,
+        "pointsAgainst": 11.6875
+      },
+      {
+        "name": "Indiana State",
+        "power": -9.007856998917793,
+        "games": 11,
+        "pointsFor": 19.363636363636363,
+        "pointsAgainst": 41
+      },
+      {
+        "name": "Iowa",
+        "power": 17.949123887024406,
+        "games": 13,
+        "pointsFor": 29.307692307692307,
+        "pointsAgainst": 16.076923076923077
+      },
+      {
+        "name": "Iowa State",
+        "power": 12.39158395333881,
+        "games": 12,
+        "pointsFor": 27.416666666666668,
+        "pointsAgainst": 20.166666666666668
+      },
+      {
+        "name": "Jackson State",
+        "power": -0.13118155637575327,
+        "games": 11,
+        "pointsFor": 33.09090909090909,
+        "pointsAgainst": 20.454545454545453
+      },
+      {
+        "name": "Jacksonville State",
+        "power": 0.32806658881472817,
+        "games": 14,
+        "pointsFor": 28.142857142857142,
+        "pointsAgainst": 25.214285714285715
+      },
+      {
+        "name": "James Madison",
+        "power": 15.98361770549724,
+        "games": 14,
+        "pointsFor": 37.07142857142857,
+        "pointsAgainst": 18.357142857142858
+      },
+      {
+        "name": "Kansas",
+        "power": 8.133966865589457,
+        "games": 12,
+        "pointsFor": 28.083333333333332,
+        "pointsAgainst": 26.75
+      },
+      {
+        "name": "Kansas State",
+        "power": 11.197864662975828,
+        "games": 12,
+        "pointsFor": 29.416666666666668,
+        "pointsAgainst": 26.666666666666668
+      },
+      {
+        "name": "Kennesaw State",
+        "power": 3.6511482391193777,
+        "games": 14,
+        "pointsFor": 26.714285714285715,
+        "pointsAgainst": 25.5
+      },
+      {
+        "name": "Kent State",
+        "power": -6.314921898780721,
+        "games": 12,
+        "pointsFor": 21.25,
+        "pointsAgainst": 33.583333333333336
+      },
+      {
+        "name": "Kentucky",
+        "power": 9.072595368549694,
+        "games": 12,
+        "pointsFor": 23,
+        "pointsAgainst": 26.416666666666668
+      },
+      {
+        "name": "Lafayette",
+        "power": -2.2585259278007546,
+        "games": 12,
+        "pointsFor": 33.583333333333336,
+        "pointsAgainst": 28.75
+      },
+      {
+        "name": "Lamar",
+        "power": -2.5439082716451735,
+        "games": 13,
+        "pointsFor": 22.46153846153846,
+        "pointsAgainst": 23
+      },
+      {
+        "name": "Lehigh",
+        "power": 9.46734263678635,
+        "games": 13,
+        "pointsFor": 31.76923076923077,
+        "pointsAgainst": 13.923076923076923
+      },
+      {
+        "name": "Liberty",
+        "power": 0.07441259541050503,
+        "games": 12,
+        "pointsFor": 25.583333333333332,
+        "pointsAgainst": 26.5
+      },
+      {
+        "name": "Lindenwood",
+        "power": -7.560507787055144,
+        "games": 12,
+        "pointsFor": 24.75,
+        "pointsAgainst": 27
+      },
+      {
+        "name": "Long Island University",
+        "power": -8.69050544845252,
+        "games": 12,
+        "pointsFor": 16.416666666666668,
+        "pointsAgainst": 18.833333333333332
+      },
+      {
+        "name": "Louisiana",
+        "power": -1.017344010697022,
+        "games": 13,
+        "pointsFor": 26,
+        "pointsAgainst": 29.23076923076923
+      },
+      {
+        "name": "Louisiana Tech",
+        "power": 4.601261844191025,
+        "games": 13,
+        "pointsFor": 27.307692307692307,
+        "pointsAgainst": 20.76923076923077
+      },
+      {
+        "name": "Louisville",
+        "power": 15.537041656348713,
+        "games": 13,
+        "pointsFor": 29.923076923076923,
+        "pointsAgainst": 21.153846153846153
+      },
+      {
+        "name": "LSU",
+        "power": 12.479724190559894,
+        "games": 13,
+        "pointsFor": 22.846153846153847,
+        "pointsAgainst": 19.846153846153847
+      },
+      {
+        "name": "Maine",
+        "power": -7.2518162779158395,
+        "games": 12,
+        "pointsFor": 24.166666666666668,
+        "pointsAgainst": 24.25
+      },
+      {
+        "name": "Marist",
+        "power": -9.239161035130936,
+        "games": 12,
+        "pointsFor": 22.666666666666668,
+        "pointsAgainst": 23.5
+      },
+      {
+        "name": "Marshall",
+        "power": 3.212312524547499,
+        "games": 12,
+        "pointsFor": 30.75,
+        "pointsAgainst": 30.25
+      },
+      {
+        "name": "Maryland",
+        "power": 5.624378903377924,
+        "games": 12,
+        "pointsFor": 23.5,
+        "pointsAgainst": 26.5
+      },
+      {
+        "name": "Massachusetts",
+        "power": -19.293452516385194,
+        "games": 12,
+        "pointsFor": 11.083333333333334,
+        "pointsAgainst": 38.583333333333336
+      },
+      {
+        "name": "McNeese",
+        "power": -10.192837590794316,
+        "games": 11,
+        "pointsFor": 20.727272727272727,
+        "pointsAgainst": 27
+      },
+      {
+        "name": "Memphis",
+        "power": 9.182125725631767,
+        "games": 13,
+        "pointsFor": 32.46153846153846,
+        "pointsAgainst": 23.153846153846153
+      },
+      {
+        "name": "Mercer",
+        "power": 2.394089540081588,
+        "games": 12,
+        "pointsFor": 36.166666666666664,
+        "pointsAgainst": 25.5
+      },
+      {
+        "name": "Mercyhurst",
+        "power": -10.024137734455127,
+        "games": 12,
+        "pointsFor": 18.75,
+        "pointsAgainst": 24.75
+      },
+      {
+        "name": "Merrimack",
+        "power": -12.802438806961682,
+        "games": 11,
+        "pointsFor": 19.545454545454547,
+        "pointsAgainst": 26.09090909090909
+      },
+      {
+        "name": "Miami",
+        "power": 24.52008265446387,
+        "games": 16,
+        "pointsFor": 30.9375,
+        "pointsAgainst": 14.8125
+      },
+      {
+        "name": "Miami (OH)",
+        "power": 2.069076797152583,
+        "games": 14,
+        "pointsFor": 23.5,
+        "pointsAgainst": 21.714285714285715
+      },
+      {
+        "name": "Michigan",
+        "power": 13.630130764556286,
+        "games": 13,
+        "pointsFor": 27.53846153846154,
+        "pointsAgainst": 20.384615384615383
+      },
+      {
+        "name": "Michigan State",
+        "power": 4.805901493554223,
+        "games": 12,
+        "pointsFor": 24.583333333333332,
+        "pointsAgainst": 29.916666666666668
+      },
+      {
+        "name": "Middle Tennessee",
+        "power": -7.581983468999101,
+        "games": 12,
+        "pointsFor": 22.416666666666668,
+        "pointsAgainst": 30.916666666666668
+      },
+      {
+        "name": "Minnesota",
+        "power": 6.190749534203126,
+        "games": 13,
+        "pointsFor": 23,
+        "pointsAgainst": 22.923076923076923
+      },
+      {
+        "name": "Mississippi State",
+        "power": 7.521184803680054,
+        "games": 13,
+        "pointsFor": 30.384615384615383,
+        "pointsAgainst": 30.23076923076923
+      },
+      {
+        "name": "Mississippi Valley State",
+        "power": -20.692165576387243,
+        "games": 11,
+        "pointsFor": 15.545454545454545,
+        "pointsAgainst": 42.18181818181818
+      },
+      {
+        "name": "Missouri",
+        "power": 15.17429224003318,
+        "games": 13,
+        "pointsFor": 30.23076923076923,
+        "pointsAgainst": 18.923076923076923
+      },
+      {
+        "name": "Missouri State",
+        "power": 0.4711272751942197,
+        "games": 13,
+        "pointsFor": 25.615384615384617,
+        "pointsAgainst": 28.76923076923077
+      },
+      {
+        "name": "Monmouth",
+        "power": 0.02061233986294128,
+        "games": 12,
+        "pointsFor": 40,
+        "pointsAgainst": 27.75
+      },
+      {
+        "name": "Montana",
+        "power": 11.977936227928625,
+        "games": 14,
+        "pointsFor": 40.92857142857143,
+        "pointsAgainst": 26
+      },
+      {
+        "name": "Montana State",
+        "power": 16.412684185292218,
+        "games": 16,
+        "pointsFor": 37.875,
+        "pointsAgainst": 19
+      },
+      {
+        "name": "Morehead State",
+        "power": -16.907156748717824,
+        "games": 10,
+        "pointsFor": 17.1,
+        "pointsAgainst": 29.9
+      },
+      {
+        "name": "Morgan State",
+        "power": -14.034650011916245,
+        "games": 9,
+        "pointsFor": 20.555555555555557,
+        "pointsAgainst": 32.888888888888886
+      },
+      {
+        "name": "Murray State",
+        "power": -16.338425491233597,
+        "games": 12,
+        "pointsFor": 19,
+        "pointsAgainst": 38.583333333333336
+      },
+      {
+        "name": "Navy",
+        "power": 8.526892912812869,
+        "games": 13,
+        "pointsFor": 31.46153846153846,
+        "pointsAgainst": 25
+      },
+      {
+        "name": "NC State",
+        "power": 11.69622022316375,
+        "games": 13,
+        "pointsFor": 30.23076923076923,
+        "pointsAgainst": 27.153846153846153
+      },
+      {
+        "name": "Nebraska",
+        "power": 6.87351168587539,
+        "games": 13,
+        "pointsFor": 28.692307692307693,
+        "pointsAgainst": 24.615384615384617
+      },
+      {
+        "name": "Nevada",
+        "power": -4.628966930657399,
+        "games": 12,
+        "pointsFor": 17.583333333333332,
+        "pointsAgainst": 27.5
+      },
+      {
+        "name": "New Hampshire",
+        "power": -2.494807246488376,
+        "games": 13,
+        "pointsFor": 24.846153846153847,
+        "pointsAgainst": 22.846153846153847
+      },
+      {
+        "name": "New Haven",
+        "power": -20.64157577109156,
+        "games": 7,
+        "pointsFor": 21,
+        "pointsAgainst": 34.857142857142854
+      },
+      {
+        "name": "New Mexico",
+        "power": 6.265106582710518,
+        "games": 13,
+        "pointsFor": 27.076923076923077,
+        "pointsAgainst": 22.307692307692307
+      },
+      {
+        "name": "New Mexico State",
+        "power": -5.243268263581814,
+        "games": 12,
+        "pointsFor": 21.583333333333332,
+        "pointsAgainst": 27.583333333333332
+      },
+      {
+        "name": "Nicholls",
+        "power": -9.612582163683326,
+        "games": 12,
+        "pointsFor": 18.25,
+        "pointsAgainst": 24.916666666666668
+      },
+      {
+        "name": "Norfolk State",
+        "power": -19.257878588444978,
+        "games": 11,
+        "pointsFor": 19.727272727272727,
+        "pointsAgainst": 36
+      },
+      {
+        "name": "North Alabama",
+        "power": -12.894552651213107,
+        "games": 11,
+        "pointsFor": 23.09090909090909,
+        "pointsAgainst": 40.81818181818182
+      },
+      {
+        "name": "North Carolina",
+        "power": -0.19660606513515946,
+        "games": 12,
+        "pointsFor": 19.25,
+        "pointsAgainst": 24.5
+      },
+      {
+        "name": "North Carolina A&T",
+        "power": -18.37282280650152,
+        "games": 12,
+        "pointsFor": 20.5,
+        "pointsAgainst": 43.583333333333336
+      },
+      {
+        "name": "North Carolina Central",
+        "power": -4.969863258966731,
+        "games": 11,
+        "pointsFor": 32.36363636363637,
+        "pointsAgainst": 26.272727272727273
+      },
+      {
+        "name": "North Dakota",
+        "power": 9.06782117761916,
+        "games": 14,
+        "pointsFor": 32.92857142857143,
+        "pointsAgainst": 19.857142857142858
+      },
+      {
+        "name": "North Dakota State",
+        "power": 17.731232049206543,
+        "games": 13,
+        "pointsFor": 41.07692307692308,
+        "pointsAgainst": 13
+      },
+      {
+        "name": "North Texas",
+        "power": 15.698092034368129,
+        "games": 14,
+        "pointsFor": 45.07142857142857,
+        "pointsAgainst": 26.5
+      },
+      {
+        "name": "Northern Arizona",
+        "power": -2.2438785308207696,
+        "games": 12,
+        "pointsFor": 31.666666666666668,
+        "pointsAgainst": 31.25
+      },
+      {
+        "name": "Northern Colorado",
+        "power": -9.3683166179682,
+        "games": 11,
+        "pointsFor": 20.545454545454547,
+        "pointsAgainst": 30.727272727272727
+      },
+      {
+        "name": "Northern Illinois",
+        "power": -6.342482395393907,
+        "games": 12,
+        "pointsFor": 17.083333333333332,
+        "pointsAgainst": 24.333333333333332
+      },
+      {
+        "name": "Northern Iowa",
+        "power": -8.098991477778513,
+        "games": 12,
+        "pointsFor": 17.25,
+        "pointsAgainst": 26.75
+      },
+      {
+        "name": "Northwestern",
+        "power": 8.455613007202277,
+        "games": 13,
+        "pointsFor": 23.384615384615383,
+        "pointsAgainst": 19.846153846153847
+      },
+      {
+        "name": "Northwestern State",
+        "power": -20.192155664756815,
+        "games": 12,
+        "pointsFor": 10.5,
+        "pointsAgainst": 41.583333333333336
+      },
+      {
+        "name": "Notre Dame",
+        "power": 25.451082837977676,
+        "games": 12,
+        "pointsFor": 42,
+        "pointsAgainst": 17.583333333333332
+      },
+      {
+        "name": "Ohio",
+        "power": 4.967850110916722,
+        "games": 13,
+        "pointsFor": 27.76923076923077,
+        "pointsAgainst": 21.923076923076923
+      },
+      {
+        "name": "Ohio State",
+        "power": 26.78559565391475,
+        "games": 14,
+        "pointsFor": 33.42857142857143,
+        "pointsAgainst": 9.285714285714286
+      },
+      {
+        "name": "Oklahoma",
+        "power": 18.600487163011888,
+        "games": 13,
+        "pointsFor": 26.23076923076923,
+        "pointsAgainst": 15.461538461538462
+      },
+      {
+        "name": "Oklahoma State",
+        "power": -3.4738723243657965,
+        "games": 12,
+        "pointsFor": 14.166666666666666,
+        "pointsAgainst": 33.333333333333336
+      },
+      {
+        "name": "Old Dominion",
+        "power": 12.157278518019133,
+        "games": 13,
+        "pointsFor": 32,
+        "pointsAgainst": 18.53846153846154
+      },
+      {
+        "name": "Ole Miss",
+        "power": 21.414940404618672,
+        "games": 15,
+        "pointsFor": 36.93333333333333,
+        "pointsAgainst": 21.066666666666666
+      },
+      {
+        "name": "Oregon",
+        "power": 25.520899646852385,
+        "games": 15,
+        "pointsFor": 36.93333333333333,
+        "pointsAgainst": 17.866666666666667
+      },
+      {
+        "name": "Oregon State",
+        "power": -2.9130603483280364,
+        "games": 12,
+        "pointsFor": 18.166666666666668,
+        "pointsAgainst": 29.416666666666668
+      },
+      {
+        "name": "Penn State",
+        "power": 17.100283364375077,
+        "games": 13,
+        "pointsFor": 31,
+        "pointsAgainst": 20.53846153846154
+      },
+      {
+        "name": "Pennsylvania",
+        "power": -1.6279765809729083,
+        "games": 10,
+        "pointsFor": 27.1,
+        "pointsAgainst": 26.5
+      },
+      {
+        "name": "Pittsburgh",
+        "power": 13.183608081595793,
+        "games": 13,
+        "pointsFor": 33.69230769230769,
+        "pointsAgainst": 24.76923076923077
+      },
+      {
+        "name": "Portland State",
+        "power": -15.583950809364184,
+        "games": 12,
+        "pointsFor": 16.166666666666668,
+        "pointsAgainst": 42.666666666666664
+      },
+      {
+        "name": "Prairie View A&M",
+        "power": -2.5561245297718282,
+        "games": 13,
+        "pointsFor": 31.076923076923077,
+        "pointsAgainst": 19.23076923076923
+      },
+      {
+        "name": "Presbyterian",
+        "power": -2.8695553889775907,
+        "games": 10,
+        "pointsFor": 29.5,
+        "pointsAgainst": 17.7
+      },
+      {
+        "name": "Princeton",
+        "power": -4.088034800697333,
+        "games": 10,
+        "pointsFor": 20.8,
+        "pointsAgainst": 24.4
+      },
+      {
+        "name": "Purdue",
+        "power": 3.2056908209123685,
+        "games": 12,
+        "pointsFor": 18.75,
+        "pointsAgainst": 31.833333333333332
+      },
+      {
+        "name": "Rhode Island",
+        "power": 1.58576571624042,
+        "games": 14,
+        "pointsFor": 31.285714285714285,
+        "pointsAgainst": 21.142857142857142
+      },
+      {
+        "name": "Rice",
+        "power": -4.274841810788533,
+        "games": 13,
+        "pointsFor": 19.076923076923077,
+        "pointsAgainst": 32.92307692307692
+      },
+      {
+        "name": "Richmond",
+        "power": -7.238358179997292,
+        "games": 12,
+        "pointsFor": 21.916666666666668,
+        "pointsAgainst": 22.666666666666668
+      },
+      {
+        "name": "Robert Morris",
+        "power": -16.491969561350643,
+        "games": 11,
+        "pointsFor": 14,
+        "pointsAgainst": 25.90909090909091
+      },
+      {
+        "name": "Rutgers",
+        "power": 6.915833621851648,
+        "games": 12,
+        "pointsFor": 28.666666666666668,
+        "pointsAgainst": 31.833333333333332
+      },
+      {
+        "name": "Sacramento State",
+        "power": 3.0177236130358263,
+        "games": 12,
+        "pointsFor": 33.75,
+        "pointsAgainst": 26.25
+      },
+      {
+        "name": "Sacred Heart",
+        "power": -7.624300108137301,
+        "games": 11,
+        "pointsFor": 26.09090909090909,
+        "pointsAgainst": 27.727272727272727
+      },
+      {
+        "name": "Saint Francis",
+        "power": -21.92707881098685,
+        "games": 11,
+        "pointsFor": 10.454545454545455,
+        "pointsAgainst": 29
+      },
+      {
+        "name": "Sam Houston",
+        "power": -15.161159673524711,
+        "games": 12,
+        "pointsFor": 17.75,
+        "pointsAgainst": 37.833333333333336
+      },
+      {
+        "name": "Samford",
+        "power": -19.947323732825765,
+        "games": 12,
+        "pointsFor": 14.583333333333334,
+        "pointsAgainst": 37.916666666666664
+      },
+      {
+        "name": "San Diego",
+        "power": -3.1778337419585636,
+        "games": 12,
+        "pointsFor": 28.416666666666668,
+        "pointsAgainst": 24.333333333333332
+      },
+      {
+        "name": "San Diego State",
+        "power": 9.972431096376903,
+        "games": 13,
+        "pointsFor": 26.384615384615383,
+        "pointsAgainst": 15.384615384615385
+      },
+      {
+        "name": "San José State",
+        "power": -5.440085432309382,
+        "games": 12,
+        "pointsFor": 21.416666666666668,
+        "pointsAgainst": 32.5
+      },
+      {
+        "name": "SE Louisiana",
+        "power": 1.0645584411720033,
+        "games": 13,
+        "pointsFor": 31,
+        "pointsAgainst": 18
+      },
+      {
+        "name": "SMU",
+        "power": 15.453870674338496,
+        "games": 13,
+        "pointsFor": 32.23076923076923,
+        "pointsAgainst": 20.53846153846154
+      },
+      {
+        "name": "South Alabama",
+        "power": -2.24663726364966,
+        "games": 12,
+        "pointsFor": 26.5,
+        "pointsAgainst": 30.416666666666668
+      },
+      {
+        "name": "South Carolina",
+        "power": 10.641066085991346,
+        "games": 12,
+        "pointsFor": 22.666666666666668,
+        "pointsAgainst": 22.083333333333332
+      },
+      {
+        "name": "South Carolina State",
+        "power": -3.879043763121538,
+        "games": 12,
+        "pointsFor": 31,
+        "pointsAgainst": 29
+      },
+      {
+        "name": "South Dakota",
+        "power": 1.817103997283223,
+        "games": 15,
+        "pointsFor": 27.133333333333333,
+        "pointsAgainst": 26.333333333333332
+      },
+      {
+        "name": "South Dakota State",
+        "power": 6.012955016689129,
+        "games": 14,
+        "pointsFor": 28.571428571428573,
+        "pointsAgainst": 21.928571428571427
+      },
+      {
+        "name": "South Florida",
+        "power": 16.365645399000684,
+        "games": 13,
+        "pointsFor": 40.46153846153846,
+        "pointsAgainst": 23.384615384615383
+      },
+      {
+        "name": "Southeast Missouri State",
+        "power": -10.360478614100737,
+        "games": 12,
+        "pointsFor": 23.166666666666668,
+        "pointsAgainst": 30.083333333333332
+      },
+      {
+        "name": "Southern",
+        "power": -20.017551745361438,
+        "games": 12,
+        "pointsFor": 18.583333333333332,
+        "pointsAgainst": 36.083333333333336
+      },
+      {
+        "name": "Southern Illinois",
+        "power": 3.1452201261799844,
+        "games": 11,
+        "pointsFor": 35.27272727272727,
+        "pointsAgainst": 28.818181818181817
+      },
+      {
+        "name": "Southern Miss",
+        "power": 2.4862353727270703,
+        "games": 13,
+        "pointsFor": 28.76923076923077,
+        "pointsAgainst": 27.384615384615383
+      },
+      {
+        "name": "Southern Utah",
+        "power": 1.6881604520331637,
+        "games": 12,
+        "pointsFor": 33.75,
+        "pointsAgainst": 29.583333333333332
+      },
+      {
+        "name": "St. Thomas (MN)",
+        "power": -1.377284417048753,
+        "games": 11,
+        "pointsFor": 31.90909090909091,
+        "pointsAgainst": 21.727272727272727
+      },
+      {
+        "name": "Stanford",
+        "power": 0.6135450580550823,
+        "games": 12,
+        "pointsFor": 18.833333333333332,
+        "pointsAgainst": 29.166666666666668
+      },
+      {
+        "name": "Stephen F. Austin",
+        "power": 5.123715679641363,
+        "games": 13,
+        "pointsFor": 33.30769230769231,
+        "pointsAgainst": 20.076923076923077
+      },
+      {
+        "name": "Stetson",
+        "power": -23.07056854809826,
+        "games": 10,
+        "pointsFor": 14.6,
+        "pointsAgainst": 42.5
+      },
+      {
+        "name": "Stonehill",
+        "power": -13.289694949640065,
+        "games": 12,
+        "pointsFor": 15.083333333333334,
+        "pointsAgainst": 23.083333333333332
+      },
+      {
+        "name": "Stony Brook",
+        "power": -3.574503463760558,
+        "games": 12,
+        "pointsFor": 28,
+        "pointsAgainst": 25.75
+      },
+      {
+        "name": "Syracuse",
+        "power": -1.1553735730423167,
+        "games": 12,
+        "pointsFor": 20.166666666666668,
+        "pointsAgainst": 34.916666666666664
+      },
+      {
+        "name": "Tarleton State",
+        "power": 11.446666853996346,
+        "games": 14,
+        "pointsFor": 42.42857142857143,
+        "pointsAgainst": 18.571428571428573
+      },
+      {
+        "name": "TCU",
+        "power": 12.140932700823363,
+        "games": 13,
+        "pointsFor": 30.692307692307693,
+        "pointsAgainst": 25.307692307692307
+      },
+      {
+        "name": "Temple",
+        "power": 0.16470789814215853,
+        "games": 12,
+        "pointsFor": 27.833333333333332,
+        "pointsAgainst": 29.666666666666668
+      },
+      {
+        "name": "Tennessee",
+        "power": 15.635724671145118,
+        "games": 13,
+        "pointsFor": 39.76923076923077,
+        "pointsAgainst": 28.846153846153847
+      },
+      {
+        "name": "Tennessee State",
+        "power": -15.124561582008436,
+        "games": 12,
+        "pointsFor": 12.916666666666666,
+        "pointsAgainst": 26.583333333333332
+      },
+      {
+        "name": "Tennessee Tech",
+        "power": 3.4148935219580854,
+        "games": 12,
+        "pointsFor": 35.25,
+        "pointsAgainst": 20.25
+      },
+      {
+        "name": "Texas",
+        "power": 15.629373445408278,
+        "games": 13,
+        "pointsFor": 30.46153846153846,
+        "pointsAgainst": 20.307692307692307
+      },
+      {
+        "name": "Texas A&M",
+        "power": 19.674979234507887,
+        "games": 13,
+        "pointsFor": 33.76923076923077,
+        "pointsAgainst": 21
+      },
+      {
+        "name": "Texas Southern",
+        "power": -10.600018178056379,
+        "games": 10,
+        "pointsFor": 22.3,
+        "pointsAgainst": 24.7
+      },
+      {
+        "name": "Texas State",
+        "power": 7.000264873867604,
+        "games": 13,
+        "pointsFor": 36.46153846153846,
+        "pointsAgainst": 29
+      },
+      {
+        "name": "Texas Tech",
+        "power": 24.544924630246854,
+        "games": 14,
+        "pointsFor": 39.42857142857143,
+        "pointsAgainst": 11.785714285714286
+      },
+      {
+        "name": "The Citadel",
+        "power": -7.48384605899922,
+        "games": 11,
+        "pointsFor": 18.90909090909091,
+        "pointsAgainst": 28
+      },
+      {
+        "name": "Toledo",
+        "power": 11.060699961637463,
+        "games": 13,
+        "pointsFor": 30.846153846153847,
+        "pointsAgainst": 13.307692307692308
+      },
+      {
+        "name": "Towson",
+        "power": -7.3241181002734335,
+        "games": 12,
+        "pointsFor": 26.75,
+        "pointsAgainst": 25.083333333333332
+      },
+      {
+        "name": "Troy",
+        "power": 1.313576730718024,
+        "games": 14,
+        "pointsFor": 23.5,
+        "pointsAgainst": 23.928571428571427
+      },
+      {
+        "name": "Tulane",
+        "power": 9.83213689034586,
+        "games": 14,
+        "pointsFor": 27.714285714285715,
+        "pointsAgainst": 23.928571428571427
+      },
+      {
+        "name": "Tulsa",
+        "power": -2.3022085709427684,
+        "games": 12,
+        "pointsFor": 23.166666666666668,
+        "pointsAgainst": 28.916666666666668
+      },
+      {
+        "name": "UAB",
+        "power": -5.0977283148669095,
+        "games": 12,
+        "pointsFor": 26.416666666666668,
+        "pointsAgainst": 38.25
+      },
+      {
+        "name": "UAlbany",
+        "power": -14.830935327389662,
+        "games": 12,
+        "pointsFor": 16.75,
+        "pointsAgainst": 32.25
+      },
+      {
+        "name": "UC Davis",
+        "power": 4.73011789720989,
+        "games": 13,
+        "pointsFor": 32.38461538461539,
+        "pointsAgainst": 30.153846153846153
+      },
+      {
+        "name": "UCF",
+        "power": 4.162929875802648,
+        "games": 12,
+        "pointsFor": 24.333333333333332,
+        "pointsAgainst": 23.583333333333332
+      },
+      {
+        "name": "UCLA",
+        "power": 2.08260422459672,
+        "games": 12,
+        "pointsFor": 18.166666666666668,
+        "pointsAgainst": 33.416666666666664
+      },
+      {
+        "name": "UConn",
+        "power": 4.217993208094486,
+        "games": 13,
+        "pointsFor": 35.30769230769231,
+        "pointsAgainst": 27
+      },
+      {
+        "name": "UL Monroe",
+        "power": -9.147778664015453,
+        "games": 12,
+        "pointsFor": 16.583333333333332,
+        "pointsAgainst": 31.916666666666668
+      },
+      {
+        "name": "UNLV",
+        "power": 6.1771718176911445,
+        "games": 14,
+        "pointsFor": 34.07142857142857,
+        "pointsAgainst": 28
+      },
+      {
+        "name": "USC",
+        "power": 17.881081320197843,
+        "games": 13,
+        "pointsFor": 35.76923076923077,
+        "pointsAgainst": 23
+      },
+      {
+        "name": "UT Martin",
+        "power": -8.843222619268703,
+        "games": 12,
+        "pointsFor": 20.666666666666668,
+        "pointsAgainst": 23.916666666666668
+      },
+      {
+        "name": "UT Rio Grande Valley",
+        "power": -0.3267602921481438,
+        "games": 9,
+        "pointsFor": 29.77777777777778,
+        "pointsAgainst": 23.666666666666668
+      },
+      {
+        "name": "Utah",
+        "power": 21.438533572697413,
+        "games": 13,
+        "pointsFor": 41.30769230769231,
+        "pointsAgainst": 18.923076923076923
+      },
+      {
+        "name": "Utah State",
+        "power": 4.2303103133288635,
+        "games": 13,
+        "pointsFor": 30.923076923076923,
+        "pointsAgainst": 28.692307692307693
+      },
+      {
+        "name": "Utah Tech",
+        "power": -12.550882749382984,
+        "games": 12,
+        "pointsFor": 16,
+        "pointsAgainst": 29.333333333333332
+      },
+      {
+        "name": "UTEP",
+        "power": -6.358139192504153,
+        "games": 12,
+        "pointsFor": 23.333333333333332,
+        "pointsAgainst": 30.416666666666668
+      },
+      {
+        "name": "UTSA",
+        "power": 8.450323188800049,
+        "games": 13,
+        "pointsFor": 35.53846153846154,
+        "pointsAgainst": 28.846153846153847
+      },
+      {
+        "name": "Valparaiso",
+        "power": -22.681087450810228,
+        "games": 10,
+        "pointsFor": 17,
+        "pointsAgainst": 40.7
+      },
+      {
+        "name": "Vanderbilt",
+        "power": 19.62236832801532,
+        "games": 13,
+        "pointsFor": 38.46153846153846,
+        "pointsAgainst": 22.846153846153847
+      },
+      {
+        "name": "Villanova",
+        "power": 5.720866191482853,
+        "games": 15,
+        "pointsFor": 29.533333333333335,
+        "pointsAgainst": 20.933333333333334
+      },
+      {
+        "name": "Virginia",
+        "power": 15.164775689115523,
+        "games": 14,
+        "pointsFor": 30.785714285714285,
+        "pointsAgainst": 19.571428571428573
+      },
+      {
+        "name": "Virginia Tech",
+        "power": 3.535651167966753,
+        "games": 12,
+        "pointsFor": 21.416666666666668,
+        "pointsAgainst": 30.166666666666668
+      },
+      {
+        "name": "VMI",
+        "power": -22.09786045930911,
+        "games": 11,
+        "pointsFor": 13.545454545454545,
+        "pointsAgainst": 40.36363636363637
+      },
+      {
+        "name": "Wagner",
+        "power": -13.411545751262034,
+        "games": 12,
+        "pointsFor": 16.416666666666668,
+        "pointsAgainst": 24.5
+      },
+      {
+        "name": "Wake Forest",
+        "power": 10.956694747700595,
+        "games": 13,
+        "pointsFor": 28.076923076923077,
+        "pointsAgainst": 22.076923076923077
+      },
+      {
+        "name": "Washington",
+        "power": 18.814001100149692,
+        "games": 13,
+        "pointsFor": 34.07692307692308,
+        "pointsAgainst": 18.692307692307693
+      },
+      {
+        "name": "Washington State",
+        "power": 10.735105417697918,
+        "games": 13,
+        "pointsFor": 22.53846153846154,
+        "pointsAgainst": 20.23076923076923
+      },
+      {
+        "name": "Weber State",
+        "power": -8.851986931140615,
+        "games": 12,
+        "pointsFor": 23.083333333333332,
+        "pointsAgainst": 38.333333333333336
+      },
+      {
+        "name": "West Georgia",
+        "power": -0.4858533003772205,
+        "games": 11,
+        "pointsFor": 25.545454545454547,
+        "pointsAgainst": 21.181818181818183
+      },
+      {
+        "name": "West Virginia",
+        "power": 1.7387907141688865,
+        "games": 12,
+        "pointsFor": 21.75,
+        "pointsAgainst": 30.833333333333332
+      },
+      {
+        "name": "Western Carolina",
+        "power": -3.386901726329502,
+        "games": 12,
+        "pointsFor": 38.583333333333336,
+        "pointsAgainst": 33.5
+      },
+      {
+        "name": "Western Illinois",
+        "power": -12.574482350089706,
+        "games": 12,
+        "pointsFor": 23.083333333333332,
+        "pointsAgainst": 34.75
+      },
+      {
+        "name": "Western Kentucky",
+        "power": 3.3430502674632208,
+        "games": 13,
+        "pointsFor": 29.53846153846154,
+        "pointsAgainst": 22.846153846153847
+      },
+      {
+        "name": "Western Michigan",
+        "power": 6.832905404363124,
+        "games": 14,
+        "pointsFor": 24.857142857142858,
+        "pointsAgainst": 17.357142857142858
+      },
+      {
+        "name": "William & Mary",
+        "power": -3.1157023623595075,
+        "games": 12,
+        "pointsFor": 29.5,
+        "pointsAgainst": 25.666666666666668
+      },
+      {
+        "name": "Wisconsin",
+        "power": 6.123752452170297,
+        "games": 12,
+        "pointsFor": 12.833333333333334,
+        "pointsAgainst": 21.583333333333332
+      },
+      {
+        "name": "Wofford",
+        "power": -2.9193265463720977,
+        "games": 12,
+        "pointsFor": 22.833333333333332,
+        "pointsAgainst": 17.25
+      },
+      {
+        "name": "Wyoming",
+        "power": -2.138981371684635,
+        "games": 12,
+        "pointsFor": 16,
+        "pointsAgainst": 20.5
+      },
+      {
+        "name": "Yale",
+        "power": 6.632625301678712,
+        "games": 12,
+        "pointsFor": 29.333333333333332,
+        "pointsAgainst": 19.583333333333332
+      },
+      {
+        "name": "Youngstown State",
+        "power": 3.05157780974703,
+        "games": 13,
+        "pointsFor": 36.61538461538461,
+        "pointsAgainst": 31
+      }
+    ],
+    "sourceFingerprint": "66cddd5017dbe7f4ae898762def92cc1bfa537a37922f171c2db27109091e9a9"
   }
 }

@@ -22,9 +22,17 @@ function time(value, timestamp = false) {
 function usableForecast(row) {
   const forecast = row.forecast;
   if (!forecast || !finite(forecast.for) || !finite(forecast.against) || !finite(forecast.margin) || !finite(forecast.winProbability) || forecast.winProbability < 0 || forecast.winProbability > 1) return null;
-  // A current rating cannot be presented as the pregame forecast of a final game.
-  if (row.status === 'final' && !['saved', 'reconstructed'].includes(forecast.kind)) return null;
   return forecast;
+}
+
+function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisionSize, rankingsReady = false) {
+  const division = String(classification || '').toUpperCase();
+  if (!['FBS', 'FCS'].includes(division)) return '<span class="forecast-rank is-unranked">Not ranked in FBS/FCS</span>';
+  if (!Number.isInteger(rank) || rank < 1) return '<span class="forecast-rank is-unranked">' + (rankingsReady ? 'Unranked' : 'Rankings pending') + '</span>';
+  const overallTitle = 'Current CFI rank across ' + (finite(fieldSize) ? fieldSize + ' ranked ' : '') + 'FBS and FCS teams, using the current lens weights. Board filters do not change this rank.';
+  const subdivisionTitle = 'Current rank within ' + division + (finite(subdivisionSize) ? ' across ' + subdivisionSize + ' ranked teams' : '') + ', using the same lens weights.';
+  return '<span class="forecast-rank" title="' + escapeHtml(overallTitle) + '">Current CFI #' + rank + '</span>' +
+    (Number.isInteger(subdivisionRank) && subdivisionRank > 0 ? '<span class="forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + subdivisionRank + '</span>' : '');
 }
 
 function scoreline(team, opponent, score) {
@@ -35,20 +43,24 @@ function scoreline(team, opponent, score) {
     '<span class="forecast-score-side"><span>' + escapeHtml(opponent) + '</span><strong>' + number(score.against, 0) + '</strong></span></div>';
 }
 
-function forecastSource(forecast) {
-  const labels = { saved: 'Saved pregame', reconstructed: 'Reconstructed pregame', current: 'Current snapshot' };
-  return '<p class="forecast-source"><span>' + escapeHtml(labels[forecast.kind] || 'Forecast') + '</span> · ' + time(forecast.generatedAt, true) +
+function forecastSource(forecast, teamName, opponentName) {
+  const priorSources = [[teamName, forecast.teamPriorSeason], [opponentName, forecast.opponentPriorSeason]]
+    .filter(([, season]) => Number.isInteger(season) && season > 0);
+  const priorLabel = priorSources.length ? '<span class="forecast-cold-start">Prior-season fallback</span>' +
+    priorSources.map(([name, season]) => '<span class="forecast-cold-start">' + escapeHtml(name) + ' uses ' + season + ' season data · no current-season FBS/FCS results</span>').join('')
+    : forecast.coldStart ? '<span class="forecast-cold-start">Cold start · limited results</span>' : '';
+  return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(forecast.generatedAt, true) +
     (forecast.modelVersion ? ' · v' + escapeHtml(forecast.modelVersion) : '') +
-    (forecast.coldStart ? '<span class="forecast-cold-start">Cold start · limited results</span>' : '') + '</p>';
+    priorLabel + '</p>';
 }
 
-function renderRow(row, teamName) {
+function renderRow(row, teamName, rankingsReady) {
   const forecast = usableForecast(row);
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
   const status = { final: 'Final', upcoming: 'Scheduled', unplayed: 'Not final', canceled: 'Canceled' }[row.status] || 'Scheduled';
   const sitePrefix = row.site === 'Away' ? '@ ' : 'vs. ';
-  const modelLabel = row.status === 'final' || ['saved', 'reconstructed'].includes(forecast?.kind) ? 'MODEL · PREGAME' : 'MODEL · EXPECTED';
-  const noForecast = row.unavailableReason || (row.status === 'final' ? 'No pregame forecast is available for this game.' : 'A forecast is unavailable for this game.');
+  const modelLabel = 'MODEL · CURRENT';
+  const noForecast = row.unavailableReason || 'The current snapshot cannot project this game.';
   const actualLabel = actual ? '<span class="forecast-outcome' + (actual.outcome === 'L' ? ' is-loss' : '') + '">' + escapeHtml(actual.outcome) + '</span>' : '';
   const actualContent = actual ? scoreline(teamName, row.opponentName, actual)
     : '<p class="forecast-no-score">' + (row.status === 'canceled' ? 'Game canceled' : row.status === 'unplayed' ? 'Final result not available' : 'Not played yet') + '</p>';
@@ -61,16 +73,16 @@ function renderRow(row, teamName) {
     '<div><dt>Opponent score miss</dt><dd>' + signed(error.opponentScore) + '</dd></div></dl>' : '';
   return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + '" role="listitem">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p></div><span class="forecast-game-status">' + status + '</span></div>' +
+    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p></div><span class="forecast-game-status">' + status + '</span></div>' +
     '<div class="forecast-score-grid"><div class="forecast-score-card"><span class="forecast-card-label">' + modelLabel + '</span>' + modelContent + '</div>' +
     '<div class="forecast-score-card is-actual"><span class="forecast-card-label">ACTUAL ' + actualLabel + '</span>' + actualContent + '</div></div>' +
-    (forecast ? '<div class="forecast-probability"><span>Win chance <strong>' + number(forecast.winProbability * 100, 1) + '%</strong></span><span>Model margin <strong>' + signed(forecast.margin) + ' pts</strong></span></div>' + forecastSource(forecast) : '') + errors + '</article>';
+    (forecast ? '<div class="forecast-probability"><span>Win chance <strong>' + number(forecast.winProbability * 100, 1) + '%</strong></span><span>Model margin <strong>' + signed(forecast.margin) + ' pts</strong></span></div>' + forecastSource(forecast, teamName, row.opponentName) : '') + errors + '</article>';
 }
 
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' model forecasts and actual results') + '">' +
-    analysis.rows.map(row => renderRow(row, analysis.teamName)).join('') + '</div>';
+    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady)).join('') + '</div>';
 }
 
 export function renderProjectionSummary(analysis) {
@@ -86,23 +98,23 @@ export function renderProjectionSummary(analysis) {
   const graded = summary.gradedGames || 0;
   const coverage = missing ? plural(missing, 'remaining game') + ' without a forecast.' : totalRemaining ? 'All listed remaining games modeled.' : 'No listed games remain.';
   const currentRecord = number(summary.currentWins, 0) + '–' + number(summary.currentLosses, 0) + (summary.currentTies ? '–' + number(summary.currentTies, 0) : '');
-  return '<div class="season-projection-metrics"><div class="season-projection-metric"><span>EXPECTED REMAINING WINS</span><strong>' +
+  return '<div class="season-projection-team-rank"><span>CURRENT TEAM RANK</span><div class="forecast-ranks" aria-label="Selected team current rankings">' +
+    rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification || analysis.teamClassification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) + '</div></div>' +
+    '<div class="season-projection-metrics"><div class="season-projection-metric"><span>EXPECTED REMAINING WINS</span><strong>' +
     (expectedWinsAvailable ? number(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>' + escapeHtml(coverage) + '</p></div>' +
     '<div class="season-projection-metric"><span>EXPECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
     (finalRecordAvailable ? 'For the schedule currently listed.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
-    '<div class="season-projection-accuracy"><div class="season-projection-accuracy-heading"><span>PREGAME FORECAST ERROR</span><span>' + plural(graded, 'graded game') + '</span></div>' +
+    '<div class="season-projection-accuracy"><div class="season-projection-accuracy-heading"><span>CURRENT MODEL VS RESULTS</span><span>' + plural(graded, 'completed comparison') + '</span></div>' +
     '<div class="season-projection-error-metrics"><div><span>Margin error</span><strong>' + (graded ? number(summary.marginMae) : '—') + '<small> pts MAE</small></strong></div>' +
     '<div><span>Score error</span><strong>' + (graded ? number(summary.scoreMae) : '—') + '<small> pts MAE</small></strong><small>Average per team</small></div>' +
-    '<div><span>Correct picks</span><strong>' + (summary.pickGames ? number(summary.correctPicks, 0) + '/' + summary.pickGames : '—') + '</strong></div></div>' +
-    (!graded ? '<p>No saved or reconstructed pregame forecasts are available to grade.</p>' : '<p>MAE is average absolute error; smaller is better. Only saved or reconstructed pregame forecasts are graded.</p>') + '</div>' +
+    '<div><span>Matched winners</span><strong>' + (summary.pickGames ? number(summary.correctPicks, 0) + '/' + summary.pickGames : '—') + '</strong></div></div>' +
+    (!graded ? '<p>No completed games have current-model comparisons.</p>' : '<p>MAE is average absolute error. These comparisons describe current model fit to completed results, including those used to rate the teams.</p>') + '</div>' +
     '<div class="season-projection-provenance"><span>Current record ' + currentRecord + ' · ' + plural(totalRemaining, 'listed game') + ' remaining</span><span>' + escapeHtml(analysis.season || 'Season') + ' · Model v' + escapeHtml(analysis.modelVersion || 'unknown') + '</span>' +
     '<span>Snapshot ' + time(analysis.snapshotAt, true) + '</span><span>Results through ' + escapeHtml(analysis.resultsThrough || 'date not recorded') + '</span></div>';
 }
 
-export function renderProjectionNote(analysis, { archiveStatus = 'ready' } = {}) {
-  if (!analysis) return 'Choose a team to see forecasts, actual scores, and forecast errors.';
-  const archiveNotice = archiveStatus === 'loading' ? '<p class="forecast-archive-notice" role="status">Loading historical pregame forecasts…</p>'
-    : archiveStatus === 'unavailable' ? '<p class="forecast-archive-notice">Historical forecast archive could not be loaded. Missing past forecasts remain unavailable.</p>' : '';
-  return '<p>Scores show ' + escapeHtml(analysis.teamName) + ' first. Future games use the ' + time(analysis.snapshotAt) + ' snapshot, with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Past forecasts are labeled saved or reconstructed.</p>' + archiveNotice +
-    '<details class="forecast-method-details"><summary>How to read forecasts and errors</summary><p>Saved pregame forecasts were produced before kickoff. Reconstructed forecasts are rebuilt from corrected final records using only games available before each cutoff; they were not forecasts published at the time. Current ratings are never used to grade past games. A positive margin miss means a better scoring margin than forecast; all misses equal actual minus projected. Historical accuracy keeps each forecast’s original model version. Forecast probabilities and ranges remain an uncalibrated baseline.</p></details>';
+export function renderProjectionNote(analysis) {
+  if (!analysis) return 'Choose a team to see current projections and actual results.';
+  return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Scores show ' + escapeHtml(analysis.teamName) + ' first.</p>' +
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. A positive margin miss means a better scoring margin than the current model projects. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities remain an uncalibrated baseline.</p></details>';
 }

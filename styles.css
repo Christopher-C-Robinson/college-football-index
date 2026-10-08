@@ -161,6 +161,12 @@ h1, h2, h3, p { margin-top: 0; }
 .schedule-panel { min-width: 0; margin-top: 20px; }
 .season-outlook-panel { min-width: 0; }
 .season-projection-summary:empty { display: none; }
+.season-projection-team-rank { margin-top: 18px; }
+.season-projection-team-rank > span { display: block; margin-bottom: 6px; color: #657168; font: 7px var(--mono); letter-spacing: .45px; }
+.forecast-ranks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 5px; }
+.forecast-rank { display: inline-flex; align-items: center; min-height: 21px; padding: 3px 6px; background: var(--blue-light); border: 1px solid var(--line); color: var(--blue-mid); font: 7px/1.4 var(--mono); white-space: nowrap; }
+.forecast-rank.is-subdivision { background: transparent; color: var(--ink-soft); }
+.forecast-rank.is-unranked { background: transparent; color: #657168; white-space: normal; }
 .season-projection-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
 .season-projection-metric { min-width: 0; padding: 12px; border: 1px solid var(--line); background: var(--blue-light); }
 .season-projection-metric > span { display: block; color: var(--ink-soft); font: 7px var(--mono); letter-spacing: .45px; }
@@ -178,7 +184,6 @@ h1, h2, h3, p { margin-top: 0; }
 .season-projection-provenance { display: flex; flex-direction: column; gap: 3px; margin: 12px 0 0; color: #657168; font: 8px/1.6 var(--mono); overflow-wrap: anywhere; }
 .schedule-forecast-note { margin: 12px 0 0; padding-left: 9px; border-left: 2px solid var(--blue-mid); color: #657168; font-size: 9px; line-height: 1.65; }
 .schedule-forecast-note > p { margin: 0; }
-.schedule-forecast-note .forecast-archive-notice { margin-top: 7px; color: #8a664b; }
 .forecast-method-details { margin-top: 7px; }
 .forecast-method-details > summary { color: var(--blue-mid); cursor: pointer; font-weight: 600; }
 .forecast-method-details > summary:focus-visible { outline: 2px solid var(--blue-mid); outline-offset: 2px; }

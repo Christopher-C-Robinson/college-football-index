@@ -18,6 +18,10 @@ The [first saved baseline](../data/backtests/README.md) covers 6,307 games in co
 
 The simulator uses predictive power. Changing descriptive CFI lens weights does not change the predicted spread. Résumé still uses fitted retrospective probabilities and must not be interpreted as a forecasting score. Frozen pregame résumé is a later model release.
 
+Team Explorer simulates every scheduled matchup from the loaded snapshot, including completed games, using the same venue and simulation defaults as the hypothetical tool. Its comparisons with actual scores describe the current model's fit, rather than pregame forecasting accuracy. Current opponent ranks use the board's weights and full FBS/FCS field; filters do not renumber them.
+
+The live predictor also supports optional preseason fallback policy `1`. For a team with zero current-season Division I results, it carries forward the previous season's adjusted power and scoring/allowed summaries; current results take over after the first rated game. The previous season's power is fitted with its own five-season venue history. Prior-season source hashes, generation times, model version, and active team years are retained. Source archives must precede the loaded snapshot, and rating uncertainty continues to use current-season game counts. The preserved historical baseline has no embedded preseason summaries and is unchanged; those reports do not establish the optional fallback's accuracy. A calibrated early-season blend remains future research.
+
 ## Temporal evaluation contract
 
 1. Load season-specific raw archives. For an evaluation season, require all four earlier venue seasons; do not silently shorten the warmup.

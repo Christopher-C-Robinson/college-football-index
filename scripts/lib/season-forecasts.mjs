@@ -10,6 +10,13 @@ const gameId = game => game.id ?? game.gameId;
 const divisionOne = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const sha256 = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
 const timestamp = value => typeof value === 'string' ? Date.parse(value) : NaN;
+const PRESEASON_FIELDS = ['preseasonFallbackVersion', 'preseasonSourceFingerprint', 'preseasonSourceModelVersion',
+  'homePriorSeason', 'homePriorGames', 'awayPriorSeason', 'awayPriorGames'];
+function preseasonMetadata(prediction) {
+  if (prediction.preseasonFallbackVersion === undefined) return {};
+  return Object.fromEntries(PRESEASON_FIELDS.filter(field => prediction[field] !== undefined)
+    .map(field => [field, prediction[field]]));
+}
 const canceled = game => game.canceled === true || game.cancelled === true
   || ['canceled', 'cancelled'].includes(String(game.status || '').toLowerCase())
   || (game.completed === true && Number(game.season) >= 1996 && game.homePoints === 0 && game.awayPoints === 0);
@@ -128,7 +135,8 @@ function baselineIndex(report, dataset, nowTime) {
       sourceResultsThrough: null, modelVersion: row.modelVersion, runs: row.runs,
       origin: 'reconstructed', sourceFingerprint: row.trainingSnapshotSha256,
       maxTrainingAvailableAt: row.maxTrainingAvailableAt,
-      homeColdStart: row.homeColdStart === true, awayColdStart: row.awayColdStart === true
+      homeColdStart: row.homeColdStart === true, awayColdStart: row.awayColdStart === true,
+      ...preseasonMetadata(row)
     };
     assertForecast(prediction, prediction, season, nowTime);
     try { assertIdentity(prediction, schedule.get(id), season); }
@@ -205,7 +213,8 @@ export function buildSeasonForecastArchive(dataset, { previous = null, baseline 
       generatedAt, predictionGeneratedAt: dataset.meta.generatedAt,
       sourceResultsThrough: dataset.meta.resultsThrough || null, modelVersion: result.modelVersion,
       runs: result.runs, origin: 'snapshot', sourceFingerprint,
-      homeColdStart: result.homeColdStart, awayColdStart: result.awayColdStart
+      homeColdStart: result.homeColdStart, awayColdStart: result.awayColdStart,
+      ...preseasonMetadata(result)
     });
   }
   predictions.sort((a, b) => timestamp(a.startDate) - timestamp(b.startDate) || String(a.gameId).localeCompare(String(b.gameId)));

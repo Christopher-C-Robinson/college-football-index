@@ -21,6 +21,23 @@ function scoringSummary(team) {
   };
 }
 
+function preseasonFor(model) {
+  const data = model.raw?.preseason;
+  if (!data || data.modelVersion !== MODEL_VERSION || Number(data.season) !== Number(model.meta.season) - 1 || !Array.isArray(data.teams)
+    || !/^[a-f0-9]{64}$/.test(data.sourceFingerprint || '')
+    || !Number.isFinite(data.leagueTotal) || data.leagueTotal < 0 || !Number.isFinite(data.totalStdDev) || data.totalStdDev < 0
+    || !Number.isFinite(Date.parse(data.sourceGeneratedAt)) || !Number.isFinite(Date.parse(model.meta.generatedAt))
+    || Date.parse(data.sourceGeneratedAt) > Date.parse(model.meta.generatedAt)) return null;
+  const teams = new Map();
+  for (const entry of data.teams) {
+    if (!entry || !teamKey(entry.name) || teams.has(teamKey(entry.name))
+      || ![entry.power, entry.games, entry.pointsFor, entry.pointsAgainst].every(Number.isFinite)
+      || !Number.isInteger(entry.games) || entry.games < 1 || entry.pointsFor < 0 || entry.pointsAgainst < 0) return null;
+    teams.set(teamKey(entry.name), entry);
+  }
+  return { ...data, teams };
+}
+
 // The browser and historical replay use exactly the same prediction mathematics.
 export function predictMatchup(model, matchup, { allowColdStart = false } = {}) {
   const home = model.teams.get(teamKey(matchup.homeTeam));
@@ -32,24 +49,30 @@ export function predictMatchup(model, matchup, { allowColdStart = false } = {}) 
   const awayStats = scoringSummary(away);
   const homeColdStart = !Number.isFinite(home.power) || !homeStats.games;
   const awayColdStart = !Number.isFinite(away.power) || !awayStats.games;
-  if (!allowColdStart && (homeColdStart || awayColdStart)) {
-    throw new Error('Both teams need at least one completed FBS or FCS game in the loaded data.');
+  const preseason = homeColdStart || awayColdStart ? preseasonFor(model) : null;
+  const homePrior = homeColdStart ? preseason?.teams.get(teamKey(home.name)) : null;
+  const awayPrior = awayColdStart ? preseason?.teams.get(teamKey(away.name)) : null;
+  const usePrior = Boolean(homePrior || awayPrior);
+  if (!allowColdStart && ((homeColdStart && !homePrior) || (awayColdStart && !awayPrior))) {
+    throw new Error('Both teams need a completed FBS or FCS game, or previous-season data, in the loaded snapshot.');
   }
-  const homePower = homeColdStart ? 0 : home.power;
-  const awayPower = awayColdStart ? 0 : away.power;
+  const homePower = homeColdStart ? homePrior?.power ?? 0 : home.power;
+  const awayPower = awayColdStart ? awayPrior?.power ?? 0 : away.power;
+  const homeScoring = homePrior || homeStats;
+  const awayScoring = awayPrior || awayStats;
   const venuePoints = matchup.neutralSite ? 0 : model.homeEdge(home.name, away.name);
   const predictedMargin = homePower - awayPower + venuePoints;
   const games = model.ratedGames;
   const totals = games.map(game => game.homePoints + game.awayPoints);
   const leagueTotal = totals.length
     ? totals.reduce((sum, total) => sum + total, 0) / totals.length
-    : 2 * parameters.coldStartPointsPerTeam;
+    : usePrior ? preseason.leagueTotal : 2 * parameters.coldStartPointsPerTeam;
   const leaguePoints = leagueTotal / 2;
   const shrunk = (value, count) => value === null ? leaguePoints
     : leaguePoints + (value - leaguePoints) * count / (count + parameters.totalPriorGames);
   const predictedTotal = Math.max(0, (
-    shrunk(homeStats.pointsFor, homeStats.games) + shrunk(awayStats.pointsAgainst, awayStats.games)
-    + shrunk(awayStats.pointsFor, awayStats.games) + shrunk(homeStats.pointsAgainst, homeStats.games)
+    shrunk(homeScoring.pointsFor, homeScoring.games) + shrunk(awayScoring.pointsAgainst, awayScoring.games)
+    + shrunk(awayScoring.pointsFor, awayScoring.games) + shrunk(homeScoring.pointsAgainst, homeScoring.games)
   ) / 2);
   const variance = totals.length
     ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
@@ -74,7 +97,15 @@ export function predictMatchup(model, matchup, { allowColdStart = false } = {}) 
       parameters.simulationRatingScale / Math.sqrt(homeStats.games + 2),
       parameters.simulationRatingScale / Math.sqrt(awayStats.games + 2)
     ),
-    totalStdDev: Math.max(parameters.totalStdDevMin, Math.min(parameters.totalStdDevMax, Math.sqrt(variance)))
+    totalStdDev: Math.max(parameters.totalStdDevMin, Math.min(parameters.totalStdDevMax,
+      !totals.length && usePrior ? preseason.totalStdDev : Math.sqrt(variance))),
+    ...(usePrior ? {
+      preseasonFallbackVersion: 1,
+      preseasonSourceFingerprint: preseason.sourceFingerprint,
+      preseasonSourceModelVersion: preseason.modelVersion,
+      ...(homePrior ? { homePriorSeason: preseason.season, homePriorGames: homePrior.games } : {}),
+      ...(awayPrior ? { awayPriorSeason: preseason.season, awayPriorGames: awayPrior.games } : {})
+    } : {})
   };
 }
 
