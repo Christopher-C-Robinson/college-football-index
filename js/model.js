@@ -68,7 +68,8 @@ function addTeam(teams, name, conference, classification) {
       fcsWins: 0, fcsLosses: 0, fcsTies: 0, overallPointsFor: 0, overallPointsAgainst: 0,
       opponents: [], expectedWins: 0, winsAboveExpectation: 0, opponentPower: null, power: null,
       efficiency: null, resume: null, composite: null, evidence: 0, metrics: null,
-      homeFieldPoints: null, homeFieldHomeGames: 0, homeFieldRoadGames: 0
+      homeFieldPoints: null, homeBoostPoints: null, roadBoostPoints: null,
+      homeFieldHomeGames: 0, homeFieldRoadGames: 0
     });
   }
   const team = teams.get(normalized);
@@ -251,7 +252,9 @@ export function estimateHomeField(historyGames, referenceSeason) {
         name: teamNames.get(teamKey),
         homeAdjustment: Number(homeAdjustment.toFixed(3)),
         roadAdjustment: Number(roadAdjustment.toFixed(3)),
-        homeFieldPoints: Number((leaguePoints + homeAdjustment + roadAdjustment).toFixed(3)),
+        homeBoostPoints: Number((leaguePoints + homeAdjustment).toFixed(3)),
+        roadBoostPoints: Number((-leaguePoints + roadAdjustment).toFixed(3)),
+        homeFieldPoints: Number((2 * leaguePoints + homeAdjustment - roadAdjustment).toFixed(3)),
         homeGames: homeGames.get(teamKey) || 0,
         roadGames: roadGames.get(teamKey) || 0,
         effectiveHomeGames: Number((homeWeights.get(teamKey) || 0).toFixed(2)),
@@ -408,7 +411,11 @@ export function buildModel(rawData, requestedWeights) {
   teams.forEach(function (team, teamName) {
     const estimate = homeFieldByTeam.get(teamName);
     team.homeFieldPoints = estimate && number(estimate.homeFieldPoints) !== null
-      ? number(estimate.homeFieldPoints) : leagueHomeField;
+      ? number(estimate.homeFieldPoints) : 2 * leagueHomeField;
+    team.homeBoostPoints = estimate && number(estimate.homeBoostPoints) !== null
+      ? number(estimate.homeBoostPoints) : leagueHomeField + (estimate ? number(estimate.homeAdjustment) || 0 : 0);
+    team.roadBoostPoints = estimate && number(estimate.roadBoostPoints) !== null
+      ? number(estimate.roadBoostPoints) : -leagueHomeField + (estimate ? number(estimate.roadAdjustment) || 0 : 0);
     team.homeFieldHomeGames = estimate ? number(estimate.homeGames) || 0 : 0;
     team.homeFieldRoadGames = estimate ? number(estimate.roadGames) || 0 : 0;
   });
