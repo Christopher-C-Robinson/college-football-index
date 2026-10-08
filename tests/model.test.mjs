@@ -51,6 +51,29 @@ test('live scores and invalid finals never enter power, records, or venue histor
   assert.equal(estimateHomeField([noFlag], 2025).gamesUsed, 1);
 });
 
+test('all-star games are excluded from rated results, efficiency, and venue history', () => {
+  const regular = game(1, 'A', 'B', 14, 7);
+  const allstar = game(2, 'A', 'B', 70, 0, { seasonType: 'allstar' });
+  assert.equal(isRatedGame(allstar), false);
+  assert.equal(isRatedGame(regular), true);
+  assert.equal(isRatedGame({ ...regular, seasonType: 'spring_regular' }), true);
+  const baseline = buildModel({ games: [regular] });
+  const model = buildModel({ games: [regular, allstar], teamStats: [stats(2, 'A', 'B', { thirdDownEff: '1-1' }, { thirdDownEff: '0-1' })] });
+  assert.equal(model.ratedGameCount, 1);
+  assert.equal(model.games.length, 1);
+  assert.equal(model.completedGames.length, 1);
+  assert.equal(model.teams.get('a').games.length, 1);
+  assert.equal(model.teams.get('a').wins, baseline.teams.get('a').wins);
+  assert.equal(model.teams.get('a').overallPointsFor, baseline.teams.get('a').overallPointsFor);
+  assert.equal(model.raw.games.length, 2);
+  assert.equal(isCompletedGame(allstar), true);
+  near(model.teams.get('a').power, baseline.teams.get('a').power);
+  near(model.teams.get('a').winsAboveExpectation, baseline.teams.get('a').winsAboveExpectation);
+  assert.equal(model.teams.get('a').coverage.results, 1);
+  assert.equal(model.teams.get('a').coverage.boxScores, 0);
+  assert.equal(estimateHomeField([regular, allstar], 2025).gamesUsed, 1);
+});
+
 test('four-team neutral league matches its hand-solvable regularized ratings', () => {
   const strengths = { A: 12, B: 4, C: -4, D: -12 };
   const names = Object.keys(strengths);

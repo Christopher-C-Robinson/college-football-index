@@ -65,7 +65,8 @@ function isDivisionTeam(value) {
 }
 
 export function isRatedGame(game) {
-  return isCompletedGame(game) && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
+  return isCompletedGame(game) && key(game.seasonType) !== 'allstar'
+    && isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification);
 }
 
 function addTeam(teams, name, conference, classification) {
@@ -406,7 +407,9 @@ function rawEfficiency(teams, games, statsIndex) {
 export function buildModel(rawData, requestedWeights, parameterOverrides) {
   const parameters = Object.freeze({ ...MODEL_PARAMETERS, ...(parameterOverrides || {}) });
   const data = rawData && typeof rawData === 'object' ? rawData : {};
-  const games = (Array.isArray(data.games) ? data.games : []).map(function (game) {
+  const games = (Array.isArray(data.games) ? data.games : []).filter(function (game) {
+    return key(game.seasonType) !== 'allstar';
+  }).map(function (game) {
     return {
       ...game,
       homeTeam: text(game.homeTeam || game.home), awayTeam: text(game.awayTeam || game.away),
@@ -502,7 +505,7 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
       else if (awayScore < homeScore) away.fcsLosses += 1;
       else away.fcsTies += 1;
     }
-    if (isDivisionTeam(game.homeClassification) && isDivisionTeam(game.awayClassification)) {
+    if (isRatedGame(game)) {
       home.opponents.push(key(game.awayTeam));
       away.opponents.push(key(game.homeTeam));
       if (homeScore > awayScore) { home.ratedWins += 1; away.ratedLosses += 1; }

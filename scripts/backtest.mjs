@@ -41,8 +41,11 @@ try {
     const destination = join(options.out, season + '.json');
     const prior = await readJson(destination, { optional: true });
     if (prior && (!Array.isArray(prior.predictions) || prior.meta?.predictionFingerprint !== fingerprint(prior.predictions))) throw new Error('Stored predictions failed their fingerprint check: ' + destination + '. Preserve this file for inspection and use a new output directory.');
-    if (prior && prior.meta?.predictionFingerprint !== report.meta.predictionFingerprint && !options.force) throw new Error('Refusing to replace frozen predictions in ' + destination + '. Use a different output directory or --force for an explicit new evaluation.');
-    if (prior && prior.meta?.predictionFingerprint === report.meta.predictionFingerprint) {
+    const settings = ['modelVersion', 'schemaVersion', 'parameters', 'simulationRuns', 'window', 'availabilityDelayHours'];
+    const unchanged = prior && prior.meta.predictionFingerprint === report.meta.predictionFingerprint
+      && settings.every(field => JSON.stringify(prior.meta[field]) === JSON.stringify(report.meta[field]));
+    if (prior && !unchanged && !options.force) throw new Error('Refusing to replace frozen predictions or settings in ' + destination + '. Use a different output directory or --force for an explicit new evaluation.');
+    if (unchanged) {
       process.stdout.write(destination + ': predictions unchanged\n');
     } else {
       await writeJsonAtomic(destination, report);

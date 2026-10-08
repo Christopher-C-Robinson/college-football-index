@@ -120,7 +120,7 @@ function subdivision(record) {
 }
 
 function weekPhase(record) {
-  if (String(record.seasonType || '').toLowerCase() === 'postseason') return 'postseason';
+  if (['postseason', 'spring_postseason'].includes(String(record.seasonType || '').toLowerCase())) return 'postseason';
   if (!finite(record.week) || record.week < 0) return 'unknown';
   return record.week <= 3 ? '0-3' : record.week <= 8 ? '4-8' : '9+';
 }

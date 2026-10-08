@@ -3,12 +3,13 @@ import { dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { MODEL_VERSION, SCHEMA_VERSION } from '../../js/config.js';
 
-export const SEASON_TYPES = ['regular', 'postseason'];
+export const RATED_SEASON_TYPES = ['regular', 'postseason', 'spring_regular', 'spring_postseason'];
+export const SEASON_TYPES = [...RATED_SEASON_TYPES, 'allstar'];
 const divisionOne = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const idOf = row => row?.id ?? row?.gameId;
 const validScore = value => Number.isInteger(value) && value >= 0;
 const completed = game => game?.completed === true && validScore(game.homePoints) && validScore(game.awayPoints);
-const rated = game => completed(game) && divisionOne(game.homeClassification) && divisionOne(game.awayClassification);
+const rated = game => completed(game) && RATED_SEASON_TYPES.includes(game.seasonType) && divisionOne(game.homeClassification) && divisionOne(game.awayClassification);
 
 export async function readJson(path, { optional = false } = {}) {
   try { return JSON.parse(await readFile(path, 'utf8')); }
@@ -36,8 +37,8 @@ export function datasetMetadata(season, games, extra = {}, now = new Date()) {
     season, schemaVersion: SCHEMA_VERSION, modelVersion: MODEL_VERSION,
     generatedAt: timestamp, asOf: timestamp.slice(0, 10), gitCommit: gitCommit(),
     resultsThrough: games.filter(completed).map(game => String(game.startDate).slice(0, 10)).sort().pop() || null,
-    provider: 'CollegeFootballData.com API', seasonTypes: SEASON_TYPES,
-    scope: 'Regular-season and postseason FBS + FCS schedules/results and available completed-game team box scores',
+    provider: 'CollegeFootballData.com API', seasonTypes: RATED_SEASON_TYPES,
+    scope: 'Regular-season and postseason FBS + FCS schedules/results, including spring phases, and available completed-game team box scores',
     starter: false, completeD1: true, ...extra
   };
 }
@@ -102,7 +103,7 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
     games.set(String(id), game);
     if (game.season !== meta.season) errors.push('Game ' + id + ' does not belong to dataset season.');
     if (!game.homeTeam || !game.awayTeam || game.homeTeam === game.awayTeam) errors.push('Game ' + id + ' must have two different named teams.');
-    if (!SEASON_TYPES.includes(game.seasonType)) errors.push('Game ' + id + ' has unsupported seasonType.');
+    if (!SEASON_TYPES.includes(game.seasonType)) errors.push('Game ' + id + ' has unsupported seasonType ' + JSON.stringify(game.seasonType) + '.');
     if (!Number.isInteger(game.week) || game.week < 0) errors.push('Game ' + id + ' has invalid week.');
     const start = Date.parse(game.startDate);
     if (!Number.isFinite(start)) errors.push('Game ' + id + ' has invalid kickoff.');
@@ -121,6 +122,8 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
   }
   coverage.teams = teams.size;
   if (unclassifiedGames) warnings.push(unclassifiedGames + ' completed schedule games have an unclassified opponent and are excluded from ratings.');
+  const allstarGames = dataset.games.filter(game => game.seasonType === 'allstar').length;
+  if (allstarGames) warnings.push(allstarGames + ' all-star schedule games are retained but excluded from college team ratings.');
   const stats = new Set();
   for (const entry of dataset.teamStats) {
     const id = idOf(entry);

@@ -88,6 +88,33 @@ test('regular and postseason week one are fetched independently and archive clos
   assert.equal((await readJson(join(cacheDirectory, '2025.json'))).meta.includesStats, true);
 });
 
+test('COVID spring phases retain their original season and distinct box-score batches', async t => {
+  const cacheDirectory = await directory(t);
+  const games = [
+    game({ id: 1, season: 2020, seasonType: 'regular', startDate: '2020-09-01T20:00:00Z' }),
+    game({ id: 2, season: 2020, seasonType: 'spring_regular', startDate: '2021-03-01T20:00:00Z' }),
+    game({ id: 3, season: 2020, seasonType: 'spring_postseason', startDate: '2021-05-01T20:00:00Z' })
+  ];
+  const calls = [];
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, now, fetchImpl: fakeProvider(games, calls) });
+  const value = await client.fetchSeasonDataset(2020);
+  assert.equal(value.games.length, 3);
+  assert.equal(value.teamStats.length, 3);
+  assert.equal(value.meta.coverage.ratedGames, 3);
+  assert.equal(value.games.find(row => row.id === 2).seasonType, 'spring_regular');
+  assert.equal(value.games.find(row => row.id === 3).season, 2020);
+  assert.equal(calls.filter(call => call.includes('seasonType=spring_regular')).length, 2);
+  assert.equal(calls.filter(call => call.includes('seasonType=spring_postseason')).length, 2);
+});
+
+test('all-star rows can be retained without entering college-team coverage', () => {
+  const value = dataset([game({ seasonType: 'allstar' })]);
+  const report = assertValidDataset(value, { now });
+  assert.equal(report.coverage.ratedGames, 0);
+  assert.equal(report.coverage.boxScoreGames, 0);
+  assert.match(report.warnings.join(' '), /all-star/);
+});
+
 test('current-season refresh reuses older boxes and refreshes two recent windows', async t => {
   const cacheDirectory = await directory(t);
   const games = [1, 2, 3, 4].map(week => game({ id: week, week, startDate: '2026-09-' + String(week * 7).padStart(2, '0') + 'T20:00:00Z' }));
@@ -110,6 +137,19 @@ test('a malformed API response cannot replace the prior archive', async t => {
   const broken = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, now, fetchImpl: fakeProvider([game()], [], { malformed: true }) });
   await assert.rejects(broken.fetchSeasonDataset(2026), /must be an array/);
   assert.deepEqual(await readJson(join(cacheDirectory, '2026.json')), prior);
+  const rejected = await readJson(join(cacheDirectory, 'rejected', '2026.json'));
+  assert.deepEqual(rejected.responses[0].data, { error: 'bad shape' });
+  assert.ok(!JSON.stringify(rejected).includes('fixture-only'));
+});
+
+test('unknown provider phases fail explicitly and retain their unmodified raw payload', async t => {
+  const cacheDirectory = await directory(t);
+  const unexpected = game({ seasonType: 'unknown_phase' });
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, now, fetchImpl: fakeProvider([unexpected], []) });
+  await assert.rejects(client.fetchSeasonDataset(2026), /unsupported seasonType "unknown_phase"/);
+  const rejected = await readJson(join(cacheDirectory, 'rejected', '2026.json'));
+  assert.equal(rejected.responses[0].data[0].seasonType, 'unknown_phase');
+  assert.equal(await readJson(join(cacheDirectory, '2026.json'), { optional: true }), null);
 });
 
 test('missing old box scores have retry backoff instead of triggering every batch daily', async t => {

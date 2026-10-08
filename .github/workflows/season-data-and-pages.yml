@@ -114,10 +114,11 @@ jobs:
         with:
           node-version: 22
       - name: Restore historical data
-        uses: actions/cache@v4
+        id: history-cache
+        uses: actions/cache/restore@v4
         with:
           path: .cache/history
-          key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}
+          key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             cfbd-history-${{ github.ref_name }}-
             cfbd-history-main-
@@ -125,17 +126,30 @@ jobs:
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
         run: node scripts/sync-history.mjs --from 2018 --to 2026 --stats-from 2022 --out .cache/history
+      - name: Exercise public snapshot generation without publishing
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: |
+          node scripts/sync-season.mjs
+          node scripts/validate-data.mjs
       - name: Replay pregame forecasts
         run: node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out data/backtests
       - name: Score pregame forecasts
         run: node scripts/score-backtest.mjs data/backtests --out data/backtests/summary.json
+      - name: Preserve history even if a later collection or replay fails
+        if: always() && steps.history-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/history
+          key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Upload raw history and backtest reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: accuracy-foundation-${{ github.run_id }}
           path: |
-            .cache/history/*.json
+            .cache/history/**/*.json
+            data/current-season.json
             data/backtests/*.json
           if-no-files-found: warn
           include-hidden-files: true

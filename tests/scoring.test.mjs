@@ -102,6 +102,16 @@ test('absolute-margin boundaries and FCS hosts use the intended categories', () 
   assert.equal(splits.weekPhase['9+'].games, 1);
 });
 
+test('spring postseason is a postseason split while spring regular follows its week', () => {
+  const { splits } = scorePredictions([
+    { ...records[0], seasonType: 'spring_postseason', week: 1 },
+    { ...records[0], seasonType: 'spring_regular', week: 2 },
+    { ...records[0], seasonType: 'spring_regular', week: 6 },
+    { ...records[0], seasonType: 'spring_regular', week: 10 }
+  ]);
+  for (const phase of ['postseason', '0-3', '4-8', '9+']) assert.equal(splits.weekPhase[phase].games, 1);
+});
+
 test('empty and partially populated inputs expose metric denominators rather than NaN', () => {
   const empty = scorePredictions([]);
   assert.equal(empty.games, 0);

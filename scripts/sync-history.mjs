@@ -24,5 +24,7 @@ for (let season = from; season <= to; season += 1) {
   const callsBefore = client.apiCalls;
   const dataset = await client.fetchSeasonDataset(season, { includeStats: season >= statsFrom });
   console.log(season + ': ' + dataset.games.length + ' scheduled games; ' + dataset.teamStats.length + ' box scores; ' + (client.apiCalls - callsBefore) + ' API calls.');
+  const phases = Object.fromEntries([...new Set(dataset.games.map(game => game.seasonType))].sort().map(phase => [phase, dataset.games.filter(game => game.seasonType === phase).length]));
+  console.log(season + ' season phases: ' + JSON.stringify(phases));
 }
 console.log('Raw historical archives saved to ' + resolve(options.out) + '. Total API calls: ' + client.apiCalls + '.');
