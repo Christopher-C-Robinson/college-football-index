@@ -2,9 +2,10 @@ import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { readJson, writeJsonAtomic, assertValidDataset, gitCommit } from './lib/dataset.mjs';
 import { replaySeason, fingerprint } from './lib/backtest.mjs';
+import { MODEL_PARAMETERS } from '../js/config.js';
 
 function argumentsFor(argv) {
-  const options = { history: '.cache/history', out: 'data/backtests', window: 'week', delay: 24, runs: 10000, force: false };
+  const options = { history: '.cache/history', out: 'data/backtests', window: 'week', delay: 24, runs: MODEL_PARAMETERS.simulationRuns, force: false };
   for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
     if (name === '--force') { options.force = true; continue; }
@@ -36,7 +37,7 @@ try {
     archives.push(archive);
   }
   for (let season = options.from; season <= options.to; season += 1) {
-    const required = Array.from({ length: 5 }, (_, index) => season - 4 + index);
+    const required = Array.from({ length: MODEL_PARAMETERS.venueSeasons }, (_, index) => season - MODEL_PARAMETERS.venueSeasons + 1 + index);
     const missing = required.filter(year => !archives.some(archive => archive.meta.season === year));
     if (missing.length) throw new Error('Missing venue warmup archives for season ' + season + ': ' + missing.join(', '));
     const report = replaySeason(archives, season, {

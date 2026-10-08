@@ -187,6 +187,51 @@ test('provided prediction fingerprints are verified before frozen reports are sc
   assert.throws(() => scoreReports([{ ...report, meta: { ...report.meta, predictionFingerprint: null } }]), /corrupt predictionFingerprint/);
 });
 
+test('summaries retain reconstructed status, limitations, policies, and source fingerprints', () => {
+  const predictions = records.slice(0, 2);
+  const predictionFingerprint = createHash('sha256').update(JSON.stringify(predictions)).digest('hex');
+  const sourceArchives = [{ season: 2024, sha256: 'archive-sha256', generatedAt: '2026-10-10T00:00:00Z' }];
+  const report = {
+    meta: {
+      ...meta, season: 2024, reconstructed: true,
+      availabilityPolicy: 'Results become eligible kickoff + 24 hours.',
+      limitation: 'Reconstructed from corrected final archives; historical publication times are unknown.',
+      predictionFingerprint, gitCommit: 'abcdef1', generatedAt: '2026-10-11T00:00:00Z', sourceArchives
+    },
+    predictions
+  };
+  const second = {
+    meta: {
+      ...meta, season: 2025, reconstructed: true,
+      availabilityPolicies: [report.meta.availabilityPolicy],
+      limitations: [report.meta.limitation, 'Uncertainty remains uncalibrated.']
+    },
+    predictions: records.slice(2)
+  };
+  const { meta: summaryMeta } = scoreReports([report, second]);
+  assert.equal(summaryMeta.reconstructed, true);
+  assert.equal(summaryMeta.evaluationType, 'reconstructed historical backtest');
+  assert.deepEqual(summaryMeta.availabilityPolicies, [report.meta.availabilityPolicy]);
+  assert.deepEqual(summaryMeta.limitations, [report.meta.limitation, 'Uncertainty remains uncalibrated.']);
+  assert.deepEqual(summaryMeta.sourceReports[0], {
+    season: 2024, predictionFingerprint, gitCommit: 'abcdef1', generatedAt: '2026-10-11T00:00:00Z', sourceArchives
+  });
+  assert.equal(summaryMeta.sourceReports[1].season, 2025);
+  assert.equal(summaryMeta.sourceReports[1].predictionFingerprint, null);
+  assert.equal(scoreReports([{ meta, predictions: [] }]).meta.reconstructed, 'unknown');
+  assert.equal(scoreReports([{ meta, predictions: [] }]).meta.evaluationType, 'unknown');
+});
+
+test('different evaluation provenance remains visible when compatible reports are combined', () => {
+  const summary = scoreReports([
+    { meta: { ...meta, reconstructed: true, evaluationType: 'historical replay' }, predictions: records.slice(0, 2) },
+    { meta: { ...meta, reconstructed: false, evaluationType: 'archived pregame predictions' }, predictions: records.slice(2) }
+  ]);
+  assert.equal(summary.meta.reconstructed, 'mixed');
+  assert.equal(summary.meta.evaluationType, 'mixed evaluation types');
+  assert.deepEqual(summary.meta.evaluationTypes, ['archived pregame predictions', 'historical replay']);
+});
+
 test('CLI reads directories and files, skips summaries, and persists a reviewable JSON result', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'cfi-scoring-'));
   try {

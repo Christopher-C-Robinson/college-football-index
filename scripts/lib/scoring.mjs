@@ -197,6 +197,34 @@ function comparisonMetadata(report, index) {
   return meta;
 }
 
+function uniqueText(values) {
+  return [...new Set(values.filter(value => typeof value === 'string' && value.trim()).map(value => value.trim()))].sort();
+}
+
+function provenanceMetadata(reports) {
+  const statuses = [...new Set(reports.map(report => report.meta.reconstructed === true ? true
+    : report.meta.reconstructed === false ? false : 'unknown'))];
+  const evaluationTypes = uniqueText(reports.map(report => report.meta.evaluationType
+    || (report.meta.reconstructed === true ? 'reconstructed historical backtest'
+      : report.meta.reconstructed === false ? 'non-reconstructed evaluation' : 'unknown')));
+  return {
+    reconstructed: statuses.length === 1 ? statuses[0] : 'mixed',
+    evaluationType: evaluationTypes.length === 1 ? evaluationTypes[0] : 'mixed evaluation types',
+    evaluationTypes,
+    availabilityPolicies: uniqueText(reports.flatMap(report => [report.meta.availabilityPolicy,
+      ...(Array.isArray(report.meta.availabilityPolicies) ? report.meta.availabilityPolicies : [])])),
+    limitations: uniqueText(reports.flatMap(report => [report.meta.limitation,
+      ...(Array.isArray(report.meta.limitations) ? report.meta.limitations : [])])),
+    sourceReports: reports.map(report => ({
+      season: report.meta.season ?? null,
+      predictionFingerprint: report.meta.predictionFingerprint ?? null,
+      gitCommit: report.meta.gitCommit ?? null,
+      generatedAt: report.meta.generatedAt ?? null,
+      sourceArchives: Array.isArray(report.meta.sourceArchives) ? canonical(report.meta.sourceArchives) : []
+    }))
+  };
+}
+
 export function scoreReports(reports) {
   if (!Array.isArray(reports) || !reports.length) throw new Error('At least one backtest report is required.');
   const meta = comparisonMetadata(reports[0], 0);
@@ -221,7 +249,7 @@ export function scoreReports(reports) {
     identities.add(identity);
   });
   return {
-    meta: { ...meta, reportCount: reports.length },
+    meta: { ...meta, reportCount: reports.length, ...provenanceMetadata(reports) },
     ...scorePredictions(predictions)
   };
 }

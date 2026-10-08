@@ -133,9 +133,9 @@ jobs:
           node scripts/sync-season.mjs
           node scripts/validate-data.mjs
       - name: Replay pregame forecasts
-        run: node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out data/backtests
+        run: node scripts/backtest.mjs --history .cache/history --from 2022 --to 2026 --out .cache/backtests
       - name: Score pregame forecasts
-        run: node scripts/score-backtest.mjs data/backtests --out data/backtests/summary.json
+        run: node scripts/score-backtest.mjs .cache/backtests --out .cache/backtests/summary.json
       - name: Preserve history even if a later collection or replay fails
         if: always() && steps.history-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -150,7 +150,7 @@ jobs:
           path: |
             .cache/history/**/*.json
             data/current-season.json
-            data/backtests/*.json
+            .cache/backtests/*.json
           if-no-files-found: warn
           include-hidden-files: true
           retention-days: 30

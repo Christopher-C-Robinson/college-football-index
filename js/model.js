@@ -57,6 +57,9 @@ function score(game, side) {
 
 export function isCompletedGame(game) {
   if (!game || typeof game !== 'object' || score(game, 'home') === null || score(game, 'away') === null) return false;
+  // Modern CFBD archives mark some canceled contests as completed 0-0.
+  // Preserve the provider row, but never treat this sentinel as a played game.
+  if (Number(game.season) >= 1996 && score(game, 'home') === 0 && score(game, 'away') === 0) return false;
   return Object.prototype.hasOwnProperty.call(game, 'completed') ? game.completed === true : true;
 }
 

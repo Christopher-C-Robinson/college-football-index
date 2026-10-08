@@ -53,6 +53,17 @@ test('availability boundary prevents using games still inside the delay', () => 
   assert.ok(!result.audit.venueHistoryGameIds.includes(4));
 });
 
+test('provider 0-0 cancellation sentinels are excluded and disclosed', () => {
+  const archives = fixture();
+  archives[1].games[0].homePoints = 0;
+  archives[1].games[0].awayPoints = 0;
+  const result = replaySeason(archives, 2025, { runs: 10 });
+  assert.deepEqual(result.predictions.map(row => row.gameId), [2, 3]);
+  assert.equal(result.meta.excludedGames, 1);
+  assert.deepEqual(result.meta.exclusions.zeroScoreFinal, [1]);
+  assert.ok(result.snapshots.every(row => !row.trainingGameIds.includes(1) && !row.venueHistoryGameIds.includes(1)));
+});
+
 test('gameId aliases cannot collide and admit future results', () => {
   const archives = fixture();
   for (const archive of archives) for (const game of archive.games) {

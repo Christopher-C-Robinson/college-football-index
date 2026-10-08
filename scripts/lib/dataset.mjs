@@ -4,13 +4,15 @@ import { execFileSync } from 'node:child_process';
 import { gunzip } from 'node:zlib';
 import { promisify } from 'node:util';
 import { MODEL_VERSION, SCHEMA_VERSION } from '../../js/config.js';
+import { isCompletedGame } from '../../js/model.js';
 
 export const RATED_SEASON_TYPES = ['regular', 'postseason', 'spring_regular', 'spring_postseason'];
 export const SEASON_TYPES = [...RATED_SEASON_TYPES, 'allstar'];
 const divisionOne = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const idOf = row => row?.id ?? row?.gameId;
 const validScore = value => Number.isInteger(value) && value >= 0;
-const completed = game => game?.completed === true && validScore(game.homePoints) && validScore(game.awayPoints);
+const completed = game => game?.completed === true && validScore(game.homePoints) && validScore(game.awayPoints) && isCompletedGame(game);
+const unplayedZeroZero = game => game?.completed === true && game.homePoints === 0 && game.awayPoints === 0 && !isCompletedGame(game);
 const rated = game => completed(game) && RATED_SEASON_TYPES.includes(game.seasonType) && divisionOne(game.homeClassification) && divisionOne(game.awayClassification);
 const gunzipAsync = promisify(gunzip);
 
@@ -102,6 +104,7 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
   const teams = new Set();
   const knownDivisionOne = new Set(dataset.teamMetadata.filter(team => divisionOne(team.classification)).map(team => team.school || team.name || team.team));
   let unclassifiedGames = 0;
+  let unplayedGames = 0;
   for (const game of dataset.games) {
     if (!game || typeof game !== 'object') { errors.push('Schedule contains a non-object row.'); continue; }
     const id = idOf(game);
@@ -122,13 +125,15 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
         unclassifiedGames += 1;
         for (const side of ['home', 'away']) if (!game[side + 'Classification'] && knownDivisionOne.has(game[side + 'Team'])) errors.push('Completed game ' + id + ' is missing a known Division I team classification.');
       }
-      coverage.completedGames += 1;
+      if (completed(game)) coverage.completedGames += 1;
+      else if (unplayedZeroZero(game)) unplayedGames += 1;
     }
     if (rated(game)) coverage.ratedGames += 1;
     for (const side of ['home', 'away']) if (divisionOne(game[side + 'Classification'])) teams.add(game[side + 'Team']);
   }
   coverage.teams = teams.size;
   if (unclassifiedGames) warnings.push(unclassifiedGames + ' completed schedule games have an unclassified opponent and are excluded from ratings.');
+  if (unplayedGames) warnings.push(unplayedGames + ' provider-completed 0–0 schedule rows are retained as unplayed games and excluded from results and ratings.');
   const allstarGames = dataset.games.filter(game => game.seasonType === 'allstar').length;
   if (allstarGames) warnings.push(allstarGames + ' all-star schedule games are retained but excluded from college team ratings.');
   const stats = new Set();
@@ -139,6 +144,10 @@ export function validateDataset(dataset, { previous, now = new Date() } = {}) {
     stats.add(String(id));
     const game = games.get(String(id));
     if (!game) { errors.push('Team statistics reference unknown game ' + id + '.'); continue; }
+    if (unplayedZeroZero(game)) {
+      warnings.push('Retained raw box scores for unplayed 0–0 game ' + id + ' are ignored.');
+      continue;
+    }
     if (!completed(game)) errors.push('Team statistics reference unfinished game ' + id + '.');
     if (!Array.isArray(entry.teams) || entry.teams.length !== 2) { errors.push('Team statistics game ' + id + ' must contain both teams.'); continue; }
     for (const side of ['home', 'away']) {

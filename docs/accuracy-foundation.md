@@ -42,12 +42,13 @@ Splits include FBS–FBS, FBS–FCS (either host), FCS–FCS; home/neutral; earl
 ## Correctness changes
 
 - Explicit unfinished flags override live non-null scores in rankings, records, and venue history.
+- Modern completed 0–0 rows are retained as provider data but excluded from results, venue history, and evaluation, with validator warnings and reported exclusion IDs. The initial real-data run exposed canceled games mislabeled this way, confirmed against [San Diego's 2022 cancellation announcement](https://usdtoreros.com/news/2022/9/27/san-diego-football-game-vs-stetson-canceled.aspx) and [South Dakota's 2024 schedule](https://goyotes.com/sports/football/schedule/2024). The rule applies from 1996 onward; earlier historical ties remain supported.
 - Third downs aggregate made/attempted counts. Percentage-only values disclose missing denominators rather than invent attempts.
 - Yards per play combines yards and known plays; CFBD rush/pass attempt counts supply plays where available. Rate-only observations are disclosed separately.
 - Turnover margin uses only games with both teams' turnover data.
 - Rated wins and expected wins use the same FBS/FCS game set; lower-division wins no longer inflate wins above expectation.
 - Coverage reports rated results and usable boxes separately, with metric-level denominator details retained in the model.
-- January–July uses the prior football season; both season types are fetched, independently keyed by season type and week.
+- January–July uses the prior football season; regular, postseason, and the exceptional spring FCS phases are preserved, independently keyed by season type and week. All-star games are retained in raw provider archives and excluded from team records and ratings.
 - Validation rejects conflicts, invalid finals, orphan/mismatched boxes, future finals, and implausible sudden count drops. Unknown opponent classifications are warned and excluded from ratings.
 - Raw caches and atomic writes preserve the last usable dataset when acquisition/validation fails.
 
@@ -59,4 +60,6 @@ Use older seasons to select parameters and reserve later seasons as a final hold
 
 ## Provider contracts
 
-The collector follows CFBD's [game API](https://apinext.collegefootballdata.com/api/games), [OpenAPI schema](https://apinext.collegefootballdata.com/api/5.32.1/cfbd-openapi.json), and [API tiers](https://collegefootballdata.com/api-tiers). The free allowance is 1,000 monthly calls; cold historical collection consumes more calls than a cached daily refresh. `/info` checks quota and collection preserves a 50-call reserve. Credentials stay in the existing GitHub Actions secret or local process memory and never enter reports.
+The collector follows CFBD's [game API](https://apinext.collegefootballdata.com/api/games), [OpenAPI schema](https://apinext.collegefootballdata.com/api/5.32.1/cfbd-openapi.json), and [API tiers](https://collegefootballdata.com/api-tiers). The free allowance is 1,000 monthly calls; cold historical collection consumes more calls than a cached daily refresh. `/info` checks quota; historical collection preserves 50 calls and ordinary refreshes can use that reserve down to five. Requests are paced and transient errors retry with bounded backoff and `Retry-After`. Credentials stay in the existing GitHub Actions secret or local process memory and never enter reports.
+
+Committed source archives may be compressed as `YYYY.json.gz`; replay reads plain or gzip JSON identically and rejects duplicate years. Keep exact source archives alongside frozen reports: Actions artifacts expire, and fetching the same season later can return corrected values.

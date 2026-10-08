@@ -62,6 +62,34 @@ test('live scores do not count as completed and cannot have retained box statist
   assert.throws(() => assertValidDataset(value, { now }), /unfinished game/);
 });
 
+test('provider-completed zero-zero rows remain raw but do not count as played games', () => {
+  const value = dataset([game({ homePoints: 0, awayPoints: 0 })]);
+  const original = structuredClone(value);
+  const report = assertValidDataset(value, { now });
+  assert.equal(report.coverage.completedGames, 0);
+  assert.equal(report.coverage.ratedGames, 0);
+  assert.equal(report.coverage.boxScoreGames, 0);
+  assert.match(report.warnings.join(' '), /0–0.*unplayed/);
+  assert.match(report.warnings.join(' '), /box scores.*ignored/);
+  assert.deepEqual(value, original);
+});
+
+test('collector preserves zero-zero schedule payloads and ignores their cached boxes', async t => {
+  const cacheDirectory = await directory(t);
+  const unplayed = game({ homePoints: 0, awayPoints: 0 });
+  const seed = dataset([unplayed]);
+  seed.meta.includesStats = true;
+  const calls = [];
+  const client = createCfbdClient({ apiKey: 'fixture-only', cacheDirectory, now, fetchImpl: fakeProvider([unplayed], calls) });
+  const value = await client.fetchSeasonDataset(2026, { seed });
+  assert.deepEqual(value.games, [unplayed]);
+  assert.equal(value.games[0].completed, true);
+  assert.equal(value.teamStats.length, 0);
+  assert.equal(value.meta.coverage.completedGames, 0);
+  assert.equal(value.meta.resultsThrough, null);
+  assert.ok(!calls.some(call => call.startsWith('/games/teams')));
+});
+
 test('reject invalid final scores, future results, duplicate IDs and mismatched box scores', () => {
   assert.match(validateDataset(dataset([game({ homePoints: null })]), { now }).errors.join(' '), /integer scores/);
   assert.match(validateDataset(dataset([game({ startDate: '2026-12-01T00:00:00Z' })]), { now }).errors.join(' '), /after dataset generation/);

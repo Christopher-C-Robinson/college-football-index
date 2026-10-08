@@ -1,10 +1,11 @@
 import { resolve } from 'node:path';
 import { inferSeason } from './season.mjs';
+import { isCompletedGame } from '../../js/model.js';
 import { assertValidDataset, datasetMetadata, deduplicateGames, deduplicateTeamStats, readJson, writeJsonAtomic, RATED_SEASON_TYPES } from './dataset.mjs';
 
 const isD1 = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const batchKey = game => game.seasonType + ':' + game.week;
-const isFinal = game => game.completed === true;
+const isFinal = isCompletedGame;
 
 export async function promptForApiKey() {
   const input = process.stdin;

@@ -51,6 +51,17 @@ test('live scores and invalid finals never enter power, records, or venue histor
   assert.equal(estimateHomeField([noFlag], 2025).gamesUsed, 1);
 });
 
+test('modern completed 0-0 cancellation sentinels do not enter results or venue history', () => {
+  const canceled = game(1, 'A', 'B', 0, 0);
+  assert.equal(isCompletedGame(canceled), false);
+  assert.equal(isRatedGame(canceled), false);
+  const model = buildModel({ games: [canceled] });
+  assert.equal(model.ratedGameCount, 0);
+  assert.equal(model.teams.get('a').ties, 0);
+  assert.equal(estimateHomeField([canceled], 2025).gamesUsed, 0);
+  assert.equal(isCompletedGame({ ...canceled, season: 1995 }), true);
+});
+
 test('all-star games are excluded from rated results, efficiency, and venue history', () => {
   const regular = game(1, 'A', 'B', 14, 7);
   const allstar = game(2, 'A', 'B', 70, 0, { seasonType: 'allstar' });

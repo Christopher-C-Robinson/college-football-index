@@ -96,6 +96,10 @@ export function replaySeason(archives, season, options = {}) {
   const availabilityDelayHours = options.availabilityDelayHours ?? 24;
   const parameters = { ...MODEL_PARAMETERS, ...options.parameters };
   const simulationRuns = options.runs ?? parameters.simulationRuns;
+  const zeroScoreFinals = current.games.filter(game => game.completed === true && Number(game.season) >= 1996
+    && Number(game.homePoints ?? game.homeScore) === 0 && Number(game.awayPoints ?? game.awayScore) === 0
+    && ['fbs', 'fcs'].includes(String(game.homeClassification).toLowerCase())
+    && ['fbs', 'fcs'].includes(String(game.awayClassification).toLowerCase()) && game.seasonType !== 'allstar');
   const targets = current.games.filter(game => isRatedGame(game) && Number.isFinite(Date.parse(game.startDate)) && game.startTimeTBD !== true)
     .sort((a, b) => Date.parse(a.startDate) - Date.parse(b.startDate) || String(gameId(a)).localeCompare(String(gameId(b))));
   const groups = new Map();
@@ -139,7 +143,9 @@ export function replaySeason(archives, season, options = {}) {
       venueSeasonsAvailable: archives.filter(archive => archive.meta.season >= season - parameters.venueSeasons + 1 && archive.meta.season <= season).map(archive => archive.meta.season).sort(),
       sourceArchives: archives.filter(archive => archive.meta.season >= season - parameters.venueSeasons + 1 && archive.meta.season <= season)
         .map(archive => ({ season: archive.meta.season, sha256: fingerprint(archive), generatedAt: archive.meta.generatedAt })),
-      excludedGames: current.games.filter(isRatedGame).length - targets.length,
+      excludedGames: current.games.filter(isRatedGame).length - targets.length + zeroScoreFinals.length,
+      exclusions: { unresolvedKickoff: current.games.filter(isRatedGame).length - targets.length,
+        zeroScoreFinal: zeroScoreFinals.map(gameId) },
       predictionFingerprint: fingerprint(predictions)
     }, snapshots, predictions
   };
