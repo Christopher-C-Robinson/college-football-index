@@ -265,3 +265,7 @@ export function enhanceSearchableSelects(root = document) {
 export function refreshSearchableSelects() {
   for (const instance of instances.values()) instance.refresh();
 }
+
+export function closeSearchableSelects() {
+  opened?.close();
+}

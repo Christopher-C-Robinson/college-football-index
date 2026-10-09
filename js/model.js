@@ -81,7 +81,7 @@ function addTeam(teams, name, conference, classification) {
   if (!teams.has(normalized)) {
     teams.set(normalized, {
       name: text(name), conference: text(conference), classification: text(classification).toLowerCase(),
-      color: '', alternateColor: '', abbreviation: '',
+      color: '', alternateColor: '', abbreviation: '', logos: [],
       games: [], wins: 0, losses: 0, ties: 0, fbsWins: 0, fbsLosses: 0, fbsTies: 0,
       fcsWins: 0, fcsLosses: 0, fcsTies: 0, overallPointsFor: 0, overallPointsAgainst: 0,
       opponents: [], expectedWins: 0, winsAboveExpectation: 0, opponentPower: null, power: null,
@@ -449,6 +449,7 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
     team.color = text(metadata.color || metadata.primaryColor);
     team.alternateColor = text(metadata.alternateColor || metadata.altColor);
     team.abbreviation = text(metadata.abbreviation);
+    team.logos = Array.isArray(metadata.logos) ? metadata.logos.filter(logo => typeof logo === 'string').slice() : [];
   });
 
   const homeFieldEstimate = data.homeField && typeof data.homeField === 'object' ? data.homeField : null;

@@ -1,4 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
+import { renderTeamLogo } from './team-logo.js';
+import { renderSeasonChart } from './season-chart.js';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -112,10 +114,10 @@ function matchupOutlook(row, teamName, forecast, actual) {
     '<div class="forecast-win-heading"><span>' + escapeHtml(teamName) + '<small>win chance</small></span><strong>' + number(probability) + '%</strong></div>' +
     '<div class="forecast-win-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span style="width:' + probability.toFixed(3) + '%"></span></div>' +
     '<div class="forecast-win-labels"><span>' + escapeHtml(teamName) + '</span><span>' + escapeHtml(row.opponentName) + '</span></div>' +
-    '<dl class="forecast-margin-factors" title="Team strength + conference evidence + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
-    '<div><dt>Team strength</dt><dd>' + signed(forecast.unpooledNeutralMargin ?? forecast.neutralMargin) + '</dd></div><div><dt>Conference evidence</dt><dd>' + signed(forecast.conferenceAdjustment ?? 0) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
+    '<dl class="forecast-margin-factors" title="Team strength + conference adjustment + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
+    '<div><dt>Team strength</dt><dd>' + signed(forecast.unpooledNeutralMargin ?? forecast.neutralMargin) + '</dd></div><div><dt>Conference adjustment</dt><dd>' + signed(forecast.conferenceAdjustment ?? 0) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
     '<div class="forecast-unit-factor"><dt>Passing + rushing matchup</dt><dd>' + signed(forecast.matchupAdjustment ?? 0) + '</dd></div></dl>' +
-    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.conferenceFallbackReason ? ' Conference evidence unavailable: ' + escapeHtml(forecast.conferenceFallbackReason) : '') + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 passing/rushing adjustment.' : '') + '</p>' +
+    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.conferenceFallbackReason ? ' Conference adjustment unavailable: ' + escapeHtml(forecast.conferenceFallbackReason) : '') + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 passing/rushing adjustment.' : '') + '</p>' +
     marginGraphic(forecast, actual) + '</section>';
 }
 
@@ -143,30 +145,57 @@ function matchupContext(row, teamName, forecast) {
   return '<section class="forecast-matchup-context"><h5 class="forecast-section-title">Team context · current season</h5>' +
     '<table class="forecast-context-table"><caption class="sr-only">Current matchup data for ' + escapeHtml(teamName + ' and ' + row.opponentName) + '</caption><thead><tr><th scope="col">Metric</th><th scope="col">' + escapeHtml(teamName) + '</th><th scope="col">' + escapeHtml(row.opponentName) + '</th></tr></thead><tbody>' +
     rows.map(([label, first, second]) => '<tr><th scope="row">' + label + '</th><td>' + first + '</td><td>' + second + '</td></tr>').join('') + '</tbody></table>' +
-    '<p class="forecast-table-note">Forecast strength includes conference evidence when available; its data source is labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
+    '<p class="forecast-table-note">Forecast strength includes the conference adjustment when available; its data source is labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
 }
 
-function renderRow(row, teamName, rankingsReady, unitProfiles) {
+function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) {
+  const neutral = row.site === 'Neutral site';
+  const selectedOnLeft = neutral || row.site === 'Away';
+  const selected = { ...row.matchup?.team, name: teamName };
+  const opponent = { ...row.matchup?.opponent, name: row.opponentName };
+  const selectedRanks = analysis ? rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) : '';
+  const opponentRanks = rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? analysis?.rankingsReady);
+  const teamBlock = (team, left, selectedTeam) => '<div class="forecast-matchup-team ' + (left ? 'is-left' : 'is-right') + '">' +
+    (!neutral ? '<span class="forecast-team-location">' + (left ? 'Away' : 'Home') + '</span>' : '') +
+    '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 60 }) + '<h4>' + escapeHtml(team.name) + '</h4></div>' +
+    '<div class="forecast-ranks" aria-label="' + escapeHtml(team.name) + ' current rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div>';
+  const scores = actual || forecast;
+  const leftScore = scores ? selectedOnLeft ? scores.for : scores.against : null;
+  const rightScore = scores ? selectedOnLeft ? scores.against : scores.for : null;
+  const status = actual ? 'Final score' : row.status === 'canceled' ? 'Canceled' : forecast ? 'Projected score' : row.status === 'unplayed' ? 'Not final' : 'Scheduled';
+  const scoreText = scores ? '<span>' + Math.round(leftScore) + '</span><i aria-hidden="true">–</i><span>' + Math.round(rightScore) + '</span>' : '<span>—</span>';
+  const favorite = actual ? actual.for === actual.against ? 'Game ended tied' : 'Winner: ' + (actual.for > actual.against ? teamName : row.opponentName) :
+    forecast ? forecast.winProbability === 0.5 ? 'Projected toss-up' : 'Projected favorite: ' + (forecast.winProbability > 0.5 ? teamName : row.opponentName) : '';
+  const probability = forecast && !actual && forecast.winProbability !== 0.5 ? number(Math.max(forecast.winProbability, 1 - forecast.winProbability) * 100) + '% win chance' : '';
+  return '<div class="forecast-matchup-header">' + teamBlock(selectedOnLeft ? selected : opponent, true, selectedOnLeft) +
+    '<div class="forecast-matchup-center"><span class="forecast-matchup-status">' + status + '</span>' +
+    '<strong class="forecast-matchup-score" aria-label="' + escapeHtml(status + ': ' + (selectedOnLeft ? teamName : row.opponentName) + ' ' + (scores ? Math.round(leftScore) : 'unavailable') + ', ' + (selectedOnLeft ? row.opponentName : teamName) + ' ' + (scores ? Math.round(rightScore) : 'unavailable')) + '">' + scoreText + '</strong>' +
+    (neutral ? '<span class="forecast-neutral-label">Neutral site</span>' : '') +
+    (favorite ? '<span class="forecast-matchup-favorite">' + escapeHtml(favorite) + '</span>' : '') +
+    (probability ? '<span class="forecast-matchup-probability">' + probability + '</span>' : '') + '</div>' +
+    teamBlock(selectedOnLeft ? opponent : selected, false, !selectedOnLeft) + '</div>';
+}
+
+function renderRow(row, teamName, rankingsReady, unitProfiles, analysis) {
   const forecast = usableForecast(row);
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
-  const status = { final: 'Final', upcoming: 'Scheduled', unplayed: 'Not final', canceled: 'Canceled' }[row.status] || 'Scheduled';
-  const sitePrefix = row.site === 'Away' ? '@ ' : 'vs. ';
-  const actualLabel = actual ? '<span class="forecast-outcome' + (actual.outcome === 'L' ? ' is-loss' : '') + '">' + escapeHtml(actual.outcome) + '</span>' : '';
   const winner = winnerPresentation(row, teamName, forecast, actual);
   const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
   return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p><p class="forecast-winner-label">' + escapeHtml(winner.label) + '</p></div><span class="forecast-game-status">' + status + ' ' + actualLabel + '</span></div>' +
-    '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + matchupContext(row, teamName, forecast) + '</div>' +
+    '<span class="forecast-venue-meta">' + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
+    renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
+    '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + '</div>' +
     renderUnitMatchup(unitProfiles, teamName, row.opponentName, { compact: true }) +
+    '<details class="forecast-supporting-details"><summary>Team records and supporting numbers</summary>' + matchupContext(row, teamName, forecast) + '</details>' +
     (forecast ? forecastSource(forecast, teamName, row.opponentName) : '') + '</article>';
 }
 
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
-    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles)).join('') + '</div>';
+    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis)).join('') + '</div>';
 }
 
 export function renderProjectionSummary(analysis) {
@@ -188,6 +217,7 @@ export function renderProjectionSummary(analysis) {
     (expectedWinsAvailable ? number(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>' + escapeHtml(coverage) + '</p></div>' +
     '<div class="season-projection-metric"><span>EXPECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
     (finalRecordAvailable ? 'For the schedule currently listed.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
+    renderSeasonChart(analysis) +
     '<div class="season-projection-accuracy"><div class="season-projection-accuracy-heading"><span>CURRENT MODEL VS RESULTS</span><span>' + plural(graded, 'completed comparison') + '</span></div>' +
     '<div class="season-projection-error-metrics"><div><span>Margin error</span><strong>' + (graded ? number(summary.marginMae) : '—') + '<small> pts MAE</small></strong></div>' +
     '<div><span>Score error</span><strong>' + (graded ? number(summary.scoreMae) : '—') + '<small> pts MAE</small></strong><small>Average per team</small></div>' +
@@ -199,6 +229,6 @@ export function renderProjectionSummary(analysis) {
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Scores show ' + escapeHtml(analysis.teamName) + ' first.</p>' +
-    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, conference evidence, home/away effects, and the fitted passing/rushing matchup adjustment. Conference evidence shows how a team\'s estimated strength changes when conference members share evidence from their results, with each team still judged on its own games. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
+  return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Matchup headers show away on the left and home on the right; neutral games show ' + escapeHtml(analysis.teamName) + ' on the left. Comparison tables list ' + escapeHtml(analysis.teamName) + ' first.</p>' +
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }
