@@ -1,5 +1,5 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderTeamLogo } from './team-logo.js?v=f5b0734a5855';
+import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 

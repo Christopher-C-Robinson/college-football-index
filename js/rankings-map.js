@@ -1,4 +1,4 @@
-import { renderTeamLogo } from './team-logo.js?v=f5b0734a5855';
+import { renderTeamLogo, renderSvgTeamLogo } from './team-logo.js?v=23545b336420';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -44,7 +44,7 @@ export function renderRankingsMap(orderedTeams, focusedTeam, ready = true, { dom
     const selected = index === selectedIndex;
     const logoSize = selected ? 24 : 18;
     const label = team.name + ' · Power ' + signed(team.power) + ' pts · Opponent power ' + signed(team.opponentPower) + ' pts';
-    return '<g class="ranking-map-team' + (team.classification === 'fcs' ? ' is-fcs' : '') + (selected ? ' is-selected' : '') + '" role="button" tabindex="' + (index === focusIndex ? '0' : '-1') + '" data-map-order="' + index + '" data-map-team="' + escapeHtml(team.name) + '" data-select-team="' + escapeHtml(team.name) + '" aria-label="Explore ' + escapeHtml(label) + '" transform="translate(' + x(team.opponentPower).toFixed(2) + ' ' + y(team.power).toFixed(2) + ')"><title>' + escapeHtml(label) + '</title><g class="ranking-map-mark"><circle class="ranking-map-dot' + (team.classification === 'fcs' ? ' is-fcs' : '') + (selected ? ' is-selected' : '') + '" cx="0" cy="0" r="' + (logoSize / 2 + 2) + '"/><foreignObject class="ranking-map-logo" x="' + (-logoSize / 2) + '" y="' + (-logoSize / 2) + '" width="' + logoSize + '" height="' + logoSize + '"><div xmlns="http://www.w3.org/1999/xhtml">' + renderTeamLogo(team, { size: logoSize }) + '</div></foreignObject><rect class="ranking-map-hit" x="' + (-logoSize / 2 - 2) + '" y="' + (-logoSize / 2 - 2) + '" width="' + (logoSize + 4) + '" height="' + (logoSize + 4) + '" aria-hidden="true"/></g></g>';
+    return '<g class="ranking-map-team' + (team.classification === 'fcs' ? ' is-fcs' : '') + (selected ? ' is-selected' : '') + '" role="button" tabindex="' + (index === focusIndex ? '0' : '-1') + '" data-map-order="' + index + '" data-map-team="' + escapeHtml(team.name) + '" data-select-team="' + escapeHtml(team.name) + '" aria-label="Explore ' + escapeHtml(label) + '" transform="translate(' + x(team.opponentPower).toFixed(2) + ' ' + y(team.power).toFixed(2) + ')"><title>' + escapeHtml(label) + '</title><g class="ranking-map-mark">' + renderSvgTeamLogo(team, { size: logoSize }) + '<rect class="ranking-map-hit" x="' + (-logoSize / 2 - 2) + '" y="' + (-logoSize / 2 - 2) + '" width="' + (logoSize + 4) + '" height="' + (logoSize + 4) + '" aria-hidden="true"/></g></g>';
   });
   const paintOrder = teams.map((team, index) => index).reverse().filter(index => index !== selectedIndex);
   if (selectedIndex >= 0) paintOrder.push(selectedIndex);

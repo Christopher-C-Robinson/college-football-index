@@ -1,4 +1,5 @@
 const installedRoots = new WeakSet();
+const preparedSvgImages = new WeakSet();
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -51,15 +52,46 @@ export function renderTeamLogo(team, { size = 32, className = '', decorative = t
     (logo ? '<img class="team-logo-image" src="' + escapeHtml(logo) + '" alt="" width="' + pixels + '" height="' + pixels + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '</span>';
 }
 
-function updateLogo(image) {
-  if (!image?.matches?.('img.team-logo-image')) return;
+/** Render a centered map marker without embedding HTML inside SVG. */
+export function renderSvgTeamLogo(team, { size = 18 } = {}) {
+  const pixels = Number.isFinite(Number(size)) ? Math.max(16, Math.min(128, Math.round(Number(size)))) : 18;
+  const name = String(team?.name || team?.school || '').trim();
+  const logo = preferredLogo(team, pixels);
+  const edge = -pixels / 2;
+  return '<g class="team-logo-svg" data-team-logo data-team-name="' + escapeHtml(name) + '" data-logo-state="' + (logo ? 'loading' : 'fallback') + '" aria-hidden="true">' +
+    '<rect class="team-logo-svg-frame" x="' + edge + '" y="' + edge + '" width="' + pixels + '" height="' + pixels + '" rx="3"/>' +
+    '<text class="team-logo-svg-fallback" x="0" y="0" text-anchor="middle" dominant-baseline="central" pointer-events="none">' + escapeHtml(initials(team)) + '</text>' +
+    (logo ? '<image class="team-logo-svg-image" href="' + escapeHtml(logo) + '" x="' + (edge + 3) + '" y="' + (edge + 3) + '" width="' + (pixels - 6) + '" height="' + (pixels - 6) + '" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>' : '') + '</g>';
+}
+
+function updateLogo(image, eventType) {
+  const svgImage = image?.matches?.('image.team-logo-svg-image');
+  if (!svgImage && !image?.matches?.('img.team-logo-image')) return;
   const wrapper = image.closest('[data-team-logo]');
   if (!wrapper) return;
+  if (svgImage) {
+    // SVGImageElement has no HTMLImageElement complete/naturalWidth fields.
+    if (eventType === 'load' || eventType === 'error') wrapper.dataset.logoState = eventType === 'load' ? 'loaded' : 'fallback';
+    return;
+  }
   wrapper.dataset.logoState = image.complete && image.naturalWidth > 0 ? 'loaded' : 'fallback';
+}
+
+function updateSvgLogoFromEvent(event) {
+  updateLogo(event.currentTarget, event.type);
 }
 
 function prepareLogos(node) {
   if (!node?.querySelectorAll) return;
+  // SVG image events do not consistently reach document capture listeners.
+  // Prepare inserted images before their asynchronous resource events arrive.
+  const svgImages = [...(node.matches?.('image.team-logo-svg-image') ? [node] : []), ...node.querySelectorAll('image.team-logo-svg-image')];
+  for (const image of svgImages) {
+    if (preparedSvgImages.has(image)) continue;
+    image.addEventListener('load', updateSvgLogoFromEvent);
+    image.addEventListener('error', updateSvgLogoFromEvent);
+    preparedSvgImages.add(image);
+  }
   const logos = [...(node.matches?.('[data-team-logo]') ? [node] : []), ...node.querySelectorAll('[data-team-logo]')];
   for (const logo of logos) {
     const name = logo.dataset.teamName;
@@ -84,8 +116,8 @@ function prepareLogos(node) {
 export function installTeamLogoFallbacks(root = document) {
   if (!root?.addEventListener) return;
   if (!installedRoots.has(root)) {
-    root.addEventListener('load', event => updateLogo(event.target), true);
-    root.addEventListener('error', event => updateLogo(event.target), true);
+    root.addEventListener('load', event => updateLogo(event.target, event.type), true);
+    root.addEventListener('error', event => updateLogo(event.target, event.type), true);
     new MutationObserver(records => {
       for (const record of records) for (const node of record.addedNodes) prepareLogos(node);
     }).observe(root, { childList: true, subtree: true });
