@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#172333">
     <meta name="description" content="A transparent, schedule-adjusted analysis of every FBS and FCS college football team.">
     <title>College Football Index — FBS + FCS Team Analysis</title>
-    <link rel="stylesheet" href="./styles.css?v=5dba475c1769">
-    <script type="module" src="./js/app.js?v=b6d51cc59297"></script>
+    <link rel="stylesheet" href="./styles.css?v=68a197a60d59">
+    <script type="module" src="./js/app.js?v=6091fa73f431"></script>
   </head>
   <body>
     <header class="site-header">
@@ -30,6 +30,7 @@
     <main id="top">
       <section id="dataset-provenance" class="dataset-provenance section-shell" aria-label="Dataset source and freshness" aria-live="polite"><p>Loading public snapshot and checking any saved import…</p></section>
       <section id="model-fit" class="model-fit section-shell" aria-labelledby="model-fit-title" aria-live="polite"><div class="model-fit-heading"><div><p class="model-fit-kicker">Completed games · current snapshot</p><h2 id="model-fit-title">Current model fit</h2></div><span class="model-fit-scope-tag">FBS + FCS</span></div><p class="model-fit-state">Preparing completed-game comparisons…</p></section>
+      <section id="challenger-status" class="challenger-status section-shell" aria-live="polite" aria-label="Baseline and challenger model comparison"><p>Loading historical model comparison…</p></section>
       <section class="hero section-shell" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow"><span class="eyebrow-line"></span> FBS + FCS · ONE FIELD</p>
@@ -100,6 +101,7 @@
           <div class="compare-section">
             <div class="compare-heading"><div><p class="eyebrow">MATCHUP LENS</p><h3>Compare two teams, metric by metric.</h3></div><div class="compare-selects"><select id="compare-a" class="select-control select-light" aria-label="First team"></select><span>VS</span><select id="compare-b" class="select-control select-light" aria-label="Second team"></select></div></div>
             <div id="compare-content" class="compare-content"></div>
+            <div id="compare-unit-matchup" class="unit-matchup-container"></div>
           </div>
 
           <div class="simulation-section">
@@ -112,6 +114,7 @@
               <button id="simulate-matchup" class="button button-primary" type="button">Run again <span aria-hidden="true">↗</span></button>
             </div>
             <div id="simulation-result" class="simulation-result" aria-live="polite"><div class="simulation-empty">Choose two teams to see a hypothetical matchup.</div></div>
+            <div id="simulation-unit-matchup" class="unit-matchup-container"></div>
           </div>
         </div>
       </section>
@@ -151,6 +154,10 @@
             <div class="mini-insight" id="team-insight"></div>
           </article>
         </div>
+        <article class="panel team-unit-panel" aria-labelledby="team-unit-title">
+          <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">OPPONENT-ADJUSTED BOX-SCORE UNITS</p><h3 id="team-unit-title">Passing and rushing profile</h3></div><span class="panel-tag">CURRENT SEASON</span></div>
+          <div id="team-unit-profile"><p class="unit-empty">Choose a team to view passing and rushing units.</p></div>
+        </article>
         <article class="panel schedule-panel" aria-labelledby="schedule-ledger-title">
           <div class="panel-heading"><div><p class="eyebrow eyebrow-dark">GAME BY GAME</p><h3 id="schedule-ledger-title">Schedule ledger</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
           <p class="panel-intro">Solid accents show the actual winner’s primary color. Pale accents show the model favorite’s color for unplayed games.</p>

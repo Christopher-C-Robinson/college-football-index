@@ -1,0 +1,2068 @@
+{
+  "meta": {
+    "experimentId": "box-units-v1",
+    "featureDefinitionVersion": "box-units-1",
+    "baselineModelVersion": "2.0.0",
+    "holdoutSeason": 2025,
+    "monitoringSeason": 2026,
+    "reconstructed": true,
+    "productionModelChanged": false,
+    "config": {
+      "id": "box-units-v1",
+      "trainingSeasons": [
+        2022,
+        2023
+      ],
+      "selectionSeason": 2024,
+      "refitSeasons": [
+        2022,
+        2023,
+        2024
+      ],
+      "holdoutSeason": 2025,
+      "monitoringSeason": 2026,
+      "lambdas": [
+        0.1,
+        1,
+        10,
+        100,
+        1000
+      ],
+      "bootstrapResamples": 5000,
+      "bootstrapSeed": "box-units-v1|paired-week-bootstrap|2025",
+      "maxSubdivisionMaeDeterioration": 0.5,
+      "targetIntervalCoverage": 0.8,
+      "maxIntervalCoverageDeviation": 0.03
+    },
+    "unitParameters": {
+      "priorAttempts": 100,
+      "iterations": 120,
+      "tolerance": 1e-7
+    },
+    "chronology": {
+      "train": [
+        2022,
+        2023
+      ],
+      "select": [
+        2024
+      ],
+      "refit": [
+        2022,
+        2023,
+        2024
+      ],
+      "holdout": [
+        2025
+      ],
+      "monitoring": [
+        2026
+      ],
+      "selectionCriterion": "Lowest all-game 2024 margin MAE; exact ties favor stronger regularization.",
+      "availability": "Use each frozen baseline cutoff and its original result availability delay; reconstruct and verify the exact training snapshot hash.",
+      "holdoutPolicy": "2025 and 2026 outcomes are not used to fit or select this challenger. Baseline 2025 results had already been inspected before the fixed challenger design was declared."
+    },
+    "definitions": {
+      "units": {
+        "method": "Attempt-weighted ridge: rate = league mean + offense effect - defense effect; common zero-centered priors.",
+        "pass": "Reported net passing yards per reported passing attempt. Completion-attempt counts supply attempts; sacks are not added to dropbacks.",
+        "rush": "Reported rushing yards per reported rushing attempt. NCAA box rushing can include sacks, kneels and team-only attempts; this is not designed-run efficiency.",
+        "passRate": "Reported passing attempts / (reported passing attempts + reported rushing attempts), pooled only over games with both valid counts.",
+        "coverage": "Usable positive-attempt games / eligible completed FBS-or-FCS opponent games. Zero attempts do not produce a rate.",
+        "adjustment": "Positive means stronger for offense and defense. Offense adjusted rate = league mean + effect; defense adjusted rate = league mean - effect.",
+        "limitations": "Uncalibrated descriptive challenger; no venue, game-state or personnel adjustment. Attempts within games are dependent. Missing boxes and disconnected schedules limit comparisons; ridge anchors disconnected components to a shared prior, not observed cross-component evidence."
+      },
+      "features": [
+        "passNet",
+        "rushNet",
+        "passExposureNet",
+        "rushExposureNet"
+      ],
+      "missing": "Any missing required unit or pass tendency produces exactly zero correction and the unchanged frozen baseline distribution.",
+      "signedError": "actual minus predicted",
+      "winner": "Probability above 0.5 picks home; below 0.5 picks away; exact 0.5 gets half credit. Actual ties excluded from probability metrics.",
+      "distribution": "Translate each game’s existing frozen score-margin simulation by the fitted residual correction; retain original interval width. Seeded original score ties are represented by uniform jitter in (-0.5,0.5), matching baseline tie decisions exactly; new threshold ties receive half weight. Totals unchanged.",
+      "calibration": "No probability or interval recalibration. Baseline simulator assumptions remain uncalibrated."
+    },
+    "limitations": [
+      "Reconstructed from corrected final archives, not archived pregame source responses. Publication times and historical revisions remain unknown.",
+      "One untouched holdout season cannot establish stability across many independent seasons.",
+      "Week blocks preserve within-week dependence but do not fully capture repeated teams across weeks or training/selection uncertainty.",
+      "Box passing/rushing definitions include NCAA sack/kneel accounting; these are not true dropback or designed-run efficiency."
+    ],
+    "fingerprintAlgorithm": "SHA-256 of JSON.stringify(parsed values); source code contents are hashed as JSON strings. The summary fingerprint excludes its own field.",
+    "sourceFingerprints": {
+      "archives": [
+        {
+          "season": 2018,
+          "sha256": "b34caa7c2b8b6ba78cac897cbe00361b90de509a66d57088a97213e16d15e93e",
+          "generatedAt": "2026-10-08T21:51:01.804Z"
+        },
+        {
+          "season": 2019,
+          "sha256": "b162797d199e94af20ff70134d532f567505e5f6d5a48ba9d2b0e93fb51631fe",
+          "generatedAt": "2026-10-08T21:51:01.804Z"
+        },
+        {
+          "season": 2020,
+          "sha256": "c086568d61e3ffc7db8496c1b1911e687ee7b9e9aeb34d3fbc16749851319a84",
+          "generatedAt": "2026-10-08T21:51:01.804Z"
+        },
+        {
+          "season": 2021,
+          "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3",
+          "generatedAt": "2026-10-08T21:51:01.804Z"
+        },
+        {
+          "season": 2022,
+          "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045",
+          "generatedAt": "2026-10-08T21:51:01.804Z"
+        },
+        {
+          "season": 2023,
+          "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572",
+          "generatedAt": "2026-10-08T21:54:45.848Z"
+        },
+        {
+          "season": 2024,
+          "sha256": "634a315ae0d9670d55f060301c1d77ec6f39bae504d03a66c44ef1f39c554cb7",
+          "generatedAt": "2026-10-08T21:54:45.848Z"
+        },
+        {
+          "season": 2025,
+          "sha256": "6aa18a0c9e1a7167ba7c21d6d40cc8bbf80038eeeefe62bfcdd84072516958b9",
+          "generatedAt": "2026-10-08T21:54:45.848Z"
+        },
+        {
+          "season": 2026,
+          "sha256": "b7c3babf5dd73db8b236b8bdaf7878494c08bc3298dcf9898a0a26c1b9176bbb",
+          "generatedAt": "2026-10-08T22:02:16.413Z"
+        }
+      ],
+      "baselines": [
+        {
+          "season": 2022,
+          "sha256": "7fd586d3f81eb19c5a17d5a8471221e3f57b5391739b6edfa661a0526ce474b2",
+          "predictionFingerprint": "d12888bcceb1691cc36d8f3a53618bc0a0ef944c41658fcf28fa56cbdff24b1f",
+          "modelVersion": "2.0.0",
+          "parameters": {
+            "marginCap": 28,
+            "powerPriorGames": 2,
+            "powerIterations": 60,
+            "winProbabilityScale": 7.5,
+            "homeFieldBaseline": 2.5,
+            "venueSeasons": 5,
+            "venueRecencyFactor": 0.75,
+            "venuePriorGames": 12,
+            "leagueVenuePriorGames": 24,
+            "venueIterations": 80,
+            "venueMinPoints": -5,
+            "venueMaxPoints": 12,
+            "simulationRuns": 10000,
+            "simulationRatingScale": 9,
+            "totalPriorGames": 4,
+            "totalStdDevMin": 7,
+            "totalStdDevMax": 20,
+            "coldStartPointsPerTeam": 27
+          }
+        },
+        {
+          "season": 2023,
+          "sha256": "eb32811bf3b649bf81930bafc7d313aa3ef7e2e652f86f58fb2e17d7eb024b77",
+          "predictionFingerprint": "d96ce19e79806fee721eca25f002ea7c67a3320431f3ed278ddf8803696cb10a",
+          "modelVersion": "2.0.0",
+          "parameters": {
+            "marginCap": 28,
+            "powerPriorGames": 2,
+            "powerIterations": 60,
+            "winProbabilityScale": 7.5,
+            "homeFieldBaseline": 2.5,
+            "venueSeasons": 5,
+            "venueRecencyFactor": 0.75,
+            "venuePriorGames": 12,
+            "leagueVenuePriorGames": 24,
+            "venueIterations": 80,
+            "venueMinPoints": -5,
+            "venueMaxPoints": 12,
+            "simulationRuns": 10000,
+            "simulationRatingScale": 9,
+            "totalPriorGames": 4,
+            "totalStdDevMin": 7,
+            "totalStdDevMax": 20,
+            "coldStartPointsPerTeam": 27
+          }
+        },
+        {
+          "season": 2024,
+          "sha256": "8d8851e8b0b355ec07038aec48024bf85b121698f9d2ee804f9e9b69a824433e",
+          "predictionFingerprint": "685a5a9cb01fabcdbe907088881b37ebb50c78564914b523cae6041c13ebe94c",
+          "modelVersion": "2.0.0",
+          "parameters": {
+            "marginCap": 28,
+            "powerPriorGames": 2,
+            "powerIterations": 60,
+            "winProbabilityScale": 7.5,
+            "homeFieldBaseline": 2.5,
+            "venueSeasons": 5,
+            "venueRecencyFactor": 0.75,
+            "venuePriorGames": 12,
+            "leagueVenuePriorGames": 24,
+            "venueIterations": 80,
+            "venueMinPoints": -5,
+            "venueMaxPoints": 12,
+            "simulationRuns": 10000,
+            "simulationRatingScale": 9,
+            "totalPriorGames": 4,
+            "totalStdDevMin": 7,
+            "totalStdDevMax": 20,
+            "coldStartPointsPerTeam": 27
+          }
+        },
+        {
+          "season": 2025,
+          "sha256": "67e6a0b24eaa496a6a2da41c1b5b0a6e7e74ab10c90714099230e6f1f9b8f44b",
+          "predictionFingerprint": "34cb75a012533428ea723564bef167883d94e135a1d302791a0a2fe82af64457",
+          "modelVersion": "2.0.0",
+          "parameters": {
+            "marginCap": 28,
+            "powerPriorGames": 2,
+            "powerIterations": 60,
+            "winProbabilityScale": 7.5,
+            "homeFieldBaseline": 2.5,
+            "venueSeasons": 5,
+            "venueRecencyFactor": 0.75,
+            "venuePriorGames": 12,
+            "leagueVenuePriorGames": 24,
+            "venueIterations": 80,
+            "venueMinPoints": -5,
+            "venueMaxPoints": 12,
+            "simulationRuns": 10000,
+            "simulationRatingScale": 9,
+            "totalPriorGames": 4,
+            "totalStdDevMin": 7,
+            "totalStdDevMax": 20,
+            "coldStartPointsPerTeam": 27
+          }
+        },
+        {
+          "season": 2026,
+          "sha256": "3fe1f2d98f2d76796192395d051a8aa9901102e9a1edcf07e398fbdec550713c",
+          "predictionFingerprint": "43bccd256b4aeac131584ec39814c78f32d4532decac9b7865e4aec1d1a1e859",
+          "modelVersion": "2.0.0",
+          "parameters": {
+            "marginCap": 28,
+            "powerPriorGames": 2,
+            "powerIterations": 60,
+            "winProbabilityScale": 7.5,
+            "homeFieldBaseline": 2.5,
+            "venueSeasons": 5,
+            "venueRecencyFactor": 0.75,
+            "venuePriorGames": 12,
+            "leagueVenuePriorGames": 24,
+            "venueIterations": 80,
+            "venueMinPoints": -5,
+            "venueMaxPoints": 12,
+            "simulationRuns": 10000,
+            "simulationRatingScale": 9,
+            "totalPriorGames": 4,
+            "totalStdDevMin": 7,
+            "totalStdDevMax": 20,
+            "coldStartPointsPerTeam": 27
+          }
+        }
+      ],
+      "sourceCode": [
+        {
+          "path": "js/config.js",
+          "sha256": "a7e06ba9dd7fca715da5eb1346c0a530318f9537ed077dc00c7979940fcd70d1"
+        },
+        {
+          "path": "js/model.js",
+          "sha256": "3dc55f8fb7a63bb14a51144f61499ba296e4ad2a8521b680dfb720df1a991901"
+        },
+        {
+          "path": "js/unit-model.js",
+          "sha256": "57f300e6c8d895c9032ff94b31d6ffb2405020fdb5aab1d67b382779ee532e88"
+        },
+        {
+          "path": "js/prediction.js",
+          "sha256": "6d9f748181c1316d1de3f80e8747ce38110d5e820c16998e41f6f2e5e211e2bf"
+        },
+        {
+          "path": "scripts/lib/backtest.mjs",
+          "sha256": "b0caf7e45cbb11a1830377cb8c8beb4888c9e4198af4e0d076e200819cabb063"
+        },
+        {
+          "path": "scripts/lib/matchup-challenger.mjs",
+          "sha256": "2357f62c40df581612270c4f0ab02aabad9ed65913ea4b3fe7403a29624e31e4"
+        },
+        {
+          "path": "scripts/matchup-challenger.mjs",
+          "sha256": "8490b165cfdf720d37db144d146db0863b12b6c9a7740ba4e49c770bf2910e1d"
+        }
+      ]
+    },
+    "featureFingerprint": "e26ae7874943f0e5f36ff7f9fde9c8e43eaa4764abad5f383e30600a87a0c72e",
+    "snapshotAuditFingerprint": "99480d3e4c5e34b15fc30fe8add28d3e2597e96d9a190f74314fdd4ba453c91e",
+    "summaryFingerprint": "c890367132bbc4213250f243f2236106e9496645cfe0d40cb392593b09f0643d"
+  },
+  "selection": {
+    "season": 2024,
+    "trainingSeasons": [
+      2022,
+      2023
+    ],
+    "criterion": "marginMae",
+    "selectedLambda": 1000,
+    "candidates": [
+      {
+        "lambda": 0.1,
+        "marginMae": 14.857169389202372,
+        "marginRmse": 19.058634246913716,
+        "eligibleGames": 1445,
+        "fitTrainingGames": 2738
+      },
+      {
+        "lambda": 1,
+        "marginMae": 14.856691656526015,
+        "marginRmse": 19.058050775298668,
+        "eligibleGames": 1445,
+        "fitTrainingGames": 2738
+      },
+      {
+        "lambda": 10,
+        "marginMae": 14.853980448493695,
+        "marginRmse": 19.053366493061375,
+        "eligibleGames": 1445,
+        "fitTrainingGames": 2738
+      },
+      {
+        "lambda": 100,
+        "marginMae": 14.84827537761309,
+        "marginRmse": 19.040483504602822,
+        "eligibleGames": 1445,
+        "fitTrainingGames": 2738
+      },
+      {
+        "lambda": 1000,
+        "marginMae": 14.845329940063918,
+        "marginRmse": 19.033970478306045,
+        "eligibleGames": 1445,
+        "fitTrainingGames": 2738
+      }
+    ]
+  },
+  "fit": {
+    "trainingSeasons": [
+      2022,
+      2023,
+      2024
+    ],
+    "eligibleGames": 4183,
+    "lambda": 1000,
+    "featureNames": [
+      "passNet",
+      "rushNet",
+      "passExposureNet",
+      "rushExposureNet"
+    ],
+    "intercept": 0,
+    "scaling": "Root mean square about zero, fitted using eligible training rows only; no mean subtraction.",
+    "objective": "sum((actualMargin - baselineMargin - scaledFeatures * beta)^2) + lambda * sum(beta^2)",
+    "scales": [
+      1.386808852959042,
+      1.1838798306853973,
+      0.6358091896772523,
+      0.6523377939043669
+    ],
+    "coefficientsStandardized": [
+      0.36744816060537466,
+      1.1894034768377546,
+      0.7522072947580195,
+      1.0330191807343083
+    ],
+    "coefficientsRaw": [
+      0.2649594858161948,
+      1.004665715226485,
+      1.1830708127069582,
+      1.583564819311618
+    ]
+  },
+  "training": {
+    "trainingSeasons": [
+      2022,
+      2023,
+      2024
+    ],
+    "evaluation": "In-sample descriptive fit; not promotion evidence.",
+    "baseline": {
+      "games": 4682,
+      "marginMae": 14.891169985660115,
+      "marginRmse": 19.047301268289882,
+      "marginBias": 4.214680035606043,
+      "probabilityGames": 4682,
+      "winnerAccuracy": 0.6908372490388722,
+      "brier": 0.20083028869286598,
+      "logLoss": 0.5861603223845737,
+      "intervalCoverage": 0.6768475010679197,
+      "intervalMeanWidth": 35.66403246475865
+    },
+    "candidate": {
+      "games": 4682,
+      "marginMae": 14.698072286918306,
+      "marginRmse": 18.818402136835395,
+      "marginBias": 4.130890181073748,
+      "probabilityGames": 4682,
+      "winnerAccuracy": 0.7020504058094831,
+      "brier": 0.1991146692844938,
+      "logLoss": 0.5843041498130195,
+      "intervalCoverage": 0.6712943186672362,
+      "intervalMeanWidth": 35.66403246475865
+    },
+    "paired": {
+      "deltaMarginMae": -0.19309769874180915,
+      "deltaMarginRmse": -0.2288991314544866,
+      "deltaMarginBias": -0.08378985453229504,
+      "deltaBrier": -0.001715619408372171,
+      "deltaLogLoss": -0.0018561725715542376,
+      "deltaWinnerAccuracy": 0.011213156770610855,
+      "deltaIntervalCoverage": -0.005553182400683476,
+      "bootstrap": {
+        "lower95": -0.2684689574645758,
+        "upper95": -0.11937832867441096,
+        "blocks": 64,
+        "resamples": 5000,
+        "seed": "box-units-v1|paired-week-bootstrap|2025|training",
+        "effect": "candidate minus baseline margin MAE",
+        "block": "All games sharing the frozen season and Monday prediction cutoff are resampled together.",
+        "limitation": "Preserves within-week dependence only. Repeated teams across weeks, corrected archive revisions, coefficient estimation and model selection uncertainty are not fully represented."
+      }
+    },
+    "coverage": {
+      "eligibleGames": 4183,
+      "fallbackGames": 499,
+      "eligibleFraction": 0.8934216146945749
+    },
+    "groups": {
+      "subdivision": {
+        "FBS-FBS": {
+          "baseline": {
+            "games": 2366,
+            "marginMae": 14.064129441739368,
+            "marginRmse": 17.836030148409602,
+            "marginBias": 2.6290325837935558,
+            "probabilityGames": 2366,
+            "winnerAccuracy": 0.6715976331360947,
+            "brier": 0.2077314081868129,
+            "logLoss": 0.6015767901164266,
+            "intervalCoverage": 0.698647506339814,
+            "intervalMeanWidth": 35.374894336432796
+          },
+          "candidate": {
+            "games": 2366,
+            "marginMae": 13.921948231934115,
+            "marginRmse": 17.605405404278365,
+            "marginBias": 2.531413804436565,
+            "probabilityGames": 2366,
+            "winnerAccuracy": 0.6821639898562976,
+            "brier": 0.20638897346153856,
+            "logLoss": 0.6007885695854633,
+            "intervalCoverage": 0.6885038038884193,
+            "intervalMeanWidth": 35.374894336432796
+          },
+          "paired": {
+            "deltaMarginMae": -0.14218120980525306,
+            "deltaMarginRmse": -0.23062474413123724,
+            "deltaMarginBias": -0.0976187793569907,
+            "deltaBrier": -0.001342434725274344,
+            "deltaLogLoss": -0.0007882205309632795,
+            "deltaWinnerAccuracy": 0.010566356720202896,
+            "deltaIntervalCoverage": -0.010143702451394732
+          },
+          "coverage": {
+            "eligibleGames": 2206,
+            "fallbackGames": 160,
+            "eligibleFraction": 0.9323753169907016
+          }
+        },
+        "FBS-FCS": {
+          "baseline": {
+            "games": 358,
+            "marginMae": 26.080988459649568,
+            "marginRmse": 30.52937111147392,
+            "marginBias": 24.721833263406307,
+            "probabilityGames": 358,
+            "winnerAccuracy": 0.8743016759776536,
+            "brier": 0.15030663759776533,
+            "logLoss": 0.47612887522073827,
+            "intervalCoverage": 0.39664804469273746,
+            "intervalMeanWidth": 38.40782122905028
+          },
+          "candidate": {
+            "games": 358,
+            "marginMae": 25.705146821080863,
+            "marginRmse": 30.23699157120686,
+            "marginBias": 24.336747159069827,
+            "probabilityGames": 358,
+            "winnerAccuracy": 0.8631284916201117,
+            "brier": 0.15239302692737441,
+            "logLoss": 0.4773034601535107,
+            "intervalCoverage": 0.40502793296089384,
+            "intervalMeanWidth": 38.40782122905028
+          },
+          "paired": {
+            "deltaMarginMae": -0.3758416385687049,
+            "deltaMarginRmse": -0.2923795402670599,
+            "deltaMarginBias": -0.38508610433648016,
+            "deltaBrier": 0.002086389329609084,
+            "deltaLogLoss": 0.001174584932772449,
+            "deltaWinnerAccuracy": -0.011173184357541888,
+            "deltaIntervalCoverage": 0.008379888268156388
+          },
+          "coverage": {
+            "eligibleGames": 182,
+            "fallbackGames": 176,
+            "eligibleFraction": 0.5083798882681564
+          }
+        },
+        "FCS-FCS": {
+          "baseline": {
+            "games": 1958,
+            "marginMae": 13.84460354706389,
+            "marginRmse": 17.683455394111625,
+            "marginBias": 2.38121783715652,
+            "probabilityGames": 1958,
+            "winnerAccuracy": 0.6805413687436159,
+            "brier": 0.20172886804392268,
+            "logLoss": 0.5876495437487643,
+            "intervalCoverage": 0.7017364657814096,
+            "intervalMeanWidth": 35.51174668028601
+          },
+          "candidate": {
+            "games": 1958,
+            "marginMae": 13.623392425254593,
+            "marginRmse": 17.467233910733597,
+            "marginBias": 2.36922741754006,
+            "probabilityGames": 1958,
+            "winnerAccuracy": 0.6966292134831461,
+            "brier": 0.19886714338100098,
+            "logLoss": 0.5839487410880538,
+            "intervalCoverage": 0.6991828396322778,
+            "intervalMeanWidth": 35.51174668028601
+          },
+          "paired": {
+            "deltaMarginMae": -0.22121112180929714,
+            "deltaMarginRmse": -0.21622148337802827,
+            "deltaMarginBias": -0.01199041961646019,
+            "deltaBrier": -0.0028617246629216997,
+            "deltaLogLoss": -0.0037008026607104894,
+            "deltaWinnerAccuracy": 0.016087844739530177,
+            "deltaIntervalCoverage": -0.0025536261491317935
+          },
+          "coverage": {
+            "eligibleGames": 1795,
+            "fallbackGames": 163,
+            "eligibleFraction": 0.9167517875383044
+          }
+        }
+      },
+      "coverage": {
+        "eligible": {
+          "baseline": {
+            "games": 4183,
+            "marginMae": 14.152504887849261,
+            "marginRmse": 18.034465171796747,
+            "marginBias": 3.0769122083246168,
+            "probabilityGames": 4183,
+            "winnerAccuracy": 0.6840784126225197,
+            "brier": 0.20144181729619878,
+            "logLoss": 0.5868411648575654,
+            "intervalCoverage": 0.6930432703801099,
+            "intervalMeanWidth": 35.141286158259625
+          },
+          "candidate": {
+            "games": 4183,
+            "marginMae": 13.936372106231028,
+            "marginRmse": 17.763461079254476,
+            "marginBias": 2.9831268631369223,
+            "probabilityGames": 4183,
+            "winnerAccuracy": 0.6966292134831461,
+            "brier": 0.1995215375759026,
+            "logLoss": 0.5847635650535944,
+            "intervalCoverage": 0.6868276356681807,
+            "intervalMeanWidth": 35.141286158259625
+          },
+          "paired": {
+            "deltaMarginMae": -0.21613278161823324,
+            "deltaMarginRmse": -0.2710040925422703,
+            "deltaMarginBias": -0.09378534518769444,
+            "deltaBrier": -0.0019202797202961808,
+            "deltaLogLoss": -0.002077599803971042,
+            "deltaWinnerAccuracy": 0.012550800860626432,
+            "deltaIntervalCoverage": -0.006215634711929208
+          },
+          "coverage": {
+            "eligibleGames": 4183,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        },
+        "fallback": {
+          "baseline": {
+            "games": 499,
+            "marginMae": 21.083226306587694,
+            "marginRmse": 26.03147154712982,
+            "marginBias": 13.752320960492167,
+            "probabilityGames": 499,
+            "winnerAccuracy": 0.7474949899799599,
+            "brier": 0.1957039877955911,
+            "logLoss": 0.5804529795699017,
+            "intervalCoverage": 0.5410821643286573,
+            "intervalMeanWidth": 40.04609218436874
+          },
+          "candidate": {
+            "games": 499,
+            "marginMae": 21.083226306587694,
+            "marginRmse": 26.03147154712982,
+            "marginBias": 13.752320960492167,
+            "probabilityGames": 499,
+            "winnerAccuracy": 0.7474949899799599,
+            "brier": 0.1957039877955911,
+            "logLoss": 0.5804529795699017,
+            "intervalCoverage": 0.5410821643286573,
+            "intervalMeanWidth": 40.04609218436874
+          },
+          "paired": {
+            "deltaMarginMae": 0,
+            "deltaMarginRmse": 0,
+            "deltaMarginBias": 0,
+            "deltaBrier": 0,
+            "deltaLogLoss": 0,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 0,
+            "fallbackGames": 499,
+            "eligibleFraction": 0
+          }
+        }
+      },
+      "season": {
+        "2022": {
+          "baseline": {
+            "games": 1540,
+            "marginMae": 14.715990450990994,
+            "marginRmse": 18.82232519117782,
+            "marginBias": 3.2750096283427066,
+            "probabilityGames": 1540,
+            "winnerAccuracy": 0.688961038961039,
+            "brier": 0.19783754859740244,
+            "logLoss": 0.5773717316858535,
+            "intervalCoverage": 0.6844155844155844,
+            "intervalMeanWidth": 35.687012987012984
+          },
+          "candidate": {
+            "games": 1540,
+            "marginMae": 14.463780218261503,
+            "marginRmse": 18.56070639261473,
+            "marginBias": 3.2116412232695994,
+            "probabilityGames": 1540,
+            "winnerAccuracy": 0.7025974025974026,
+            "brier": 0.19642352353896078,
+            "logLoss": 0.575988272186708,
+            "intervalCoverage": 0.6792207792207792,
+            "intervalMeanWidth": 35.687012987012984
+          },
+          "paired": {
+            "deltaMarginMae": -0.2522102327294906,
+            "deltaMarginRmse": -0.26161879856309156,
+            "deltaMarginBias": -0.06336840507310715,
+            "deltaBrier": -0.0014140250584416536,
+            "deltaLogLoss": -0.001383459499145534,
+            "deltaWinnerAccuracy": 0.013636363636363558,
+            "deltaIntervalCoverage": -0.0051948051948051965
+          },
+          "coverage": {
+            "eligibleGames": 1379,
+            "fallbackGames": 161,
+            "eligibleFraction": 0.8954545454545455
+          }
+        },
+        "2023": {
+          "baseline": {
+            "games": 1535,
+            "marginMae": 14.974173050927963,
+            "marginRmse": 19.071588086913003,
+            "marginBias": 4.382916475943829,
+            "probabilityGames": 1535,
+            "winnerAccuracy": 0.6993485342019544,
+            "brier": 0.19985576239087935,
+            "logLoss": 0.5848023238661824,
+            "intervalCoverage": 0.6775244299674267,
+            "intervalMeanWidth": 35.63973941368078
+          },
+          "candidate": {
+            "games": 1535,
+            "marginMae": 14.77892557508539,
+            "marginRmse": 18.848233638305338,
+            "marginBias": 4.3279263092389,
+            "probabilityGames": 1535,
+            "winnerAccuracy": 0.7133550488599348,
+            "brier": 0.1972434602214982,
+            "logLoss": 0.5802484895322586,
+            "intervalCoverage": 0.6723127035830619,
+            "intervalMeanWidth": 35.63973941368078
+          },
+          "paired": {
+            "deltaMarginMae": -0.19524747584257263,
+            "deltaMarginRmse": -0.2233544486076653,
+            "deltaMarginBias": -0.05499016670492907,
+            "deltaBrier": -0.0026123021693811588,
+            "deltaLogLoss": -0.004553834333923756,
+            "deltaWinnerAccuracy": 0.014006514657980418,
+            "deltaIntervalCoverage": -0.005211726384364734
+          },
+          "coverage": {
+            "eligibleGames": 1359,
+            "fallbackGames": 176,
+            "eligibleFraction": 0.885342019543974
+          }
+        },
+        "2024": {
+          "baseline": {
+            "games": 1607,
+            "marginMae": 14.97976163357839,
+            "marginRmse": 19.237461554940122,
+            "marginBias": 4.954474367446136,
+            "probabilityGames": 1607,
+            "winnerAccuracy": 0.6845052893590542,
+            "brier": 0.20462911733042963,
+            "logLoss": 0.5958796487080097,
+            "intervalCoverage": 0.6689483509645302,
+            "intervalMeanWidth": 35.665214685749845
+          },
+          "candidate": {
+            "games": 1607,
+            "marginMae": 14.845365372416158,
+            "marginRmse": 19.033911491608414,
+            "marginBias": 4.823605139558462,
+            "probabilityGames": 1607,
+            "winnerAccuracy": 0.6907280647168638,
+            "brier": 0.20348098562538902,
+            "logLoss": 0.596147267470459,
+            "intervalCoverage": 0.6627255756067206,
+            "intervalMeanWidth": 35.665214685749845
+          },
+          "paired": {
+            "deltaMarginMae": -0.13439626116223202,
+            "deltaMarginRmse": -0.20355006333170778,
+            "deltaMarginBias": -0.13086922788767374,
+            "deltaBrier": -0.001148131705040606,
+            "deltaLogLoss": 0.0002676187624492954,
+            "deltaWinnerAccuracy": 0.0062227753578095735,
+            "deltaIntervalCoverage": -0.0062227753578095735
+          },
+          "coverage": {
+            "eligibleGames": 1445,
+            "fallbackGames": 162,
+            "eligibleFraction": 0.8991910392034848
+          }
+        }
+      },
+      "phase": {
+        "postseason": {
+          "baseline": {
+            "games": 163,
+            "marginMae": 13.769283685030327,
+            "marginRmse": 17.85939772232548,
+            "marginBias": 2.598143062109897,
+            "probabilityGames": 163,
+            "winnerAccuracy": 0.588957055214724,
+            "brier": 0.23800104582822093,
+            "logLoss": 0.6668615768456871,
+            "intervalCoverage": 0.6871165644171779,
+            "intervalMeanWidth": 34.012269938650306
+          },
+          "candidate": {
+            "games": 163,
+            "marginMae": 13.624649368088843,
+            "marginRmse": 17.47965010730363,
+            "marginBias": 2.2832882763080753,
+            "probabilityGames": 163,
+            "winnerAccuracy": 0.6073619631901841,
+            "brier": 0.24170617987730067,
+            "logLoss": 0.6762881080450871,
+            "intervalCoverage": 0.6748466257668712,
+            "intervalMeanWidth": 34.012269938650306
+          },
+          "paired": {
+            "deltaMarginMae": -0.14463431694148454,
+            "deltaMarginRmse": -0.3797476150218486,
+            "deltaMarginBias": -0.3148547858018218,
+            "deltaBrier": 0.003705134049079739,
+            "deltaLogLoss": 0.009426531199399957,
+            "deltaWinnerAccuracy": 0.018404907975460127,
+            "deltaIntervalCoverage": -0.012269938650306789
+          },
+          "coverage": {
+            "eligibleGames": 163,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        },
+        "weeks-0-3": {
+          "baseline": {
+            "games": 1065,
+            "marginMae": 19.45327983598724,
+            "marginRmse": 24.31966004714864,
+            "marginBias": 10.098146255055731,
+            "probabilityGames": 1065,
+            "winnerAccuracy": 0.7286384976525822,
+            "brier": 0.19375149648826304,
+            "logLoss": 0.5733357705739086,
+            "intervalCoverage": 0.5802816901408451,
+            "intervalMeanWidth": 38.6037558685446
+          },
+          "candidate": {
+            "games": 1065,
+            "marginMae": 19.269169684095925,
+            "marginRmse": 24.165904881073725,
+            "marginBias": 10.018981651041761,
+            "probabilityGames": 1065,
+            "winnerAccuracy": 0.7342723004694836,
+            "brier": 0.19319925565258214,
+            "logLoss": 0.5721096226561685,
+            "intervalCoverage": 0.5774647887323944,
+            "intervalMeanWidth": 38.6037558685446
+          },
+          "paired": {
+            "deltaMarginMae": -0.1841101518913142,
+            "deltaMarginRmse": -0.1537551660749159,
+            "deltaMarginBias": -0.07916460401396996,
+            "deltaBrier": -0.000552240835680895,
+            "deltaLogLoss": -0.0012261479177401169,
+            "deltaWinnerAccuracy": 0.005633802816901401,
+            "deltaIntervalCoverage": -0.0028169014084507005
+          },
+          "coverage": {
+            "eligibleGames": 577,
+            "fallbackGames": 488,
+            "eligibleFraction": 0.5417840375586854
+          }
+        },
+        "weeks-4-8": {
+          "baseline": {
+            "games": 1644,
+            "marginMae": 13.242698955774774,
+            "marginRmse": 16.855895072418374,
+            "marginBias": -0.3951519213898532,
+            "probabilityGames": 1644,
+            "winnerAccuracy": 0.6934306569343066,
+            "brier": 0.19698896899026735,
+            "logLoss": 0.5752542128460634,
+            "intervalCoverage": 0.7250608272506083,
+            "intervalMeanWidth": 35.4823600973236
+          },
+          "candidate": {
+            "games": 1644,
+            "marginMae": 13.114397276879497,
+            "marginRmse": 16.6827366749435,
+            "marginBias": -0.46605982769721593,
+            "probabilityGames": 1644,
+            "winnerAccuracy": 0.6982968369829684,
+            "brier": 0.1967532383333332,
+            "logLoss": 0.5745412693087679,
+            "intervalCoverage": 0.7171532846715328,
+            "intervalMeanWidth": 35.4823600973236
+          },
+          "paired": {
+            "deltaMarginMae": -0.12830167889527644,
+            "deltaMarginRmse": -0.17315839747487516,
+            "deltaMarginBias": -0.07090790630736271,
+            "deltaBrier": -0.00023573065693416329,
+            "deltaLogLoss": -0.0007129435372954518,
+            "deltaWinnerAccuracy": 0.0048661800486617945,
+            "deltaIntervalCoverage": -0.007907542579075444
+          },
+          "coverage": {
+            "eligibleGames": 1633,
+            "fallbackGames": 11,
+            "eligibleFraction": 0.9933090024330901
+          }
+        },
+        "weeks-9+": {
+          "baseline": {
+            "games": 1810,
+            "marginMae": 13.805151670486708,
+            "marginRmse": 17.42629091343177,
+            "marginBias": 5.085490941831025,
+            "probabilityGames": 1810,
+            "winnerAccuracy": 0.675414364640884,
+            "brier": 0.20513703448066306,
+            "logLoss": 0.5963445695019813,
+            "intervalCoverage": 0.6889502762430939,
+            "intervalMeanWidth": 34.24806629834254
+          },
+          "candidate": {
+            "games": 1810,
+            "marginMae": 13.543547935691187,
+            "marginRmse": 17.091667325937973,
+            "marginBias": 5.008087700068441,
+            "probabilityGames": 1810,
+            "winnerAccuracy": 0.6950276243093922,
+            "brier": 0.20090455424309356,
+            "logLoss": 0.5920632447186704,
+            "intervalCoverage": 0.6845303867403315,
+            "intervalMeanWidth": 34.24806629834254
+          },
+          "paired": {
+            "deltaMarginMae": -0.26160373479552135,
+            "deltaMarginRmse": -0.33462358749379817,
+            "deltaMarginBias": -0.07740324176258362,
+            "deltaBrier": -0.0042324802375695025,
+            "deltaLogLoss": -0.004281324783310891,
+            "deltaWinnerAccuracy": 0.019613259668508243,
+            "deltaIntervalCoverage": -0.0044198895027623974
+          },
+          "coverage": {
+            "eligibleGames": 1810,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        }
+      },
+      "venue": {
+        "home": {
+          "baseline": {
+            "games": 4420,
+            "marginMae": 14.961496085537865,
+            "marginRmse": 19.079690697714984,
+            "marginBias": 4.3765976902338455,
+            "probabilityGames": 4420,
+            "winnerAccuracy": 0.6944570135746606,
+            "brier": 0.19940079568778238,
+            "logLoss": 0.5830233802174103,
+            "intervalCoverage": 0.6744343891402715,
+            "intervalMeanWidth": 35.69162895927602
+          },
+          "candidate": {
+            "games": 4420,
+            "marginMae": 14.762117346010898,
+            "marginRmse": 18.842194165933623,
+            "marginBias": 4.288590646357734,
+            "probabilityGames": 4420,
+            "winnerAccuracy": 0.7052036199095023,
+            "brier": 0.1975929443009049,
+            "logLoss": 0.5810082197722186,
+            "intervalCoverage": 0.6687782805429864,
+            "intervalMeanWidth": 35.69162895927602
+          },
+          "paired": {
+            "deltaMarginMae": -0.19937873952696705,
+            "deltaMarginRmse": -0.23749653178136043,
+            "deltaMarginBias": -0.0880070438761118,
+            "deltaBrier": -0.0018078513868774737,
+            "deltaLogLoss": -0.002015160445191677,
+            "deltaWinnerAccuracy": 0.010746606334841702,
+            "deltaIntervalCoverage": -0.005656108597285159
+          },
+          "coverage": {
+            "eligibleGames": 3952,
+            "fallbackGames": 468,
+            "eligibleFraction": 0.8941176470588236
+          }
+        },
+        "neutral": {
+          "baseline": {
+            "games": 262,
+            "marginMae": 13.704752575509058,
+            "marginRmse": 18.492334777814992,
+            "marginBias": 1.4830921216560213,
+            "probabilityGames": 262,
+            "winnerAccuracy": 0.6297709923664122,
+            "brier": 0.22494616305343512,
+            "logLoss": 0.639081255128337,
+            "intervalCoverage": 0.7175572519083969,
+            "intervalMeanWidth": 35.19847328244275
+          },
+          "candidate": {
+            "games": 262,
+            "marginMae": 13.617617473219068,
+            "marginRmse": 18.412391550138462,
+            "marginBias": 1.470447217122502,
+            "probabilityGames": 262,
+            "winnerAccuracy": 0.648854961832061,
+            "brier": 0.2247865182442748,
+            "logLoss": 0.6399072443944802,
+            "intervalCoverage": 0.7137404580152672,
+            "intervalMeanWidth": 35.19847328244275
+          },
+          "paired": {
+            "deltaMarginMae": -0.08713510228998977,
+            "deltaMarginRmse": -0.07994322767653017,
+            "deltaMarginBias": -0.012644904533519297,
+            "deltaBrier": -0.00015964480916030865,
+            "deltaLogLoss": 0.00082598926614319,
+            "deltaWinnerAccuracy": 0.01908396946564883,
+            "deltaIntervalCoverage": -0.003816793893129722
+          },
+          "coverage": {
+            "eligibleGames": 231,
+            "fallbackGames": 31,
+            "eligibleFraction": 0.8816793893129771
+          }
+        }
+      }
+    }
+  },
+  "holdout": {
+    "season": 2025,
+    "evaluation": "Not used in this challenger fit or lambda selection; used once for the predeclared promotion gates. Baseline results had previously been inspected.",
+    "baseline": {
+      "games": 1625,
+      "marginMae": 14.97261693908743,
+      "marginRmse": 19.249765847302655,
+      "marginBias": 5.949533602222371,
+      "probabilityGames": 1625,
+      "winnerAccuracy": 0.6953846153846154,
+      "brier": 0.1953108367938463,
+      "logLoss": 0.5729211487740198,
+      "intervalCoverage": 0.6732307692307692,
+      "intervalMeanWidth": 35.57846153846154
+    },
+    "candidate": {
+      "games": 1625,
+      "marginMae": 14.657322796008971,
+      "marginRmse": 18.886193119409718,
+      "marginBias": 5.8981720810947085,
+      "probabilityGames": 1625,
+      "winnerAccuracy": 0.7113846153846154,
+      "brier": 0.19166832479999985,
+      "logLoss": 0.565259895316507,
+      "intervalCoverage": 0.6824615384615385,
+      "intervalMeanWidth": 35.57846153846154
+    },
+    "paired": {
+      "deltaMarginMae": -0.31529414307845904,
+      "deltaMarginRmse": -0.3635727278929366,
+      "deltaMarginBias": -0.05136152112766279,
+      "deltaBrier": -0.0036425119938464645,
+      "deltaLogLoss": -0.007661253457512784,
+      "deltaWinnerAccuracy": 0.016000000000000014,
+      "deltaIntervalCoverage": 0.009230769230769265,
+      "bootstrap": {
+        "lower95": -0.45989058904109675,
+        "upper95": -0.17013649081705565,
+        "blocks": 22,
+        "resamples": 5000,
+        "seed": "box-units-v1|paired-week-bootstrap|2025|holdout",
+        "effect": "candidate minus baseline margin MAE",
+        "block": "All games sharing the frozen season and Monday prediction cutoff are resampled together.",
+        "limitation": "Preserves within-week dependence only. Repeated teams across weeks, corrected archive revisions, coefficient estimation and model selection uncertainty are not fully represented."
+      }
+    },
+    "coverage": {
+      "eligibleGames": 1455,
+      "fallbackGames": 170,
+      "eligibleFraction": 0.8953846153846153
+    },
+    "groups": {
+      "subdivision": {
+        "FBS-FBS": {
+          "baseline": {
+            "games": 808,
+            "marginMae": 14.11534084216558,
+            "marginRmse": 17.934660220216546,
+            "marginBias": 5.023397647282175,
+            "probabilityGames": 808,
+            "winnerAccuracy": 0.6596534653465347,
+            "brier": 0.20655824293316802,
+            "logLoss": 0.5981755256393432,
+            "intervalCoverage": 0.7029702970297029,
+            "intervalMeanWidth": 35.320544554455445
+          },
+          "candidate": {
+            "games": 808,
+            "marginMae": 13.836351825227801,
+            "marginRmse": 17.620700859218925,
+            "marginBias": 4.989770671051511,
+            "probabilityGames": 808,
+            "winnerAccuracy": 0.676980198019802,
+            "brier": 0.20449603551980186,
+            "logLoss": 0.5945431785131854,
+            "intervalCoverage": 0.7103960396039604,
+            "intervalMeanWidth": 35.320544554455445
+          },
+          "paired": {
+            "deltaMarginMae": -0.27898901693777844,
+            "deltaMarginRmse": -0.3139593609976217,
+            "deltaMarginBias": -0.03362697623066335,
+            "deltaBrier": -0.002062207413366157,
+            "deltaLogLoss": -0.0036323471261577867,
+            "deltaWinnerAccuracy": 0.017326732673267342,
+            "deltaIntervalCoverage": 0.007425742574257432
+          },
+          "coverage": {
+            "eligibleGames": 752,
+            "fallbackGames": 56,
+            "eligibleFraction": 0.9306930693069307
+          }
+        },
+        "FBS-FCS": {
+          "baseline": {
+            "games": 126,
+            "marginMae": 27.610072181728416,
+            "marginRmse": 31.67554346200928,
+            "marginBias": 26.790756995643008,
+            "probabilityGames": 126,
+            "winnerAccuracy": 0.8809523809523809,
+            "brier": 0.13691317325396823,
+            "logLoss": 0.44589114413032616,
+            "intervalCoverage": 0.3253968253968254,
+            "intervalMeanWidth": 38.166666666666664
+          },
+          "candidate": {
+            "games": 126,
+            "marginMae": 27.29152145470722,
+            "marginRmse": 31.448684431586614,
+            "marginBias": 26.407748665178666,
+            "probabilityGames": 126,
+            "winnerAccuracy": 0.8650793650793651,
+            "brier": 0.14179330793650793,
+            "logLoss": 0.4552711789948819,
+            "intervalCoverage": 0.3412698412698413,
+            "intervalMeanWidth": 38.166666666666664
+          },
+          "paired": {
+            "deltaMarginMae": -0.31855072702119713,
+            "deltaMarginRmse": -0.2268590304226663,
+            "deltaMarginBias": -0.38300833046434235,
+            "deltaBrier": 0.0048801346825397,
+            "deltaLogLoss": 0.009380034864555742,
+            "deltaWinnerAccuracy": -0.015873015873015817,
+            "deltaIntervalCoverage": 0.015873015873015872
+          },
+          "coverage": {
+            "eligibleGames": 66,
+            "fallbackGames": 60,
+            "eligibleFraction": 0.5238095238095238
+          }
+        },
+        "FCS-FCS": {
+          "baseline": {
+            "games": 691,
+            "marginMae": 13.670677323660625,
+            "marginRmse": 17.67342108125219,
+            "marginBias": 3.2322017701249286,
+            "probabilityGames": 691,
+            "winnerAccuracy": 0.703328509406657,
+            "brier": 0.19280751037626642,
+            "logLoss": 0.5665539187854857,
+            "intervalCoverage": 0.7018813314037626,
+            "intervalMeanWidth": 35.40810419681621
+          },
+          "candidate": {
+            "games": 691,
+            "marginMae": 13.31352469672561,
+            "marginRmse": 17.187431526611032,
+            "marginBias": 3.2205768419056136,
+            "probabilityGames": 691,
+            "winnerAccuracy": 0.723589001447178,
+            "brier": 0.1857630597684515,
+            "logLoss": 0.5510742012985762,
+            "intervalCoverage": 0.7120115774240231,
+            "intervalMeanWidth": 35.40810419681621
+          },
+          "paired": {
+            "deltaMarginMae": -0.35715262693501515,
+            "deltaMarginRmse": -0.4859895546411579,
+            "deltaMarginBias": -0.011624928219315045,
+            "deltaBrier": -0.007044450607814917,
+            "deltaLogLoss": -0.015479717486909461,
+            "deltaWinnerAccuracy": 0.02026049204052094,
+            "deltaIntervalCoverage": 0.01013024602026047
+          },
+          "coverage": {
+            "eligibleGames": 637,
+            "fallbackGames": 54,
+            "eligibleFraction": 0.9218523878437048
+          }
+        }
+      },
+      "coverage": {
+        "eligible": {
+          "baseline": {
+            "games": 1455,
+            "marginMae": 14.392833899903499,
+            "marginRmse": 18.407348180387213,
+            "marginBias": 5.32175117693621,
+            "probabilityGames": 1455,
+            "winnerAccuracy": 0.6872852233676976,
+            "brier": 0.19541724298281765,
+            "logLoss": 0.5722732198599099,
+            "intervalCoverage": 0.6845360824742268,
+            "intervalMeanWidth": 35.07353951890035
+          },
+          "candidate": {
+            "games": 1455,
+            "marginMae": 14.040701265881149,
+            "marginRmse": 17.981804248333265,
+            "marginBias": 5.264388653340038,
+            "probabilityGames": 1455,
+            "winnerAccuracy": 0.7051546391752578,
+            "brier": 0.19134914539518869,
+            "logLoss": 0.5637168371324467,
+            "intervalCoverage": 0.6948453608247422,
+            "intervalMeanWidth": 35.07353951890035
+          },
+          "paired": {
+            "deltaMarginMae": -0.3521326340223503,
+            "deltaMarginRmse": -0.425543932053948,
+            "deltaMarginBias": -0.05736252359617122,
+            "deltaBrier": -0.004068097587628966,
+            "deltaLogLoss": -0.008556382727463174,
+            "deltaWinnerAccuracy": 0.017869415807560185,
+            "deltaIntervalCoverage": 0.010309278350515427
+          },
+          "coverage": {
+            "eligibleGames": 1455,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        },
+        "fallback": {
+          "baseline": {
+            "games": 170,
+            "marginMae": 19.934877656808812,
+            "marginRmse": 25.339005491010866,
+            "marginBias": 11.322612595112593,
+            "probabilityGames": 170,
+            "winnerAccuracy": 0.7647058823529411,
+            "brier": 0.19440012500000006,
+            "logLoss": 0.5784666580094915,
+            "intervalCoverage": 0.5764705882352941,
+            "intervalMeanWidth": 39.9
+          },
+          "candidate": {
+            "games": 170,
+            "marginMae": 19.934877656808812,
+            "marginRmse": 25.339005491010866,
+            "marginBias": 11.322612595112593,
+            "probabilityGames": 170,
+            "winnerAccuracy": 0.7647058823529411,
+            "brier": 0.19440012500000006,
+            "logLoss": 0.5784666580094915,
+            "intervalCoverage": 0.5764705882352941,
+            "intervalMeanWidth": 39.9
+          },
+          "paired": {
+            "deltaMarginMae": 0,
+            "deltaMarginRmse": 0,
+            "deltaMarginBias": 0,
+            "deltaBrier": 0,
+            "deltaLogLoss": 0,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 0,
+            "fallbackGames": 170,
+            "eligibleFraction": 0
+          }
+        }
+      },
+      "season": {
+        "2025": {
+          "baseline": {
+            "games": 1625,
+            "marginMae": 14.97261693908743,
+            "marginRmse": 19.249765847302655,
+            "marginBias": 5.949533602222371,
+            "probabilityGames": 1625,
+            "winnerAccuracy": 0.6953846153846154,
+            "brier": 0.1953108367938463,
+            "logLoss": 0.5729211487740198,
+            "intervalCoverage": 0.6732307692307692,
+            "intervalMeanWidth": 35.57846153846154
+          },
+          "candidate": {
+            "games": 1625,
+            "marginMae": 14.657322796008971,
+            "marginRmse": 18.886193119409718,
+            "marginBias": 5.8981720810947085,
+            "probabilityGames": 1625,
+            "winnerAccuracy": 0.7113846153846154,
+            "brier": 0.19166832479999985,
+            "logLoss": 0.565259895316507,
+            "intervalCoverage": 0.6824615384615385,
+            "intervalMeanWidth": 35.57846153846154
+          },
+          "paired": {
+            "deltaMarginMae": -0.31529414307845904,
+            "deltaMarginRmse": -0.3635727278929366,
+            "deltaMarginBias": -0.05136152112766279,
+            "deltaBrier": -0.0036425119938464645,
+            "deltaLogLoss": -0.007661253457512784,
+            "deltaWinnerAccuracy": 0.016000000000000014,
+            "deltaIntervalCoverage": 0.009230769230769265
+          },
+          "coverage": {
+            "eligibleGames": 1455,
+            "fallbackGames": 170,
+            "eligibleFraction": 0.8953846153846153
+          }
+        }
+      },
+      "phase": {
+        "postseason": {
+          "baseline": {
+            "games": 50,
+            "marginMae": 12.974307027662642,
+            "marginRmse": 16.099304643406153,
+            "marginBias": 4.745995356777378,
+            "probabilityGames": 50,
+            "winnerAccuracy": 0.48,
+            "brier": 0.2333221746000001,
+            "logLoss": 0.6549036886844262,
+            "intervalCoverage": 0.7,
+            "intervalMeanWidth": 34.06
+          },
+          "candidate": {
+            "games": 50,
+            "marginMae": 12.950872517221972,
+            "marginRmse": 15.73337148644861,
+            "marginBias": 4.163935276918117,
+            "probabilityGames": 50,
+            "winnerAccuracy": 0.54,
+            "brier": 0.2384696038,
+            "logLoss": 0.6633329556744694,
+            "intervalCoverage": 0.7,
+            "intervalMeanWidth": 34.06
+          },
+          "paired": {
+            "deltaMarginMae": -0.023434510440669243,
+            "deltaMarginRmse": -0.3659331569575439,
+            "deltaMarginBias": -0.5820600798592608,
+            "deltaBrier": 0.0051474291999999144,
+            "deltaLogLoss": 0.008429266990043205,
+            "deltaWinnerAccuracy": 0.06000000000000005,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 50,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        },
+        "weeks-0-3": {
+          "baseline": {
+            "games": 357,
+            "marginMae": 19.170852538290752,
+            "marginRmse": 24.495235746774583,
+            "marginBias": 10.237907303280112,
+            "probabilityGames": 357,
+            "winnerAccuracy": 0.7478991596638656,
+            "brier": 0.1836897539215686,
+            "logLoss": 0.5497395353441531,
+            "intervalCoverage": 0.5938375350140056,
+            "intervalMeanWidth": 38.450980392156865
+          },
+          "candidate": {
+            "games": 357,
+            "marginMae": 19.0404272283974,
+            "marginRmse": 24.32931128569909,
+            "marginBias": 10.186707769150582,
+            "probabilityGames": 357,
+            "winnerAccuracy": 0.7507002801120448,
+            "brier": 0.18493784226890753,
+            "logLoss": 0.5514021463887918,
+            "intervalCoverage": 0.5938375350140056,
+            "intervalMeanWidth": 38.450980392156865
+          },
+          "paired": {
+            "deltaMarginMae": -0.13042530989335077,
+            "deltaMarginRmse": -0.16592446107549108,
+            "deltaMarginBias": -0.05119953412953038,
+            "deltaBrier": 0.001248088347338916,
+            "deltaLogLoss": 0.0016626110446387177,
+            "deltaWinnerAccuracy": 0.0028011204481792618,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 195,
+            "fallbackGames": 162,
+            "eligibleFraction": 0.5462184873949579
+          }
+        },
+        "weeks-4-8": {
+          "baseline": {
+            "games": 536,
+            "marginMae": 13.680650305772318,
+            "marginRmse": 17.47282464180299,
+            "marginBias": 1.6054077192961302,
+            "probabilityGames": 536,
+            "winnerAccuracy": 0.6940298507462687,
+            "brier": 0.19193241891791052,
+            "logLoss": 0.5632722419052051,
+            "intervalCoverage": 0.710820895522388,
+            "intervalMeanWidth": 35.48694029850746
+          },
+          "candidate": {
+            "games": 536,
+            "marginMae": 13.29041000001966,
+            "marginRmse": 17.042431016453694,
+            "marginBias": 1.6366690747924146,
+            "probabilityGames": 536,
+            "winnerAccuracy": 0.7145522388059702,
+            "brier": 0.187553349141791,
+            "logLoss": 0.5527241540931901,
+            "intervalCoverage": 0.7164179104477612,
+            "intervalMeanWidth": 35.48694029850746
+          },
+          "paired": {
+            "deltaMarginMae": -0.39024030575265733,
+            "deltaMarginRmse": -0.43039362534929637,
+            "deltaMarginBias": 0.03126135549628439,
+            "deltaBrier": -0.004379069776119515,
+            "deltaLogLoss": -0.010548087812014995,
+            "deltaWinnerAccuracy": 0.020522388059701524,
+            "deltaIntervalCoverage": 0.005597014925373123
+          },
+          "coverage": {
+            "eligibleGames": 528,
+            "fallbackGames": 8,
+            "eligibleFraction": 0.9850746268656716
+          }
+        },
+        "weeks-9+": {
+          "baseline": {
+            "games": 682,
+            "marginMae": 13.936897733973838,
+            "marginRmse": 17.603632396967576,
+            "marginBias": 7.207127406097865,
+            "probabilityGames": 682,
+            "winnerAccuracy": 0.6847507331378299,
+            "brier": 0.20126243749266873,
+            "logLoss": 0.5866286606224448,
+            "intervalCoverage": 0.6832844574780058,
+            "intervalMeanWidth": 34.25806451612903
+          },
+          "candidate": {
+            "games": 682,
+            "marginMae": 13.562336711297782,
+            "marginRmse": 17.135371914288797,
+            "marginBias": 7.129653328823333,
+            "probabilityGames": 682,
+            "winnerAccuracy": 0.7008797653958945,
+            "brier": 0.19499434425219936,
+            "logLoss": 0.5751759079924523,
+            "intervalCoverage": 0.7008797653958945,
+            "intervalMeanWidth": 34.25806451612903
+          },
+          "paired": {
+            "deltaMarginMae": -0.3745610226760565,
+            "deltaMarginRmse": -0.4682604826787795,
+            "deltaMarginBias": -0.07747407727453215,
+            "deltaBrier": -0.006268093240469369,
+            "deltaLogLoss": -0.011452752629992458,
+            "deltaWinnerAccuracy": 0.016129032258064613,
+            "deltaIntervalCoverage": 0.01759530791788866
+          },
+          "coverage": {
+            "eligibleGames": 682,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        }
+      },
+      "venue": {
+        "home": {
+          "baseline": {
+            "games": 1546,
+            "marginMae": 15.046824331924958,
+            "marginRmse": 19.36498363990716,
+            "marginBias": 6.066199792796406,
+            "probabilityGames": 1546,
+            "winnerAccuracy": 0.705045278137128,
+            "brier": 0.19317100779430796,
+            "logLoss": 0.5680306219174881,
+            "intervalCoverage": 0.6720569210866753,
+            "intervalMeanWidth": 35.61254851228978
+          },
+          "candidate": {
+            "games": 1546,
+            "marginMae": 14.701740156021248,
+            "marginRmse": 18.990742095809154,
+            "marginBias": 6.011708352918749,
+            "probabilityGames": 1546,
+            "winnerAccuracy": 0.720569210866753,
+            "brier": 0.18909821383570474,
+            "logLoss": 0.5595453406229921,
+            "intervalCoverage": 0.6817593790426908,
+            "intervalMeanWidth": 35.61254851228978
+          },
+          "paired": {
+            "deltaMarginMae": -0.3450841759037093,
+            "deltaMarginRmse": -0.37424154409800536,
+            "deltaMarginBias": -0.05449143987765748,
+            "deltaBrier": -0.004072793958603216,
+            "deltaLogLoss": -0.008485281294495994,
+            "deltaWinnerAccuracy": 0.015523932729624934,
+            "deltaIntervalCoverage": 0.009702457956015542
+          },
+          "coverage": {
+            "eligibleGames": 1383,
+            "fallbackGames": 163,
+            "eligibleFraction": 0.8945666235446313
+          }
+        },
+        "neutral": {
+          "baseline": {
+            "games": 79,
+            "marginMae": 13.520406441279503,
+            "marginRmse": 16.837047437636585,
+            "marginBias": 3.666420556305096,
+            "probabilityGames": 79,
+            "winnerAccuracy": 0.5063291139240507,
+            "brier": 0.237186477721519,
+            "logLoss": 0.6686269021942421,
+            "intervalCoverage": 0.6962025316455697,
+            "intervalMeanWidth": 34.91139240506329
+          },
+          "candidate": {
+            "games": 79,
+            "marginMae": 13.788091927920682,
+            "marginRmse": 16.70906029636906,
+            "marginBias": 3.676310356538287,
+            "probabilityGames": 79,
+            "winnerAccuracy": 0.5316455696202531,
+            "brier": 0.24196442037974672,
+            "logLoss": 0.6770915605845315,
+            "intervalCoverage": 0.6962025316455697,
+            "intervalMeanWidth": 34.91139240506329
+          },
+          "paired": {
+            "deltaMarginMae": 0.2676854866411791,
+            "deltaMarginRmse": -0.12798714126752486,
+            "deltaMarginBias": 0.009889800233191082,
+            "deltaBrier": 0.00477794265822773,
+            "deltaLogLoss": 0.008464658390289315,
+            "deltaWinnerAccuracy": 0.025316455696202445,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 72,
+            "fallbackGames": 7,
+            "eligibleFraction": 0.9113924050632911
+          }
+        }
+      }
+    }
+  },
+  "monitoring": {
+    "season": 2026,
+    "evaluation": "Incomplete current-season monitoring using coefficients frozen after 2024; not used for model selection or promotion.",
+    "baseline": {
+      "games": 647,
+      "marginMae": 17.993031559365132,
+      "marginRmse": 23.120571028944042,
+      "marginBias": 7.300216679419611,
+      "probabilityGames": 647,
+      "winnerAccuracy": 0.7217928902627512,
+      "brier": 0.18731443962905686,
+      "logLoss": 0.5572273884114357,
+      "intervalCoverage": 0.624420401854714,
+      "intervalMeanWidth": 37.48995363214838
+    },
+    "candidate": {
+      "games": 647,
+      "marginMae": 17.807554235222916,
+      "marginRmse": 22.91391757973675,
+      "marginBias": 7.236032241587778,
+      "probabilityGames": 647,
+      "winnerAccuracy": 0.7217928902627512,
+      "brier": 0.18698916015455938,
+      "logLoss": 0.5576526733762694,
+      "intervalCoverage": 0.624420401854714,
+      "intervalMeanWidth": 37.48995363214838
+    },
+    "paired": {
+      "deltaMarginMae": -0.18547732414221585,
+      "deltaMarginRmse": -0.20665344920729112,
+      "deltaMarginBias": -0.06418443783183303,
+      "deltaBrier": -0.00032527947449748074,
+      "deltaLogLoss": 0.0004252849648337387,
+      "deltaWinnerAccuracy": 0,
+      "deltaIntervalCoverage": 0,
+      "bootstrap": {
+        "lower95": -0.38164252591761466,
+        "upper95": -0.00651237911962567,
+        "blocks": 7,
+        "resamples": 5000,
+        "seed": "box-units-v1|paired-week-bootstrap|2025|monitoring",
+        "effect": "candidate minus baseline margin MAE",
+        "block": "All games sharing the frozen season and Monday prediction cutoff are resampled together.",
+        "limitation": "Preserves within-week dependence only. Repeated teams across weeks, corrected archive revisions, coefficient estimation and model selection uncertainty are not fully represented."
+      }
+    },
+    "coverage": {
+      "eligibleGames": 464,
+      "fallbackGames": 183,
+      "eligibleFraction": 0.7171561051004637
+    },
+    "groups": {
+      "subdivision": {
+        "FBS-FBS": {
+          "baseline": {
+            "games": 274,
+            "marginMae": 15.600223870048302,
+            "marginRmse": 19.839460000762283,
+            "marginBias": 3.5357081408040942,
+            "probabilityGames": 274,
+            "winnerAccuracy": 0.7007299270072993,
+            "brier": 0.19637434591240874,
+            "logLoss": 0.5779154149020229,
+            "intervalCoverage": 0.6897810218978102,
+            "intervalMeanWidth": 37.34306569343066
+          },
+          "candidate": {
+            "games": 274,
+            "marginMae": 15.423409459405434,
+            "marginRmse": 19.621319186606307,
+            "marginBias": 3.552575014118731,
+            "probabilityGames": 274,
+            "winnerAccuracy": 0.6970802919708029,
+            "brier": 0.19717743474452562,
+            "logLoss": 0.581067470740748,
+            "intervalCoverage": 0.6751824817518248,
+            "intervalMeanWidth": 37.34306569343066
+          },
+          "paired": {
+            "deltaMarginMae": -0.17681441064286751,
+            "deltaMarginRmse": -0.21814081415597641,
+            "deltaMarginBias": 0.016866873314636877,
+            "deltaBrier": 0.0008030888321168828,
+            "deltaLogLoss": 0.003152055838725132,
+            "deltaWinnerAccuracy": -0.0036496350364964014,
+            "deltaIntervalCoverage": -0.014598540145985384
+          },
+          "coverage": {
+            "eligibleGames": 215,
+            "fallbackGames": 59,
+            "eligibleFraction": 0.7846715328467153
+          }
+        },
+        "FBS-FCS": {
+          "baseline": {
+            "games": 119,
+            "marginMae": 30.876188171403836,
+            "marginRmse": 35.254858354379905,
+            "marginBias": 29.804240711682063,
+            "probabilityGames": 119,
+            "winnerAccuracy": 0.8739495798319328,
+            "brier": 0.1253819174789915,
+            "logLoss": 0.4181899001060674,
+            "intervalCoverage": 0.2773109243697479,
+            "intervalMeanWidth": 38.016806722689076
+          },
+          "candidate": {
+            "games": 119,
+            "marginMae": 30.514904678576954,
+            "marginRmse": 34.91810898907378,
+            "marginBias": 29.336226127779323,
+            "probabilityGames": 119,
+            "winnerAccuracy": 0.865546218487395,
+            "brier": 0.12630944512605033,
+            "logLoss": 0.4154602957418584,
+            "intervalCoverage": 0.31092436974789917,
+            "intervalMeanWidth": 38.016806722689076
+          },
+          "paired": {
+            "deltaMarginMae": -0.36128349282688177,
+            "deltaMarginRmse": -0.336749365306126,
+            "deltaMarginBias": -0.46801458390273964,
+            "deltaBrier": 0.0009275276470588345,
+            "deltaLogLoss": -0.002729604364208993,
+            "deltaWinnerAccuracy": -0.008403361344537785,
+            "deltaIntervalCoverage": 0.03361344537815125
+          },
+          "coverage": {
+            "eligibleGames": 67,
+            "fallbackGames": 52,
+            "eligibleFraction": 0.5630252100840336
+          }
+        },
+        "FCS-FCS": {
+          "baseline": {
+            "games": 254,
+            "marginMae": 14.538439709129774,
+            "marginRmse": 18.834922930377918,
+            "marginBias": 0.8179193555669346,
+            "probabilityGames": 254,
+            "winnerAccuracy": 0.6732283464566929,
+            "brier": 0.2065567853543307,
+            "logLoss": 0.6000499941197737,
+            "intervalCoverage": 0.7165354330708661,
+            "intervalMeanWidth": 37.40157480314961
+          },
+          "candidate": {
+            "games": 254,
+            "marginMae": 14.425983234494039,
+            "marginRmse": 18.731758983515498,
+            "marginBias": 0.8554976269016782,
+            "probabilityGames": 254,
+            "winnerAccuracy": 0.6811023622047244,
+            "brier": 0.2044273446062992,
+            "logLoss": 0.5990118799141751,
+            "intervalCoverage": 0.7165354330708661,
+            "intervalMeanWidth": 37.40157480314961
+          },
+          "paired": {
+            "deltaMarginMae": -0.11245647463573505,
+            "deltaMarginRmse": -0.10316394686241992,
+            "deltaMarginBias": 0.03757827133474356,
+            "deltaBrier": -0.002129440748031508,
+            "deltaLogLoss": -0.001038114205598517,
+            "deltaWinnerAccuracy": 0.007874015748031482,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 182,
+            "fallbackGames": 72,
+            "eligibleFraction": 0.7165354330708661
+          }
+        }
+      },
+      "coverage": {
+        "eligible": {
+          "baseline": {
+            "games": 464,
+            "marginMae": 16.25930112660991,
+            "marginRmse": 20.976050259439255,
+            "marginBias": 4.370284576291476,
+            "probabilityGames": 464,
+            "winnerAccuracy": 0.7047413793103449,
+            "brier": 0.19109792379310325,
+            "logLoss": 0.5637402545307807,
+            "intervalCoverage": 0.6594827586206896,
+            "intervalMeanWidth": 36.54094827586207
+          },
+          "candidate": {
+            "games": 464,
+            "marginMae": 16.00067218540295,
+            "marginRmse": 20.657432825414716,
+            "marginBias": 4.280786017504433,
+            "probabilityGames": 464,
+            "winnerAccuracy": 0.7047413793103449,
+            "brier": 0.19064435521551715,
+            "logLoss": 0.5643332704192461,
+            "intervalCoverage": 0.6594827586206896,
+            "intervalMeanWidth": 36.54094827586207
+          },
+          "paired": {
+            "deltaMarginMae": -0.25862894120695756,
+            "deltaMarginRmse": -0.3186174340245387,
+            "deltaMarginBias": -0.08949855878704227,
+            "deltaBrier": -0.00045356857758610536,
+            "deltaLogLoss": 0.0005930158884653869,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 464,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        },
+        "fallback": {
+          "baseline": {
+            "games": 183,
+            "marginMae": 22.38893823039487,
+            "marginRmse": 27.8268756988391,
+            "marginBias": 14.729115563853783,
+            "probabilityGames": 183,
+            "winnerAccuracy": 0.7650273224043715,
+            "brier": 0.17772134316939878,
+            "logLoss": 0.5407138918028219,
+            "intervalCoverage": 0.5355191256830601,
+            "intervalMeanWidth": 39.89617486338798
+          },
+          "candidate": {
+            "games": 183,
+            "marginMae": 22.38893823039487,
+            "marginRmse": 27.8268756988391,
+            "marginBias": 14.729115563853783,
+            "probabilityGames": 183,
+            "winnerAccuracy": 0.7650273224043715,
+            "brier": 0.17772134316939878,
+            "logLoss": 0.5407138918028219,
+            "intervalCoverage": 0.5355191256830601,
+            "intervalMeanWidth": 39.89617486338798
+          },
+          "paired": {
+            "deltaMarginMae": 0,
+            "deltaMarginRmse": 0,
+            "deltaMarginBias": 0,
+            "deltaBrier": 0,
+            "deltaLogLoss": 0,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 0,
+            "fallbackGames": 183,
+            "eligibleFraction": 0
+          }
+        }
+      },
+      "season": {
+        "2026": {
+          "baseline": {
+            "games": 647,
+            "marginMae": 17.993031559365132,
+            "marginRmse": 23.120571028944042,
+            "marginBias": 7.300216679419611,
+            "probabilityGames": 647,
+            "winnerAccuracy": 0.7217928902627512,
+            "brier": 0.18731443962905686,
+            "logLoss": 0.5572273884114357,
+            "intervalCoverage": 0.624420401854714,
+            "intervalMeanWidth": 37.48995363214838
+          },
+          "candidate": {
+            "games": 647,
+            "marginMae": 17.807554235222916,
+            "marginRmse": 22.91391757973675,
+            "marginBias": 7.236032241587778,
+            "probabilityGames": 647,
+            "winnerAccuracy": 0.7217928902627512,
+            "brier": 0.18698916015455938,
+            "logLoss": 0.5576526733762694,
+            "intervalCoverage": 0.624420401854714,
+            "intervalMeanWidth": 37.48995363214838
+          },
+          "paired": {
+            "deltaMarginMae": -0.18547732414221585,
+            "deltaMarginRmse": -0.20665344920729112,
+            "deltaMarginBias": -0.06418443783183303,
+            "deltaBrier": -0.00032527947449748074,
+            "deltaLogLoss": 0.0004252849648337387,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 464,
+            "fallbackGames": 183,
+            "eligibleFraction": 0.7171561051004637
+          }
+        }
+      },
+      "phase": {
+        "weeks-0-3": {
+          "baseline": {
+            "games": 410,
+            "marginMae": 19.990717756688618,
+            "marginRmse": 25.28612348899396,
+            "marginBias": 11.394904267242934,
+            "probabilityGames": 410,
+            "winnerAccuracy": 0.7317073170731707,
+            "brier": 0.18267772399999974,
+            "logLoss": 0.5481372330709646,
+            "intervalCoverage": 0.5829268292682926,
+            "intervalMeanWidth": 38.453658536585365
+          },
+          "candidate": {
+            "games": 410,
+            "marginMae": 19.90660705300118,
+            "marginRmse": 25.156498884731093,
+            "marginBias": 11.289676892515292,
+            "probabilityGames": 410,
+            "winnerAccuracy": 0.724390243902439,
+            "brier": 0.18402688463414618,
+            "logLoss": 0.5501871925448294,
+            "intervalCoverage": 0.5829268292682926,
+            "intervalMeanWidth": 38.453658536585365
+          },
+          "paired": {
+            "deltaMarginMae": -0.08411070368743623,
+            "deltaMarginRmse": -0.12962460426286881,
+            "deltaMarginBias": -0.10522737472764199,
+            "deltaBrier": 0.0013491606341464457,
+            "deltaLogLoss": 0.002049959473864771,
+            "deltaWinnerAccuracy": -0.007317073170731714,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 227,
+            "fallbackGames": 183,
+            "eligibleFraction": 0.5536585365853659
+          }
+        },
+        "weeks-4-8": {
+          "baseline": {
+            "games": 237,
+            "marginMae": 14.537118728552421,
+            "marginRmse": 18.793991295867833,
+            "marginBias": 0.2165799241134494,
+            "probabilityGames": 237,
+            "winnerAccuracy": 0.7046413502109705,
+            "brier": 0.1953357620253163,
+            "logLoss": 0.5729529735995924,
+            "intervalCoverage": 0.6962025316455697,
+            "intervalMeanWidth": 35.822784810126585
+          },
+          "candidate": {
+            "games": 237,
+            "marginMae": 14.176281428095994,
+            "marginRmse": 18.39986476975302,
+            "marginBias": 0.2233980353418891,
+            "probabilityGames": 237,
+            "winnerAccuracy": 0.7172995780590717,
+            "brier": 0.19211377181434594,
+            "logLoss": 0.5705676402154704,
+            "intervalCoverage": 0.6962025316455697,
+            "intervalMeanWidth": 35.822784810126585
+          },
+          "paired": {
+            "deltaMarginMae": -0.3608373004564278,
+            "deltaMarginRmse": -0.3941265261148139,
+            "deltaMarginBias": 0.006818111228439699,
+            "deltaBrier": -0.00322199021097036,
+            "deltaLogLoss": -0.002385333384122057,
+            "deltaWinnerAccuracy": 0.012658227848101222,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 237,
+            "fallbackGames": 0,
+            "eligibleFraction": 1
+          }
+        }
+      },
+      "venue": {
+        "home": {
+          "baseline": {
+            "games": 633,
+            "marginMae": 18.192041514439243,
+            "marginRmse": 23.312818095134695,
+            "marginBias": 7.428941829192541,
+            "probabilityGames": 633,
+            "winnerAccuracy": 0.7266982622432859,
+            "brier": 0.1860235116587675,
+            "logLoss": 0.5544578344981534,
+            "intervalCoverage": 0.617693522906793,
+            "intervalMeanWidth": 37.459715639810426
+          },
+          "candidate": {
+            "games": 633,
+            "marginMae": 18.005596538333474,
+            "marginRmse": 23.102983990762926,
+            "marginBias": 7.354542823192171,
+            "probabilityGames": 633,
+            "winnerAccuracy": 0.7266982622432859,
+            "brier": 0.1857212323222748,
+            "logLoss": 0.5549679968198423,
+            "intervalCoverage": 0.617693522906793,
+            "intervalMeanWidth": 37.459715639810426
+          },
+          "paired": {
+            "deltaMarginMae": -0.1864449761057685,
+            "deltaMarginRmse": -0.20983410437176886,
+            "deltaMarginBias": -0.07439900600037053,
+            "deltaBrier": -0.00030227933649268346,
+            "deltaLogLoss": 0.0005101623216888784,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 458,
+            "fallbackGames": 175,
+            "eligibleFraction": 0.7235387045813586
+          }
+        },
+        "neutral": {
+          "baseline": {
+            "games": 14,
+            "marginMae": 8.994938590656767,
+            "marginRmse": 11.443217058144677,
+            "marginBias": 1.4800009789721815,
+            "probabilityGames": 14,
+            "winnerAccuracy": 0.5,
+            "brier": 0.24568282571428574,
+            "logLoss": 0.6824507903477002,
+            "intervalCoverage": 0.9285714285714286,
+            "intervalMeanWidth": 38.857142857142854
+          },
+          "candidate": {
+            "games": 14,
+            "marginMae": 8.853212958866845,
+            "marginRmse": 11.47484249488023,
+            "marginBias": 1.877660944760656,
+            "probabilityGames": 14,
+            "winnerAccuracy": 0.5,
+            "brier": 0.24431761142857147,
+            "logLoss": 0.679038406249024,
+            "intervalCoverage": 0.9285714285714286,
+            "intervalMeanWidth": 38.857142857142854
+          },
+          "paired": {
+            "deltaMarginMae": -0.1417256317899227,
+            "deltaMarginRmse": 0.031625436735552626,
+            "deltaMarginBias": 0.3976599657884745,
+            "deltaBrier": -0.0013652142857142613,
+            "deltaLogLoss": -0.003412384098676169,
+            "deltaWinnerAccuracy": 0,
+            "deltaIntervalCoverage": 0
+          },
+          "coverage": {
+            "eligibleGames": 6,
+            "fallbackGames": 8,
+            "eligibleFraction": 0.42857142857142855
+          }
+        }
+      }
+    }
+  },
+  "gate": {
+    "promoted": false,
+    "champion": "baseline",
+    "reasons": [
+      "interval-coverage: Holdout coverage of the unchanged-width, shifted 80% margin intervals must be between 77% and 83%. Observed: 0.6824615384615385."
+    ],
+    "criteria": [
+      {
+        "id": "paired-mae-improvement",
+        "observed": -0.17013649081705565,
+        "meanDelta": -0.31529414307845904,
+        "passed": true,
+        "requirement": "Mean margin MAE improves and the upper bound of the paired week-block bootstrap 95% MAE difference interval is below zero."
+      },
+      {
+        "id": "subdivision-mae",
+        "observed": -0.27898901693777844,
+        "passed": true,
+        "requirement": "All three subdivision groups are present; no group margin MAE worsens by more than 0.5 points."
+      },
+      {
+        "id": "brier",
+        "observed": -0.0036425119938464645,
+        "passed": true,
+        "requirement": "Holdout Brier score does not increase."
+      },
+      {
+        "id": "log-loss",
+        "observed": -0.007661253457512784,
+        "passed": true,
+        "requirement": "Holdout log loss does not increase."
+      },
+      {
+        "id": "interval-coverage",
+        "observed": 0.6824615384615385,
+        "passed": false,
+        "requirement": "Holdout coverage of the unchanged-width, shifted 80% margin intervals must be between 77% and 83%."
+      }
+    ],
+    "decisionScope": "Offline evidence gate only. This command never changes production predictions or configuration."
+  }
+}

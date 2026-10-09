@@ -1,4 +1,5 @@
 import { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
+import { buildUnitProfiles } from './unit-model.js';
 
 export { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
 const DEFAULTS = { power: 55, efficiency: 30, resume: 15 };
@@ -623,7 +624,7 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
     return text(a.startDate).localeCompare(text(b.startDate));
   });
 
-  return {
+  const model = {
     meta: data.meta || {}, raw: data, games: games, completedGames: completedGames,
     teams: teams, allTeams: allTeams, ratedGames: ratedGames, broadCoverage: broadCoverage,
     ratedTeamCount: ratedTeamCount, ratedGameCount: ratedGames.length,
@@ -632,6 +633,8 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
     weights: weights, defaultWeights: DEFAULTS,
     modelVersion: MODEL_VERSION, schemaVersion: SCHEMA_VERSION, parameters: parameters
   };
+  model.unitProfiles = buildUnitProfiles(model);
+  return model;
 }
 
 export function recordText(wins, losses, ties) {

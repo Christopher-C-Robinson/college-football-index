@@ -7,6 +7,8 @@ import { buildSeasonProjections } from './season-projections.js';
 import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote } from './season-projections-view.js';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
+import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
+import { loadChallengerStatus } from './challenger-status.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -329,6 +331,7 @@ function renderDossier() {
     ids('trace-intro').textContent = 'Load a complete FBS + FCS season file to see a team’s performance trace.';
     ids('margin-chart').innerHTML = '<div class="schedule-empty">Choose a team to view its results.</div>';
     ids('team-insight').textContent = state.model.allTeams.length ? 'Select a team to open its season profile.' : 'The team explorer is ready for the full season dataset.';
+    ids('team-unit-profile').innerHTML = renderTeamUnitProfile(state.model.unitProfiles, null);
     return;
   }
   applyTeamTheme(team);
@@ -347,6 +350,7 @@ function renderDossier() {
   ids('team-home-field-sample').textContent = team.homeFieldHomeGames || team.homeFieldRoadGames
     ? 'HOME ' + team.homeFieldHomeGames + ' · ROAD ' + team.homeFieldRoadGames + ' GAMES'
     : 'Field baseline · no history';
+  ids('team-unit-profile').innerHTML = renderTeamUnitProfile(state.model.unitProfiles, team.name);
   let analysis = seasonAnalysisCache.get(teamKey(team.name));
   if (!analysis) {
     analysis = buildSeasonProjections(state.model, team.name);
@@ -505,6 +509,7 @@ function compareMetrics(team) {
 function renderCompare() {
   const a = teamByKey(ids('compare-a').value || state.compareA);
   const b = teamByKey(ids('compare-b').value || state.compareB);
+  ids('compare-unit-matchup').innerHTML = renderUnitMatchup(state.model.unitProfiles, a?.name, b?.name);
   if (!a || !b) {
     ids('compare-content').innerHTML = '<div class="compare-empty">Choose two teams above to compare their profiles.</div>';
     return;
@@ -533,11 +538,13 @@ function marginRangeLabel(teamA, teamB, low, high) {
 function runMatchupSimulation() {
   const output = ids('simulation-result');
   if (!state.model) {
+    ids('simulation-unit-matchup').innerHTML = '';
     output.innerHTML = '<div class="simulation-empty">Loading team data for the matchup.</div>';
     return;
   }
   const teamA = teamByKey(ids('sim-a').value);
   const teamB = teamByKey(ids('sim-b').value);
+  ids('simulation-unit-matchup').innerHTML = renderUnitMatchup(state.model.unitProfiles, teamA?.name, teamB?.name);
   if (!teamA || !teamB) {
     output.innerHTML = '<div class="simulation-empty">Choose two teams to run a hypothetical matchup.</div>';
     return;
@@ -768,6 +775,7 @@ document.addEventListener('click', async function (event) {
 });
 
 enhanceSearchableSelects();
+loadChallengerStatus();
 initialize().catch(function (error) {
   const message = ids('import-message');
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }

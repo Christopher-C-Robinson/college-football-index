@@ -1,3 +1,5 @@
+import { renderUnitMatchup } from './unit-profile-view.js';
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
@@ -142,7 +144,7 @@ function matchupContext(row, teamName, forecast) {
     '<p class="forecast-table-note">Power sources are labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
 }
 
-function renderRow(row, teamName, rankingsReady) {
+function renderRow(row, teamName, rankingsReady, unitProfiles) {
   const forecast = usableForecast(row);
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
   const status = { final: 'Final', upcoming: 'Scheduled', unplayed: 'Not final', canceled: 'Canceled' }[row.status] || 'Scheduled';
@@ -155,13 +157,14 @@ function renderRow(row, teamName, rankingsReady) {
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
     '<div class="forecast-opponent"><h4>' + escapeHtml(sitePrefix + row.opponentName) + '</h4><div class="forecast-ranks" aria-label="Opponent current rankings">' + rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? rankingsReady) + '</div><p>' + escapeHtml([String(row.classification || '').toUpperCase(), row.site, row.venue].filter(Boolean).join(' · ')) + '</p><p class="forecast-winner-label">' + escapeHtml(winner.label) + '</p></div><span class="forecast-game-status">' + status + ' ' + actualLabel + '</span></div>' +
     '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + matchupContext(row, teamName, forecast) + '</div>' +
+    renderUnitMatchup(unitProfiles, teamName, row.opponentName, { compact: true }) +
     (forecast ? forecastSource(forecast, teamName, row.opponentName) : '') + '</article>';
 }
 
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
-    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady)).join('') + '</div>';
+    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles)).join('') + '</div>';
 }
 
 export function renderProjectionSummary(analysis) {

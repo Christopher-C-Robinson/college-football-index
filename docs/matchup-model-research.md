@@ -2,6 +2,8 @@
 
 Research date: October 8, 2026. This is a design proposal, not a change to the production prediction formula.
 
+Implementation update: `box-units-1` now supplies the four jointly opponent-adjusted box-derived passing/rushing profiles and descriptive matchup context. The forecast candidate is evaluated separately; see [definitions, limitations, and promotion gates](opponent-adjusted-units.md). Richer drive/play/kicking layers below remain proposals.
+
 ## Answer
 
 Yes. We can estimate how a team's passing, rushing, finishing, and special teams fit a particular opponent. A pass-heavy offense facing a weak pass defense should be a candidate for a different projection than the same offense facing an equally strong overall team with an excellent pass defense. The size and reliability of that difference must come from historical predictions.

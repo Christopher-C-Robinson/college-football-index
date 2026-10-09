@@ -140,6 +140,7 @@ export function buildSeasonProjections(model, teamName) {
     subdivisionFieldSize: subdivisionSizes.get(String(team.classification).toLowerCase()) || 0,
     rankingsReady: model.broadCoverage,
     rows,
+    unitProfiles: model.unitProfiles || null,
     summary: {
       remainingProjectedGames: projected.length, remainingUnmodeledGames: remaining.length - projected.length,
       totalRemainingGames: remaining.length, expectedAdditionalWins: projected.length || !remaining.length ? expectedAdditionalWins : null,

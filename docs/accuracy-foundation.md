@@ -13,6 +13,9 @@ The [first saved baseline](../data/backtests/README.md) covers 6,307 games in co
 | `js/prediction.js` | Deterministic matchup forecast and seeded simulator, shared by browser/Node |
 | `js/model-fit.js` | Whole-field current-snapshot simulations and completed-result comparisons |
 | `js/model-fit-view.js` | Current-fit summary, definitions, coverage gaps, and subdivision breakdown |
+| `js/unit-model.js` | Joint opponent-adjusted pass/rush profiles and symmetric challenger features |
+| `js/unit-profile-view.js` | Unit profiles, matchup context, and expandable schedule details |
+| `scripts/lib/matchup-challenger.mjs` | Chronological box-unit residual candidate and paired evaluation |
 | `scripts/lib/backtest.mjs` | Sanitized pregame snapshots and chronological replay |
 | `scripts/lib/scoring.mjs` | Forecast metrics, reliability bins, and splits |
 | `scripts/lib/cfbd.mjs` | Secret-authenticated acquisition, quota guard, raw cache |
@@ -71,6 +74,8 @@ Splits include FBS–FBS, FBS–FCS (either host), FCS–FCS; home/neutral; earl
 - Raw caches and atomic writes preserve the last usable dataset when acquisition/validation fails.
 
 ## Experiment discipline
+
+The first box-unit challenger and its frozen selection/holdout design are documented in [opponent-adjusted units](opponent-adjusted-units.md). It uses the existing pregame snapshots; the website separately displays current-snapshot unit profiles. Derived aggregate results and the promotion decision live in `data/experiments/box-units-v1/summary.json`; per-game feature/audit rows stay in `.cache`. The signature power/venue model remains the active predictor until a candidate satisfies the predeclared gates and is activated through a versioned release.
 
 Use a distinct output directory for each candidate and record its exact code/configuration. Existing predictions cannot be silently rewritten; the CLI rejects changed reports unless `--force` is explicit. Scoring rejects mixed versions/configurations/temporal policies and duplicate game forecasts.
 
