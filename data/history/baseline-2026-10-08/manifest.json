@@ -1,0 +1,71 @@
+{
+  "description": "Exact corrected final API archives used for the reconstructed model 2.0.0 baseline. 2026 is incomplete.",
+  "collectedAt": "2026-10-08",
+  "workflowRun": "https://github.com/Christopher-C-Robinson/college-football-index/actions/runs/37850748307",
+  "fingerprintAlgorithm": "SHA-256 of JSON.stringify(parsed archive)",
+  "archives": [
+    {
+      "season": 2018,
+      "file": "2018.json.gz",
+      "sha256": "b34caa7c2b8b6ba78cac897cbe00361b90de509a66d57088a97213e16d15e93e",
+      "generatedAt": "2026-10-08T21:51:01.804Z",
+      "compressedBytes": 206416
+    },
+    {
+      "season": 2019,
+      "file": "2019.json.gz",
+      "sha256": "b162797d199e94af20ff70134d532f567505e5f6d5a48ba9d2b0e93fb51631fe",
+      "generatedAt": "2026-10-08T21:51:01.804Z",
+      "compressedBytes": 212035
+    },
+    {
+      "season": 2020,
+      "file": "2020.json.gz",
+      "sha256": "c086568d61e3ffc7db8496c1b1911e687ee7b9e9aeb34d3fbc16749851319a84",
+      "generatedAt": "2026-10-08T21:51:01.804Z",
+      "compressedBytes": 129009
+    },
+    {
+      "season": 2021,
+      "file": "2021.json.gz",
+      "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3",
+      "generatedAt": "2026-10-08T21:51:01.804Z",
+      "compressedBytes": 197827
+    },
+    {
+      "season": 2022,
+      "file": "2022.json.gz",
+      "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045",
+      "generatedAt": "2026-10-08T21:51:01.804Z",
+      "compressedBytes": 515271
+    },
+    {
+      "season": 2023,
+      "file": "2023.json.gz",
+      "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572",
+      "generatedAt": "2026-10-08T21:54:45.848Z",
+      "compressedBytes": 509627
+    },
+    {
+      "season": 2024,
+      "file": "2024.json.gz",
+      "sha256": "634a315ae0d9670d55f060301c1d77ec6f39bae504d03a66c44ef1f39c554cb7",
+      "generatedAt": "2026-10-08T21:54:45.848Z",
+      "compressedBytes": 541193
+    },
+    {
+      "season": 2025,
+      "file": "2025.json.gz",
+      "sha256": "6aa18a0c9e1a7167ba7c21d6d40cc8bbf80038eeeefe62bfcdd84072516958b9",
+      "generatedAt": "2026-10-08T21:54:45.848Z",
+      "compressedBytes": 542498
+    },
+    {
+      "season": 2026,
+      "file": "2026.json.gz",
+      "sha256": "b7c3babf5dd73db8b236b8bdaf7878494c08bc3298dcf9898a0a26c1b9176bbb",
+      "generatedAt": "2026-10-08T22:02:16.413Z",
+      "compressedBytes": 313794
+    }
+  ]
+}

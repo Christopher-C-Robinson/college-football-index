@@ -1,0 +1,4195 @@
+{
+  "meta": {
+    "modelVersion": "2.0.0",
+    "schemaVersion": 2,
+    "parameters": {
+      "marginCap": 28,
+      "powerPriorGames": 2,
+      "powerIterations": 60,
+      "winProbabilityScale": 7.5,
+      "homeFieldBaseline": 2.5,
+      "venueSeasons": 5,
+      "venueRecencyFactor": 0.75,
+      "venuePriorGames": 12,
+      "leagueVenuePriorGames": 24,
+      "venueIterations": 80,
+      "venueMinPoints": -5,
+      "venueMaxPoints": 12,
+      "simulationRuns": 10000,
+      "simulationRatingScale": 9,
+      "totalPriorGames": 4,
+      "totalStdDevMin": 7,
+      "totalStdDevMax": 20,
+      "coldStartPointsPerTeam": 27
+    },
+    "simulationRuns": 10000,
+    "window": "week",
+    "availabilityDelayHours": 24,
+    "reportCount": 5,
+    "reconstructed": true,
+    "evaluationType": "reconstructed historical backtest",
+    "evaluationTypes": [
+      "reconstructed historical backtest"
+    ],
+    "availabilityPolicies": [
+      "Final archive results and box scores become eligible kickoff + 24 hours; TBD kickoffs excluded."
+    ],
+    "limitations": [
+      "Reconstructed from corrected final archives, not archived pregame API responses. Publication times and historical revisions are unknown. Uncertainty remains uncalibrated."
+    ],
+    "sourceReports": [
+      {
+        "season": 2022,
+        "predictionFingerprint": "d12888bcceb1691cc36d8f3a53618bc0a0ef944c41658fcf28fa56cbdff24b1f",
+        "gitCommit": "5ee6aa305bce6612010137ee1e5130de7edb5071",
+        "generatedAt": "2026-10-08T22:02:53.787Z",
+        "sourceArchives": [
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2018,
+            "sha256": "b34caa7c2b8b6ba78cac897cbe00361b90de509a66d57088a97213e16d15e93e"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2019,
+            "sha256": "b162797d199e94af20ff70134d532f567505e5f6d5a48ba9d2b0e93fb51631fe"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2020,
+            "sha256": "c086568d61e3ffc7db8496c1b1911e687ee7b9e9aeb34d3fbc16749851319a84"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2021,
+            "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2022,
+            "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045"
+          }
+        ]
+      },
+      {
+        "season": 2023,
+        "predictionFingerprint": "d96ce19e79806fee721eca25f002ea7c67a3320431f3ed278ddf8803696cb10a",
+        "gitCommit": "5ee6aa305bce6612010137ee1e5130de7edb5071",
+        "generatedAt": "2026-10-08T22:03:12.499Z",
+        "sourceArchives": [
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2019,
+            "sha256": "b162797d199e94af20ff70134d532f567505e5f6d5a48ba9d2b0e93fb51631fe"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2020,
+            "sha256": "c086568d61e3ffc7db8496c1b1911e687ee7b9e9aeb34d3fbc16749851319a84"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2021,
+            "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2022,
+            "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2023,
+            "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572"
+          }
+        ]
+      },
+      {
+        "season": 2024,
+        "predictionFingerprint": "685a5a9cb01fabcdbe907088881b37ebb50c78564914b523cae6041c13ebe94c",
+        "gitCommit": "5ee6aa305bce6612010137ee1e5130de7edb5071",
+        "generatedAt": "2026-10-08T22:03:32.668Z",
+        "sourceArchives": [
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2020,
+            "sha256": "c086568d61e3ffc7db8496c1b1911e687ee7b9e9aeb34d3fbc16749851319a84"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2021,
+            "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2022,
+            "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2023,
+            "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2024,
+            "sha256": "634a315ae0d9670d55f060301c1d77ec6f39bae504d03a66c44ef1f39c554cb7"
+          }
+        ]
+      },
+      {
+        "season": 2025,
+        "predictionFingerprint": "34cb75a012533428ea723564bef167883d94e135a1d302791a0a2fe82af64457",
+        "gitCommit": "5ee6aa305bce6612010137ee1e5130de7edb5071",
+        "generatedAt": "2026-10-08T22:03:53.602Z",
+        "sourceArchives": [
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2021,
+            "sha256": "48cfa5f262bb2c2d4213656c00bf09e74138c1119866b81354945dee0c2213b3"
+          },
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2022,
+            "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2023,
+            "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2024,
+            "sha256": "634a315ae0d9670d55f060301c1d77ec6f39bae504d03a66c44ef1f39c554cb7"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2025,
+            "sha256": "6aa18a0c9e1a7167ba7c21d6d40cc8bbf80038eeeefe62bfcdd84072516958b9"
+          }
+        ]
+      },
+      {
+        "season": 2026,
+        "predictionFingerprint": "43bccd256b4aeac131584ec39814c78f32d4532decac9b7865e4aec1d1a1e859",
+        "gitCommit": "5ee6aa305bce6612010137ee1e5130de7edb5071",
+        "generatedAt": "2026-10-08T22:03:59.303Z",
+        "sourceArchives": [
+          {
+            "generatedAt": "2026-10-08T21:51:01.804Z",
+            "season": 2022,
+            "sha256": "c5ce3013b39734fdb2b4c826063280a2f1043ebb46c156016d06f34cbd756045"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2023,
+            "sha256": "12ecc83238b72dd86a12eca10444e9526d0b888b7c28a8dd49e3d7e8d2d02572"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2024,
+            "sha256": "634a315ae0d9670d55f060301c1d77ec6f39bae504d03a66c44ef1f39c554cb7"
+          },
+          {
+            "generatedAt": "2026-10-08T21:54:45.848Z",
+            "season": 2025,
+            "sha256": "6aa18a0c9e1a7167ba7c21d6d40cc8bbf80038eeeefe62bfcdd84072516958b9"
+          },
+          {
+            "generatedAt": "2026-10-08T22:02:16.413Z",
+            "season": 2026,
+            "sha256": "b7c3babf5dd73db8b236b8bdaf7878494c08bc3298dcf9898a0a26c1b9176bbb"
+          }
+        ]
+      }
+    ]
+  },
+  "games": 6954,
+  "margin": {
+    "games": 6954,
+    "mae": 15.198799513630524,
+    "rmse": 19.508773208607476,
+    "meanError": 4.90715620102147,
+    "medianAbsoluteError": 12.170142676877493,
+    "p90AbsoluteError": 32.437825
+  },
+  "winProbability": {
+    "games": 6954,
+    "brier": 0.19828299739574387,
+    "logLoss": 0.5803746931930626,
+    "logLossEpsilon": 1e-15,
+    "reliability": [
+      {
+        "lower": 0,
+        "upper": 0.1,
+        "games": 211,
+        "meanProbability": 0.06541232227488147,
+        "observedWinRate": 0.11374407582938388
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "games": 400,
+        "meanProbability": 0.15280075,
+        "observedWinRate": 0.2475
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "games": 517,
+        "meanProbability": 0.24959651837524197,
+        "observedWinRate": 0.34622823984526113
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "games": 708,
+        "meanProbability": 0.35210550847457606,
+        "observedWinRate": 0.4307909604519774
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "games": 856,
+        "meanProbability": 0.45308644859813046,
+        "observedWinRate": 0.5280373831775701
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "games": 1162,
+        "meanProbability": 0.5510925989672983,
+        "observedWinRate": 0.5963855421686747
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "games": 1263,
+        "meanProbability": 0.6474940617577204,
+        "observedWinRate": 0.7600950118764845
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "games": 919,
+        "meanProbability": 0.7474508161044621,
+        "observedWinRate": 0.780195865070729
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "games": 655,
+        "meanProbability": 0.8487056488549615,
+        "observedWinRate": 0.8778625954198473
+      },
+      {
+        "lower": 0.9,
+        "upper": 1,
+        "games": 263,
+        "meanProbability": 0.9309634980988599,
+        "observedWinRate": 0.9657794676806084
+      }
+    ]
+  },
+  "baseWinProbability": {
+    "games": 6954,
+    "brier": 0.19733997298423397,
+    "logLoss": 0.5783401843495798,
+    "logLossEpsilon": 1e-15,
+    "reliability": [
+      {
+        "lower": 0,
+        "upper": 0.1,
+        "games": 246,
+        "meanProbability": 0.06385924807735888,
+        "observedWinRate": 0.14227642276422764
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "games": 443,
+        "meanProbability": 0.15205735891179156,
+        "observedWinRate": 0.2505643340857788
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "games": 544,
+        "meanProbability": 0.25129348813315444,
+        "observedWinRate": 0.37316176470588236
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "games": 672,
+        "meanProbability": 0.3523019367190919,
+        "observedWinRate": 0.42857142857142855
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "games": 768,
+        "meanProbability": 0.4513933305905826,
+        "observedWinRate": 0.53515625
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "games": 1015,
+        "meanProbability": 0.5494720586836019,
+        "observedWinRate": 0.5832512315270936
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "games": 1181,
+        "meanProbability": 0.6503061715119461,
+        "observedWinRate": 0.7375105842506351
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "games": 991,
+        "meanProbability": 0.748631131956179,
+        "observedWinRate": 0.7739656912209889
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "games": 727,
+        "meanProbability": 0.8491443379545105,
+        "observedWinRate": 0.8707015130674003
+      },
+      {
+        "lower": 0.9,
+        "upper": 1,
+        "games": 367,
+        "meanProbability": 0.9324992782031318,
+        "observedWinRate": 0.9455040871934605
+      }
+    ]
+  },
+  "interval80": {
+    "games": 6954,
+    "coverage": 0.6711245326430831,
+    "meanWidth": 35.81392004601668
+  },
+  "total": {
+    "games": 6954,
+    "mae": 13.132917717945283,
+    "rmse": 16.424500399517115,
+    "meanError": 0.16014320518698819,
+    "medianAbsoluteError": 11.113851308316097,
+    "p90AbsoluteError": 26.576596777922557
+  },
+  "definitions": {
+    "signedError": "actual minus predicted",
+    "quantiles": "linear interpolation between ordered observations",
+    "probabilityTies": "excluded",
+    "intervalBounds": "inclusive",
+    "predictedMarginBands": "absolute margin, lower bound inclusive and upper bound exclusive",
+    "evidence": "minimum of homeGames and awayGames"
+  },
+  "splits": {
+    "subdivision": {
+      "FBS-FBS": {
+        "games": 3448,
+        "margin": {
+          "games": 3448,
+          "mae": 14.198198085852203,
+          "rmse": 18.02633824824552,
+          "meanError": 3.2621752966473023,
+          "medianAbsoluteError": 11.599841319593345,
+          "p90AbsoluteError": 29.622230372545243
+        },
+        "winProbability": {
+          "games": 3448,
+          "brier": 0.20655398574245937,
+          "logLoss": 0.5988994587631121,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 102,
+              "meanProbability": 0.06719215686274511,
+              "observedWinRate": 0.10784313725490197
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 213,
+              "meanProbability": 0.15072676056338025,
+              "observedWinRate": 0.2676056338028169
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 275,
+              "meanProbability": 0.25055854545454537,
+              "observedWinRate": 0.3563636363636364
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 360,
+              "meanProbability": 0.35268666666666665,
+              "observedWinRate": 0.44166666666666665
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 448,
+              "meanProbability": 0.45199620535714313,
+              "observedWinRate": 0.5200892857142857
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 571,
+              "meanProbability": 0.5497598949211906,
+              "observedWinRate": 0.5569176882661997
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 606,
+              "meanProbability": 0.6476066006600658,
+              "observedWinRate": 0.7277227722772277
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 455,
+              "meanProbability": 0.7460907692307683,
+              "observedWinRate": 0.7384615384615385
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 308,
+              "meanProbability": 0.8498389610389613,
+              "observedWinRate": 0.8863636363636364
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 110,
+              "meanProbability": 0.9282990909090902,
+              "observedWinRate": 0.9636363636363636
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 3448,
+          "brier": 0.20658104134494995,
+          "logLoss": 0.5993553647060044,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 124,
+              "meanProbability": 0.06678773257733926,
+              "observedWinRate": 0.1693548387096774
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 230,
+              "meanProbability": 0.15156386230268565,
+              "observedWinRate": 0.24782608695652175
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 279,
+              "meanProbability": 0.251013166670827,
+              "observedWinRate": 0.3978494623655914
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 351,
+              "meanProbability": 0.35212368874093464,
+              "observedWinRate": 0.4415954415954416
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 406,
+              "meanProbability": 0.4507448698417835,
+              "observedWinRate": 0.5098522167487685
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 511,
+              "meanProbability": 0.5485613071684193,
+              "observedWinRate": 0.5557729941291585
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 567,
+              "meanProbability": 0.6501352589757802,
+              "observedWinRate": 0.6984126984126984
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 493,
+              "meanProbability": 0.7490237443999987,
+              "observedWinRate": 0.7464503042596349
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 335,
+              "meanProbability": 0.8518472344334526,
+              "observedWinRate": 0.8656716417910447
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 152,
+              "meanProbability": 0.9308234490860143,
+              "observedWinRate": 0.9407894736842105
+            }
+          ]
+        },
+        "interval80": {
+          "games": 3448,
+          "coverage": 0.6989559164733179,
+          "meanWidth": 35.51856148491879
+        },
+        "total": {
+          "games": 3448,
+          "mae": 12.994496110306175,
+          "rmse": 16.1855751815888,
+          "meanError": -0.13622855591029015,
+          "medianAbsoluteError": 11.00065426997245,
+          "p90AbsoluteError": 26.20923582081671
+        }
+      },
+      "FBS-FCS": {
+        "games": 603,
+        "margin": {
+          "games": 603,
+          "mae": 27.34681485215485,
+          "rmse": 31.7535535257894,
+          "meanError": 26.157141516485325,
+          "medianAbsoluteError": 26.147,
+          "p90AbsoluteError": 48.2544
+        },
+        "winProbability": {
+          "games": 603,
+          "brier": 0.14258919447761184,
+          "logLoss": 0.4583764835855183,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 3,
+              "meanProbability": 0.15103333333333332,
+              "observedWinRate": 0.3333333333333333
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 7,
+              "meanProbability": 0.2537285714285714,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 20,
+              "meanProbability": 0.35175499999999993,
+              "observedWinRate": 0.75
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 41,
+              "meanProbability": 0.45796585365853654,
+              "observedWinRate": 0.8780487804878049
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 120,
+              "meanProbability": 0.5574908333333332,
+              "observedWinRate": 0.9166666666666666
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 216,
+              "meanProbability": 0.6453615740740747,
+              "observedWinRate": 0.9814814814814815
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 106,
+              "meanProbability": 0.7432018867924527,
+              "observedWinRate": 0.9811320754716981
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 65,
+              "meanProbability": 0.8498353846153844,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 25,
+              "meanProbability": 0.9330439999999999,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 603,
+          "brier": 0.13127819676137642,
+          "logLoss": 0.43012699622885725,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 4,
+              "meanProbability": 0.13680068871793027,
+              "observedWinRate": 0.5
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 11,
+              "meanProbability": 0.25933330066489707,
+              "observedWinRate": 0.7272727272727273
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 20,
+              "meanProbability": 0.35475573813631034,
+              "observedWinRate": 0.85
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 38,
+              "meanProbability": 0.4598289075495687,
+              "observedWinRate": 0.8947368421052632
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 80,
+              "meanProbability": 0.5538944053260428,
+              "observedWinRate": 0.8875
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 201,
+              "meanProbability": 0.6535721082591254,
+              "observedWinRate": 0.9800995024875622
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 127,
+              "meanProbability": 0.7439995040918792,
+              "observedWinRate": 0.9763779527559056
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 77,
+              "meanProbability": 0.8428823659460161,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 45,
+              "meanProbability": 0.930372969540162,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "interval80": {
+          "games": 603,
+          "coverage": 0.3582089552238806,
+          "meanWidth": 38.28026533996683
+        },
+        "total": {
+          "games": 603,
+          "mae": 12.891901216183527,
+          "rmse": 16.438562019111327,
+          "meanError": 4.475790628544151,
+          "medianAbsoluteError": 10.837499999999999,
+          "p90AbsoluteError": 26.357271648873077
+        }
+      },
+      "FCS-FCS": {
+        "games": 2903,
+        "margin": {
+          "games": 2903,
+          "mae": 13.863911630010207,
+          "rmse": 17.78480576559733,
+          "meanError": 2.446995337451873,
+          "medianAbsoluteError": 11.204537224360628,
+          "p90AbsoluteError": 29.416622616166197
+        },
+        "winProbability": {
+          "games": 2903,
+          "brier": 0.2000277426042025,
+          "logLoss": 0.5837131460720887,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 109,
+              "meanProbability": 0.06374678899082573,
+              "observedWinRate": 0.11926605504587157
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 184,
+              "meanProbability": 0.15523043478260873,
+              "observedWinRate": 0.22282608695652173
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 235,
+              "meanProbability": 0.24834765957446803,
+              "observedWinRate": 0.3148936170212766
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 328,
+              "meanProbability": 0.35148902439024365,
+              "observedWinRate": 0.39939024390243905
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 367,
+              "meanProbability": 0.45387220708446857,
+              "observedWinRate": 0.4986376021798365
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 471,
+              "meanProbability": 0.5510781316348193,
+              "observedWinRate": 0.5626326963906582
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 441,
+              "meanProbability": 0.6483839002267574,
+              "observedWinRate": 0.6961451247165533
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 358,
+              "meanProbability": 0.7504374301675985,
+              "observedWinRate": 0.7737430167597765
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 282,
+              "meanProbability": 0.8472074468085108,
+              "observedWinRate": 0.8404255319148937
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 128,
+              "meanProbability": 0.932846875,
+              "observedWinRate": 0.9609375
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 2903,
+          "brier": 0.20008611399513365,
+          "logLoss": 0.584165954438401,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 122,
+              "meanProbability": 0.06088275563475586,
+              "observedWinRate": 0.11475409836065574
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 209,
+              "meanProbability": 0.15289243499250793,
+              "observedWinRate": 0.24880382775119617
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 254,
+              "meanProbability": 0.2512532194329193,
+              "observedWinRate": 0.33070866141732286
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 301,
+              "meanProbability": 0.35234675071241023,
+              "observedWinRate": 0.3853820598006645
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 324,
+              "meanProbability": 0.4512165501571606,
+              "observedWinRate": 0.5246913580246914
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 424,
+              "meanProbability": 0.5497352810724289,
+              "observedWinRate": 0.5589622641509434
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 413,
+              "meanProbability": 0.6489513388771349,
+              "observedWinRate": 0.6731234866828087
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 371,
+              "meanProbability": 0.749694902317262,
+              "observedWinRate": 0.7412398921832885
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 315,
+              "meanProbability": 0.8478005332694597,
+              "observedWinRate": 0.8444444444444444
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 170,
+              "meanProbability": 0.9345605130009866,
+              "observedWinRate": 0.9352941176470588
+            }
+          ]
+        },
+        "interval80": {
+          "games": 2903,
+          "coverage": 0.7030657940062005,
+          "meanWidth": 35.65242852221839
+        },
+        "total": {
+          "games": 2903,
+          "mae": 13.347389179778382,
+          "rmse": 16.70096771040885,
+          "meanError": -0.3842748327120623,
+          "medianAbsoluteError": 11.409805890227574,
+          "p90AbsoluteError": 27.29811597944035
+        }
+      }
+    },
+    "venue": {
+      "home": {
+        "games": 6599,
+        "margin": {
+          "games": 6599,
+          "mae": 15.29137223728945,
+          "rmse": 19.591271723363047,
+          "meanError": 5.065226071886002,
+          "medianAbsoluteError": 12.25,
+          "p90AbsoluteError": 32.52186564788712
+        },
+        "winProbability": {
+          "games": 6599,
+          "brier": 0.19665809635853934,
+          "logLoss": 0.5767707972848499,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 209,
+              "meanProbability": 0.065511961722488,
+              "observedWinRate": 0.11483253588516747
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 391,
+              "meanProbability": 0.15255856777493607,
+              "observedWinRate": 0.24552429667519182
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 488,
+              "meanProbability": 0.24952049180327876,
+              "observedWinRate": 0.3483606557377049
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 659,
+              "meanProbability": 0.35182549317147166,
+              "observedWinRate": 0.4324734446130501
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 765,
+              "meanProbability": 0.4522572549019606,
+              "observedWinRate": 0.5294117647058824
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 1078,
+              "meanProbability": 0.5523129870129877,
+              "observedWinRate": 0.6001855287569573
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 1205,
+              "meanProbability": 0.6475658921161831,
+              "observedWinRate": 0.7659751037344399
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 899,
+              "meanProbability": 0.7476083426028926,
+              "observedWinRate": 0.7797552836484983
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 643,
+              "meanProbability": 0.8488642301710727,
+              "observedWinRate": 0.8771384136858476
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 262,
+              "meanProbability": 0.9308839694656492,
+              "observedWinRate": 0.9656488549618321
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 6599,
+          "brier": 0.19566538678770132,
+          "logLoss": 0.5746148644766448,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 244,
+              "meanProbability": 0.0639599109028979,
+              "observedWinRate": 0.14344262295081966
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 429,
+              "meanProbability": 0.15155759237854727,
+              "observedWinRate": 0.24708624708624707
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 519,
+              "meanProbability": 0.2514635229570047,
+              "observedWinRate": 0.37572254335260113
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 621,
+              "meanProbability": 0.3525208274591147,
+              "observedWinRate": 0.4331723027375201
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 700,
+              "meanProbability": 0.4516408157924566,
+              "observedWinRate": 0.54
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 913,
+              "meanProbability": 0.5518185258718467,
+              "observedWinRate": 0.583789704271632
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 1127,
+              "meanProbability": 0.6504195036197711,
+              "observedWinRate": 0.7417923691215617
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 966,
+              "meanProbability": 0.7489254037255836,
+              "observedWinRate": 0.7753623188405797
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 714,
+              "meanProbability": 0.8491777179142476,
+              "observedWinRate": 0.8697478991596639
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 366,
+              "meanProbability": 0.9324287418013565,
+              "observedWinRate": 0.9453551912568307
+            }
+          ]
+        },
+        "interval80": {
+          "games": 6599,
+          "coverage": 0.6684346113047431,
+          "meanWidth": 35.84270343991514
+        },
+        "total": {
+          "games": 6599,
+          "mae": 13.089357310312437,
+          "rmse": 16.402575911457106,
+          "meanError": 0.24065207211317982,
+          "medianAbsoluteError": 11.100985221674875,
+          "p90AbsoluteError": 26.53699494949495
+        }
+      },
+      "neutral": {
+        "games": 355,
+        "margin": {
+          "games": 355,
+          "mae": 13.477989926517324,
+          "rmse": 17.906162045038815,
+          "meanError": 1.9688376719087048,
+          "medianAbsoluteError": 10.023680219387254,
+          "p90AbsoluteError": 28.66187391872319
+        },
+        "winProbability": {
+          "games": 355,
+          "brier": 0.22848784794366206,
+          "logLoss": 0.6473665498079922,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 2,
+              "meanProbability": 0.055,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 9,
+              "meanProbability": 0.16332222222222226,
+              "observedWinRate": 0.3333333333333333
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 29,
+              "meanProbability": 0.2508758620689655,
+              "observedWinRate": 0.3103448275862069
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 49,
+              "meanProbability": 0.3558714285714287,
+              "observedWinRate": 0.40816326530612246
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 91,
+              "meanProbability": 0.46005714285714305,
+              "observedWinRate": 0.5164835164835165
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 84,
+              "meanProbability": 0.5354309523809524,
+              "observedWinRate": 0.5476190476190477
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 58,
+              "meanProbability": 0.6460017241379309,
+              "observedWinRate": 0.6379310344827587
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 20,
+              "meanProbability": 0.7403700000000002,
+              "observedWinRate": 0.8
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 12,
+              "meanProbability": 0.8402083333333333,
+              "observedWinRate": 0.9166666666666666
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 1,
+              "meanProbability": 0.9518,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 355,
+          "brier": 0.22846840766287654,
+          "logLoss": 0.6475891585509846,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 2,
+              "meanProbability": 0.05157838336159785,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 14,
+              "meanProbability": 0.16737163339477676,
+              "observedWinRate": 0.35714285714285715
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 25,
+              "meanProbability": 0.24776356519002227,
+              "observedWinRate": 0.32
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 51,
+              "meanProbability": 0.3496366200611654,
+              "observedWinRate": 0.37254901960784315
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 68,
+              "meanProbability": 0.44884568880658576,
+              "observedWinRate": 0.4852941176470588
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 102,
+              "meanProbability": 0.5284688768907774,
+              "observedWinRate": 0.5784313725490197
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 54,
+              "meanProbability": 0.6479408884467829,
+              "observedWinRate": 0.6481481481481481
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 25,
+              "meanProbability": 0.7372604707864002,
+              "observedWinRate": 0.72
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 13,
+              "meanProbability": 0.8473110078581712,
+              "observedWinRate": 0.9230769230769231
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 1,
+              "meanProbability": 0.9583156012528269,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "interval80": {
+          "games": 355,
+          "coverage": 0.7211267605633803,
+          "meanWidth": 35.27887323943662
+        },
+        "total": {
+          "games": 355,
+          "mae": 13.942650478421502,
+          "rmse": 16.82684869965278,
+          "meanError": -1.336414577477638,
+          "medianAbsoluteError": 11.808823529411768,
+          "p90AbsoluteError": 27.250054208829088
+        }
+      }
+    },
+    "weekPhase": {
+      "0-3": {
+        "games": 1832,
+        "margin": {
+          "games": 1832,
+          "mae": 19.518521649420613,
+          "rmse": 24.573266928525044,
+          "meanError": 10.415594660739618,
+          "medianAbsoluteError": 16.106697839575354,
+          "p90AbsoluteError": 41.2347
+        },
+        "winProbability": {
+          "games": 1832,
+          "brier": 0.1893124742085157,
+          "logLoss": 0.5630981852282594,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 8,
+              "meanProbability": 0.1607125,
+              "observedWinRate": 0.25
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 41,
+              "meanProbability": 0.2596195121951219,
+              "observedWinRate": 0.34146341463414637
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 101,
+              "meanProbability": 0.3557772277227723,
+              "observedWinRate": 0.36633663366336633
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 220,
+              "meanProbability": 0.45772454545454533,
+              "observedWinRate": 0.5318181818181819
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 464,
+              "meanProbability": 0.5536293103448279,
+              "observedWinRate": 0.6206896551724138
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 548,
+              "meanProbability": 0.6457383211678827,
+              "observedWinRate": 0.8412408759124088
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 272,
+              "meanProbability": 0.7464242647058823,
+              "observedWinRate": 0.8419117647058824
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 152,
+              "meanProbability": 0.8474907894736843,
+              "observedWinRate": 0.9210526315789473
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 26,
+              "meanProbability": 0.9226038461538463,
+              "observedWinRate": 0.9615384615384616
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1832,
+          "brier": 0.1843587443438605,
+          "logLoss": 0.5509724143843628,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 14,
+              "meanProbability": 0.15203440343857544,
+              "observedWinRate": 0.2857142857142857
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 56,
+              "meanProbability": 0.25428243404386,
+              "observedWinRate": 0.35714285714285715
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 105,
+              "meanProbability": 0.35433921663095386,
+              "observedWinRate": 0.37142857142857144
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 179,
+              "meanProbability": 0.453012048088173,
+              "observedWinRate": 0.5363128491620112
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 359,
+              "meanProbability": 0.5481173809982249,
+              "observedWinRate": 0.5933147632311978
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 530,
+              "meanProbability": 0.6517373417260094,
+              "observedWinRate": 0.8037735849056604
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 327,
+              "meanProbability": 0.7462205419611041,
+              "observedWinRate": 0.8409785932721713
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 196,
+              "meanProbability": 0.8447782712467414,
+              "observedWinRate": 0.9081632653061225
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 66,
+              "meanProbability": 0.9231343597501286,
+              "observedWinRate": 0.9393939393939394
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1832,
+          "coverage": 0.5835152838427947,
+          "meanWidth": 38.540393013100434
+        },
+        "total": {
+          "games": 1832,
+          "mae": 13.027709141843976,
+          "rmse": 16.33247249823791,
+          "meanError": 1.0406837325225284,
+          "medianAbsoluteError": 11.19017615176152,
+          "p90AbsoluteError": 26.292500000000004
+        }
+      },
+      "4-8": {
+        "games": 2417,
+        "margin": {
+          "games": 2417,
+          "mae": 13.466745050001888,
+          "rmse": 17.19280984023086,
+          "meanError": 0.10848085262420117,
+          "medianAbsoluteError": 10.94278123428198,
+          "p90AbsoluteError": 29.154751162056904
+        },
+        "winProbability": {
+          "games": 2417,
+          "brier": 0.19570550978899462,
+          "logLoss": 0.5723714118010852,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 15,
+              "meanProbability": 0.08153333333333333,
+              "observedWinRate": 0.06666666666666667
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 85,
+              "meanProbability": 0.1549764705882353,
+              "observedWinRate": 0.15294117647058825
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 133,
+              "meanProbability": 0.24736240601503764,
+              "observedWinRate": 0.2706766917293233
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 242,
+              "meanProbability": 0.35078305785123925,
+              "observedWinRate": 0.3181818181818182
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 296,
+              "meanProbability": 0.45178277027026986,
+              "observedWinRate": 0.4222972972972973
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 358,
+              "meanProbability": 0.5514902234636874,
+              "observedWinRate": 0.5027932960893855
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 400,
+              "meanProbability": 0.6493967500000002,
+              "observedWinRate": 0.655
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 418,
+              "meanProbability": 0.7470971291866028,
+              "observedWinRate": 0.722488038277512
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 322,
+              "meanProbability": 0.8486043478260878,
+              "observedWinRate": 0.8478260869565217
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 148,
+              "meanProbability": 0.9302648648648651,
+              "observedWinRate": 0.9662162162162162
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 2417,
+          "brier": 0.19592358282874237,
+          "logLoss": 0.5728654390459023,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 26,
+              "meanProbability": 0.08052530963001558,
+              "observedWinRate": 0.11538461538461539
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 102,
+              "meanProbability": 0.15564283865085687,
+              "observedWinRate": 0.16666666666666666
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 146,
+              "meanProbability": 0.2521150126074522,
+              "observedWinRate": 0.2876712328767123
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 224,
+              "meanProbability": 0.35017190467227904,
+              "observedWinRate": 0.3169642857142857
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 267,
+              "meanProbability": 0.4496653435375463,
+              "observedWinRate": 0.4419475655430712
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 331,
+              "meanProbability": 0.5516382979450389,
+              "observedWinRate": 0.4984894259818731
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 357,
+              "meanProbability": 0.64931184417896,
+              "observedWinRate": 0.6330532212885154
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 426,
+              "meanProbability": 0.7501372972954004,
+              "observedWinRate": 0.7018779342723005
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 342,
+              "meanProbability": 0.8507720933564145,
+              "observedWinRate": 0.8391812865497076
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 196,
+              "meanProbability": 0.93360989469884,
+              "observedWinRate": 0.9387755102040817
+            }
+          ]
+        },
+        "interval80": {
+          "games": 2417,
+          "coverage": 0.7190732312784444,
+          "meanWidth": 35.51675630947455
+        },
+        "total": {
+          "games": 2417,
+          "mae": 13.120267405289049,
+          "rmse": 16.473067937098346,
+          "meanError": -0.1292544319753556,
+          "medianAbsoluteError": 11.004815409309792,
+          "p90AbsoluteError": 26.71636969992754
+        }
+      },
+      "9+": {
+        "games": 2492,
+        "margin": {
+          "games": 2492,
+          "mae": 13.841207374859993,
+          "rmse": 17.47500385120498,
+          "meanError": 5.6661314188093534,
+          "medianAbsoluteError": 11.312740775891035,
+          "p90AbsoluteError": 29.04595298248816
+        },
+        "winProbability": {
+          "games": 2492,
+          "brier": 0.2040766511958266,
+          "logLoss": 0.5936855607315777,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 195,
+              "meanProbability": 0.06404205128205126,
+              "observedWinRate": 0.11794871794871795
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 306,
+              "meanProbability": 0.15186176470588242,
+              "observedWinRate": 0.27124183006535946
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 328,
+              "meanProbability": 0.2491963414634146,
+              "observedWinRate": 0.38109756097560976
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 328,
+              "meanProbability": 0.3513128048780488,
+              "observedWinRate": 0.5152439024390244
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 287,
+              "meanProbability": 0.45177526132404205,
+              "observedWinRate": 0.6306620209059234
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 296,
+              "meanProbability": 0.5471469594594598,
+              "observedWinRate": 0.6756756756756757
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 278,
+              "meanProbability": 0.6490535971223023,
+              "observedWinRate": 0.7697841726618705
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 210,
+              "meanProbability": 0.7496909523809528,
+              "observedWinRate": 0.8142857142857143
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 175,
+              "meanProbability": 0.8501359999999998,
+              "observedWinRate": 0.8914285714285715
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 89,
+              "meanProbability": 0.934567415730337,
+              "observedWinRate": 0.9662921348314607
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 2492,
+          "brier": 0.20483101929856629,
+          "logLoss": 0.596345270978791,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 219,
+              "meanProbability": 0.061789983269401105,
+              "observedWinRate": 0.1461187214611872
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 324,
+              "meanProbability": 0.15059621464254438,
+              "observedWinRate": 0.2716049382716049
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 327,
+              "meanProbability": 0.25028575262993774,
+              "observedWinRate": 0.41590214067278286
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 306,
+              "meanProbability": 0.35260918573464894,
+              "observedWinRate": 0.5163398692810458
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 273,
+              "meanProbability": 0.4530191636444266,
+              "observedWinRate": 0.6190476190476191
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 281,
+              "meanProbability": 0.5492021231680482,
+              "observedWinRate": 0.6725978647686833
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 258,
+              "meanProbability": 0.6499787106455904,
+              "observedWinRate": 0.7596899224806202
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 216,
+              "meanProbability": 0.749488305813668,
+              "observedWinRate": 0.8194444444444444
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 183,
+              "meanProbability": 0.8506578436463871,
+              "observedWinRate": 0.8852459016393442
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 105,
+              "meanProbability": 0.9363126475816007,
+              "observedWinRate": 0.9619047619047619
+            }
+          ]
+        },
+        "interval80": {
+          "games": 2492,
+          "coverage": 0.6873996789727127,
+          "meanWidth": 34.2508025682183
+        },
+        "total": {
+          "games": 2492,
+          "mae": 13.163418513750006,
+          "rmse": 16.439129490804717,
+          "meanError": -0.18467829802255292,
+          "medianAbsoluteError": 11.117671448646664,
+          "p90AbsoluteError": 26.844985589201833
+        }
+      },
+      "postseason": {
+        "games": 213,
+        "margin": {
+          "games": 213,
+          "mae": 13.582669446211622,
+          "rmse": 17.462172218820406,
+          "meanError": 3.102333741609305,
+          "medianAbsoluteError": 11.121065645530148,
+          "p90AbsoluteError": 27.286660260651043
+        },
+        "winProbability": {
+          "games": 213,
+          "brier": 0.23690271924882622,
+          "logLoss": 0.664054560845391,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 1,
+              "meanProbability": 0.0908,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 1,
+              "meanProbability": 0.1919,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 15,
+              "meanProbability": 0.25076000000000004,
+              "observedWinRate": 0.26666666666666666
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 37,
+              "meanProbability": 0.35775945945945953,
+              "observedWinRate": 0.5945945945945946
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 53,
+              "meanProbability": 0.4482150943396224,
+              "observedWinRate": 0.5471698113207547
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 44,
+              "meanProbability": 0.54765,
+              "observedWinRate": 0.5681818181818182
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 37,
+              "meanProbability": 0.6412108108108109,
+              "observedWinRate": 0.6216216216216216
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 19,
+              "meanProbability": 0.7451684210526316,
+              "observedWinRate": 0.7894736842105263
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 6,
+              "meanProbability": 0.8432,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 213,
+          "brier": 0.2374213742033824,
+          "logLoss": 0.6652018655480407,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 1,
+              "meanProbability": 0.08371064065103627,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 3,
+              "meanProbability": 0.1880617544039197,
+              "observedWinRate": 0.6666666666666666
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 15,
+              "meanProbability": 0.2541072191534875,
+              "observedWinRate": 0.3333333333333333
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 37,
+              "meanProbability": 0.35687476344828345,
+              "observedWinRate": 0.5405405405405406
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 49,
+              "meanProbability": 0.4458376099251296,
+              "observedWinRate": 0.5714285714285714
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 44,
+              "meanProbability": 0.5459528762605298,
+              "observedWinRate": 0.5681818181818182
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 36,
+              "meanProbability": 0.6414433811770133,
+              "observedWinRate": 0.6388888888888888
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 22,
+              "meanProbability": 0.7468805383499216,
+              "observedWinRate": 0.7272727272727273
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 6,
+              "meanProbability": 0.8528252022309314,
+              "observedWinRate": 1
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "interval80": {
+          "games": 213,
+          "coverage": 0.6901408450704225,
+          "meanWidth": 34.02347417840375
+        },
+        "total": {
+          "games": 213,
+          "mae": 13.824513652039185,
+          "rmse": 16.49051590261068,
+          "meanError": -0.09516651809539026,
+          "medianAbsoluteError": 12.204237877583466,
+          "p90AbsoluteError": 25.821110546167258
+        }
+      }
+    },
+    "predictedMargin": {
+      "0-7": {
+        "games": 3960,
+        "margin": {
+          "games": 3960,
+          "mae": 15.029530570749342,
+          "rmse": 19.537902902779102,
+          "meanError": 4.695635424898425,
+          "medianAbsoluteError": 11.77327119872637,
+          "p90AbsoluteError": 32.431974999999994
+        },
+        "winProbability": {
+          "games": 3960,
+          "brier": 0.23192140610101003,
+          "logLoss": 0.6563039720969335,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 28,
+              "meanProbability": 0.2958428571428572,
+              "observedWinRate": 0.39285714285714285
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 688,
+              "meanProbability": 0.35346279069767417,
+              "observedWinRate": 0.4331395348837209
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 856,
+              "meanProbability": 0.45308644859813046,
+              "observedWinRate": 0.5280373831775701
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 1162,
+              "meanProbability": 0.5510925989672983,
+              "observedWinRate": 0.5963855421686747
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 1196,
+              "meanProbability": 0.6451607023411375,
+              "observedWinRate": 0.7533444816053512
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 30,
+              "meanProbability": 0.7055066666666667,
+              "observedWinRate": 0.8
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 3960,
+          "brier": 0.23048091545467142,
+          "logLoss": 0.6531394973991513,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 113,
+              "meanProbability": 0.2911363181053809,
+              "observedWinRate": 0.45132743362831856
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 672,
+              "meanProbability": 0.3523019367190919,
+              "observedWinRate": 0.42857142857142855
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 768,
+              "meanProbability": 0.4513933305905826,
+              "observedWinRate": 0.53515625
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 1015,
+              "meanProbability": 0.5494720586836019,
+              "observedWinRate": 0.5832512315270936
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 1181,
+              "meanProbability": 0.6503061715119461,
+              "observedWinRate": 0.7375105842506351
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 211,
+              "meanProbability": 0.708719287811598,
+              "observedWinRate": 0.7867298578199052
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "interval80": {
+          "games": 3960,
+          "coverage": 0.6755050505050505,
+          "meanWidth": 36.218939393939394
+        },
+        "total": {
+          "games": 3960,
+          "mae": 13.160239387770286,
+          "rmse": 16.429963078573945,
+          "meanError": -0.5679348665342924,
+          "medianAbsoluteError": 11.111111111111114,
+          "p90AbsoluteError": 26.59162029484397
+        }
+      },
+      "14-28": {
+        "games": 974,
+        "margin": {
+          "games": 974,
+          "mae": 15.240992791438208,
+          "rmse": 18.86880732391273,
+          "meanError": 5.567883946549725,
+          "medianAbsoluteError": 12.736408333558169,
+          "p90AbsoluteError": 30.6436950345806
+        },
+        "winProbability": {
+          "games": 974,
+          "brier": 0.09776647680698153,
+          "logLoss": 0.34298583999095333,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 202,
+              "meanProbability": 0.06762673267326728,
+              "observedWinRate": 0.1188118811881188
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 178,
+              "meanProbability": 0.124814606741573,
+              "observedWinRate": 0.2247191011235955
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 342,
+              "meanProbability": 0.8707701754385967,
+              "observedWinRate": 0.8976608187134503
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 252,
+              "meanProbability": 0.9288424603174606,
+              "observedWinRate": 0.9642857142857143
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 974,
+          "brier": 0.09783286855593475,
+          "logLoss": 0.343536775613844,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 237,
+              "meanProbability": 0.06572933695748664,
+              "observedWinRate": 0.14767932489451477
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 143,
+              "meanProbability": 0.11642538179115401,
+              "observedWinRate": 0.20279720279720279
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 238,
+              "meanProbability": 0.8822579432346848,
+              "observedWinRate": 0.8991596638655462
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 356,
+              "meanProbability": 0.9309366169732131,
+              "observedWinRate": 0.9438202247191011
+            }
+          ]
+        },
+        "interval80": {
+          "games": 974,
+          "coverage": 0.660164271047228,
+          "meanWidth": 34.705338809034906
+        },
+        "total": {
+          "games": 974,
+          "mae": 12.402197253822159,
+          "rmse": 15.521955849282836,
+          "meanError": 1.3305543168537726,
+          "medianAbsoluteError": 10.814658034528552,
+          "p90AbsoluteError": 25.518362203679054
+        }
+      },
+      "28+": {
+        "games": 20,
+        "margin": {
+          "games": 20,
+          "mae": 14.307501062149413,
+          "rmse": 16.102855565413993,
+          "meanError": 7.119885803659014,
+          "medianAbsoluteError": 14.332015384450962,
+          "p90AbsoluteError": 21.90465248586499
+        },
+        "winProbability": {
+          "games": 20,
+          "brier": 0.0003655465000000002,
+          "logLoss": 0.018500413847451807,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 9,
+              "meanProbability": 0.01571111111111111,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 11,
+              "meanProbability": 0.9795545454545455,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 20,
+          "brier": 0.00027240205221343804,
+          "logLoss": 0.01602401648077378,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 9,
+              "meanProbability": 0.014613574233994429,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 11,
+              "meanProbability": 0.9830726780077672,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "interval80": {
+          "games": 20,
+          "coverage": 0.7,
+          "meanWidth": 32.95
+        },
+        "total": {
+          "games": 20,
+          "mae": 12.681577445260361,
+          "rmse": 16.027289545791156,
+          "meanError": 5.674427492227762,
+          "medianAbsoluteError": 8.258524613073405,
+          "p90AbsoluteError": 26.33526724928931
+        }
+      },
+      "7-14": {
+        "games": 2000,
+        "margin": {
+          "games": 2000,
+          "mae": 15.522316878758051,
+          "rmse": 19.786711056395085,
+          "meanError": 4.982065629646457,
+          "medianAbsoluteError": 12.48044724044317,
+          "p90AbsoluteError": 33.32115613406482
+        },
+        "winProbability": {
+          "games": 2000,
+          "brier": 0.18260966819500007,
+          "logLoss": 0.55126183526628,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 222,
+              "meanProbability": 0.17524009009009023,
+              "observedWinRate": 0.26576576576576577
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 489,
+              "meanProbability": 0.24694846625766878,
+              "observedWinRate": 0.34355828220858897
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 20,
+              "meanProbability": 0.30541500000000005,
+              "observedWinRate": 0.35
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 67,
+              "meanProbability": 0.6891462686567164,
+              "observedWinRate": 0.8805970149253731
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 889,
+              "meanProbability": 0.7488662542182231,
+              "observedWinRate": 0.7795275590551181
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 313,
+              "meanProbability": 0.8245968051118212,
+              "observedWinRate": 0.8562300319488818
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 2000,
+          "brier": 0.1821515424586733,
+          "logLoss": 0.5502099662444204,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 300,
+              "meanProbability": 0.16904193467262865,
+              "observedWinRate": 0.2733333333333333
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 431,
+              "meanProbability": 0.24084745614507666,
+              "observedWinRate": 0.35266821345707655
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 780,
+              "meanProbability": 0.7594277974875966,
+              "observedWinRate": 0.7705128205128206
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 489,
+              "meanProbability": 0.8330276957118082,
+              "observedWinRate": 0.8568507157464212
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            }
+          ]
+        },
+        "interval80": {
+          "games": 2000,
+          "coverage": 0.6675,
+          "meanWidth": 35.5805
+        },
+        "total": {
+          "games": 2000,
+          "mae": 13.439195080446378,
+          "rmse": 16.839818223121878,
+          "meanError": 0.9766047329429943,
+          "medianAbsoluteError": 11.367268165589117,
+          "p90AbsoluteError": 27.020836549498437
+        }
+      }
+    },
+    "evidence": {
+      "0-2": {
+        "games": 2177,
+        "margin": {
+          "games": 2177,
+          "mae": 18.87707309223085,
+          "rmse": 23.861313113108015,
+          "meanError": 9.26634599432552,
+          "medianAbsoluteError": 15.327853566956383,
+          "p90AbsoluteError": 40.4847
+        },
+        "winProbability": {
+          "games": 2177,
+          "brier": 0.19166180462563198,
+          "logLoss": 0.5678175591736548,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 15,
+              "meanProbability": 0.15548666666666666,
+              "observedWinRate": 0.2
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 54,
+              "meanProbability": 0.2551462962962963,
+              "observedWinRate": 0.35185185185185186
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 138,
+              "meanProbability": 0.35593550724637685,
+              "observedWinRate": 0.3695652173913043
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 280,
+              "meanProbability": 0.4563428571428571,
+              "observedWinRate": 0.525
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 521,
+              "meanProbability": 0.553470057581574,
+              "observedWinRate": 0.6103646833013435
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 607,
+              "meanProbability": 0.6463630971993406,
+              "observedWinRate": 0.828665568369028
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 330,
+              "meanProbability": 0.7473193939393938,
+              "observedWinRate": 0.8333333333333334
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 194,
+              "meanProbability": 0.8465561855670103,
+              "observedWinRate": 0.9020618556701031
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 38,
+              "meanProbability": 0.9230210526315791,
+              "observedWinRate": 0.9736842105263158
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 2177,
+          "brier": 0.18755516657734073,
+          "logLoss": 0.5577814859753103,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 1,
+              "meanProbability": 0.09361276182539352,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 24,
+              "meanProbability": 0.1504193839183072,
+              "observedWinRate": 0.25
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 72,
+              "meanProbability": 0.2545580368363256,
+              "observedWinRate": 0.375
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 143,
+              "meanProbability": 0.355002059602345,
+              "observedWinRate": 0.38461538461538464
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 231,
+              "meanProbability": 0.4529579499936659,
+              "observedWinRate": 0.5238095238095238
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 408,
+              "meanProbability": 0.5487101763267598,
+              "observedWinRate": 0.5833333333333334
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 581,
+              "meanProbability": 0.6516214501746839,
+              "observedWinRate": 0.7917383820998278
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 382,
+              "meanProbability": 0.7462516795063769,
+              "observedWinRate": 0.8350785340314136
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 249,
+              "meanProbability": 0.8447575936800157,
+              "observedWinRate": 0.891566265060241
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 86,
+              "meanProbability": 0.9245059196866324,
+              "observedWinRate": 0.9302325581395349
+            }
+          ]
+        },
+        "interval80": {
+          "games": 2177,
+          "coverage": 0.5934772622875517,
+          "meanWidth": 38.24850711988976
+        },
+        "total": {
+          "games": 2177,
+          "mae": 13.02784183719253,
+          "rmse": 16.383126400560645,
+          "meanError": 0.9084182549703707,
+          "medianAbsoluteError": 11.111111111111114,
+          "p90AbsoluteError": 26.299999999999997
+        }
+      },
+      "3-5": {
+        "games": 1772,
+        "margin": {
+          "games": 1772,
+          "mae": 13.170065414871956,
+          "rmse": 16.81563244923827,
+          "meanError": 0.05070996397606423,
+          "medianAbsoluteError": 10.653336521603169,
+          "p90AbsoluteError": 28.94086292195698
+        },
+        "winProbability": {
+          "games": 1772,
+          "brier": 0.19108644786117407,
+          "logLoss": 0.5615491402260393,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 8,
+              "meanProbability": 0.08297500000000001,
+              "observedWinRate": 0
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 67,
+              "meanProbability": 0.1546940298507463,
+              "observedWinRate": 0.208955223880597
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 105,
+              "meanProbability": 0.24812952380952388,
+              "observedWinRate": 0.24761904761904763
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 178,
+              "meanProbability": 0.3504106741573037,
+              "observedWinRate": 0.29775280898876405
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 194,
+              "meanProbability": 0.45321597938144315,
+              "observedWinRate": 0.4072164948453608
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 256,
+              "meanProbability": 0.5503945312500003,
+              "observedWinRate": 0.5
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 285,
+              "meanProbability": 0.6484347368421055,
+              "observedWinRate": 0.656140350877193
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 311,
+              "meanProbability": 0.7474180064308682,
+              "observedWinRate": 0.7266881028938906
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 251,
+              "meanProbability": 0.8489924302788849,
+              "observedWinRate": 0.8565737051792829
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 117,
+              "meanProbability": 0.9311316239316239,
+              "observedWinRate": 0.9743589743589743
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1772,
+          "brier": 0.19111232179144727,
+          "logLoss": 0.5614995605267221,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 16,
+              "meanProbability": 0.08249020757814146,
+              "observedWinRate": 0.125
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 81,
+              "meanProbability": 0.15560267678587653,
+              "observedWinRate": 0.20987654320987653
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 113,
+              "meanProbability": 0.2513317058380401,
+              "observedWinRate": 0.25663716814159293
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 160,
+              "meanProbability": 0.34916166523029335,
+              "observedWinRate": 0.2875
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 175,
+              "meanProbability": 0.44958009524206416,
+              "observedWinRate": 0.4342857142857143
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 242,
+              "meanProbability": 0.5501317772024312,
+              "observedWinRate": 0.49586776859504134
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 258,
+              "meanProbability": 0.6497361345271878,
+              "observedWinRate": 0.6356589147286822
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 311,
+              "meanProbability": 0.7520141533673251,
+              "observedWinRate": 0.7041800643086816
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 263,
+              "meanProbability": 0.8512309221582935,
+              "observedWinRate": 0.8479087452471483
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 153,
+              "meanProbability": 0.9344428014797544,
+              "observedWinRate": 0.954248366013072
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1772,
+          "coverage": 0.7291196388261851,
+          "meanWidth": 35.42889390519187
+        },
+        "total": {
+          "games": 1772,
+          "mae": 13.130947926790652,
+          "rmse": 16.46289695371835,
+          "meanError": 0.08110365427550464,
+          "medianAbsoluteError": 10.984494674121432,
+          "p90AbsoluteError": 26.80605123997641
+        }
+      },
+      "6+": {
+        "games": 3005,
+        "margin": {
+          "games": 3005,
+          "mae": 13.730352006937652,
+          "rmse": 17.36441441057858,
+          "meanError": 4.612868863923834,
+          "medianAbsoluteError": 11.240716085586602,
+          "p90AbsoluteError": 28.807588403513286
+        },
+        "winProbability": {
+          "games": 3005,
+          "brier": 0.20732347075207988,
+          "logLoss": 0.6005729496382589,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 203,
+              "meanProbability": 0.06472019704433495,
+              "observedWinRate": 0.11822660098522167
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 318,
+              "meanProbability": 0.15227515723270443,
+              "observedWinRate": 0.2578616352201258
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 358,
+              "meanProbability": 0.24918966480446936,
+              "observedWinRate": 0.3743016759776536
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 392,
+              "meanProbability": 0.35152678571428597,
+              "observedWinRate": 0.5127551020408163
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 382,
+              "meanProbability": 0.45063376963350793,
+              "observedWinRate": 0.5916230366492147
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 385,
+              "meanProbability": 0.548339480519481,
+              "observedWinRate": 0.6415584415584416
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 371,
+              "meanProbability": 0.6486218328840975,
+              "observedWinRate": 0.7277628032345014
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 278,
+              "meanProbability": 0.7476435251798561,
+              "observedWinRate": 0.7769784172661871
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 210,
+              "meanProbability": 0.8503485714285715,
+              "observedWinRate": 0.8809523809523809
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 108,
+              "meanProbability": 0.9335759259259258,
+              "observedWinRate": 0.9537037037037037
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 3005,
+          "brier": 0.20810101174011886,
+          "logLoss": 0.6031647673029538,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 229,
+              "meanProbability": 0.06242759364172326,
+              "observedWinRate": 0.14410480349344978
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 338,
+              "meanProbability": 0.15132404723144452,
+              "observedWinRate": 0.2603550295857988
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 359,
+              "meanProbability": 0.25062673017415643,
+              "observedWinRate": 0.40947075208913647
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 369,
+              "meanProbability": 0.35261718296815014,
+              "observedWinRate": 0.5067750677506775
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 362,
+              "meanProbability": 0.4512714772863803,
+              "observedWinRate": 0.5911602209944752
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 365,
+              "meanProbability": 0.5498862946289019,
+              "observedWinRate": 0.6410958904109589
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 342,
+              "meanProbability": 0.6485017640236912,
+              "observedWinRate": 0.7222222222222222
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 298,
+              "meanProbability": 0.7481506996640875,
+              "observedWinRate": 0.7684563758389261
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 215,
+              "meanProbability": 0.8516723736696487,
+              "observedWinRate": 0.8744186046511628
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 128,
+              "meanProbability": 0.935546698289815,
+              "observedWinRate": 0.9453125
+            }
+          ]
+        },
+        "interval80": {
+          "games": 3005,
+          "coverage": 0.6931780366056572,
+          "meanWidth": 34.27720465890183
+        },
+        "total": {
+          "games": 3005,
+          "mae": 13.210202464143071,
+          "rmse": 16.431766521400526,
+          "meanError": -0.3353432171635165,
+          "medianAbsoluteError": 11.22218579234972,
+          "p90AbsoluteError": 26.642289262778835
+        }
+      }
+    },
+    "season": {
+      "2022": {
+        "games": 1540,
+        "margin": {
+          "games": 1540,
+          "mae": 14.715990450990994,
+          "rmse": 18.82232519117782,
+          "meanError": 3.2750096283427066,
+          "medianAbsoluteError": 11.857379462378852,
+          "p90AbsoluteError": 31.115206891724252
+        },
+        "winProbability": {
+          "games": 1540,
+          "brier": 0.19783754859740244,
+          "logLoss": 0.5773717316858535,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 39,
+              "meanProbability": 0.06633589743589743,
+              "observedWinRate": 0.10256410256410256
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 83,
+              "meanProbability": 0.14940361445783126,
+              "observedWinRate": 0.20481927710843373
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 109,
+              "meanProbability": 0.2516100917431194,
+              "observedWinRate": 0.3394495412844037
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 143,
+              "meanProbability": 0.35160559440559425,
+              "observedWinRate": 0.42657342657342656
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 206,
+              "meanProbability": 0.45531116504854363,
+              "observedWinRate": 0.4854368932038835
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 259,
+              "meanProbability": 0.5528876447876447,
+              "observedWinRate": 0.555984555984556
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 265,
+              "meanProbability": 0.6471098113207547,
+              "observedWinRate": 0.7471698113207547
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 207,
+              "meanProbability": 0.7483400966183573,
+              "observedWinRate": 0.7391304347826086
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 152,
+              "meanProbability": 0.8489552631578947,
+              "observedWinRate": 0.8552631578947368
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 77,
+              "meanProbability": 0.930374025974026,
+              "observedWinRate": 0.974025974025974
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1540,
+          "brier": 0.19706405437710436,
+          "logLoss": 0.5755518221106716,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 46,
+              "meanProbability": 0.06472113395158362,
+              "observedWinRate": 0.13043478260869565
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 92,
+              "meanProbability": 0.14837633421763471,
+              "observedWinRate": 0.1956521739130435
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 107,
+              "meanProbability": 0.24939723884831583,
+              "observedWinRate": 0.38317757009345793
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 147,
+              "meanProbability": 0.349598384049796,
+              "observedWinRate": 0.42857142857142855
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 183,
+              "meanProbability": 0.45459678203997234,
+              "observedWinRate": 0.46994535519125685
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 222,
+              "meanProbability": 0.5496606389108538,
+              "observedWinRate": 0.545045045045045
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 258,
+              "meanProbability": 0.6479665797263332,
+              "observedWinRate": 0.7093023255813954
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 225,
+              "meanProbability": 0.7505156762957669,
+              "observedWinRate": 0.7377777777777778
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 158,
+              "meanProbability": 0.8504124981199855,
+              "observedWinRate": 0.8734177215189873
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 102,
+              "meanProbability": 0.9333776417702978,
+              "observedWinRate": 0.9509803921568627
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1540,
+          "coverage": 0.6844155844155844,
+          "meanWidth": 35.687012987012984
+        },
+        "total": {
+          "games": 1540,
+          "mae": 13.489488392538664,
+          "rmse": 16.885339795982777,
+          "meanError": -0.32741846165541416,
+          "medianAbsoluteError": 11.716870437611107,
+          "p90AbsoluteError": 26.81881665977677
+        }
+      },
+      "2023": {
+        "games": 1535,
+        "margin": {
+          "games": 1535,
+          "mae": 14.974173050927963,
+          "rmse": 19.071588086913003,
+          "meanError": 4.382916475943829,
+          "medianAbsoluteError": 12.244081364263472,
+          "p90AbsoluteError": 31.182267446215384
+        },
+        "winProbability": {
+          "games": 1535,
+          "brier": 0.19985576239087935,
+          "logLoss": 0.5848023238661824,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 50,
+              "meanProbability": 0.06931200000000001,
+              "observedWinRate": 0.1
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 76,
+              "meanProbability": 0.1512657894736841,
+              "observedWinRate": 0.19736842105263158
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 127,
+              "meanProbability": 0.2515023622047243,
+              "observedWinRate": 0.33070866141732286
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 186,
+              "meanProbability": 0.3537279569892474,
+              "observedWinRate": 0.3870967741935484
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 170,
+              "meanProbability": 0.45419941176470585,
+              "observedWinRate": 0.5470588235294118
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 269,
+              "meanProbability": 0.5509126394052042,
+              "observedWinRate": 0.6394052044609665
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 259,
+              "meanProbability": 0.6487610038610037,
+              "observedWinRate": 0.7413127413127413
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 207,
+              "meanProbability": 0.7485642512077296,
+              "observedWinRate": 0.7681159420289855
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 132,
+              "meanProbability": 0.8475037878787879,
+              "observedWinRate": 0.8712121212121212
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 59,
+              "meanProbability": 0.9299305084745763,
+              "observedWinRate": 0.9152542372881356
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1535,
+          "brier": 0.19895188212433504,
+          "logLoss": 0.5831481708310039,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 59,
+              "meanProbability": 0.06749317900812037,
+              "observedWinRate": 0.0847457627118644
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 85,
+              "meanProbability": 0.15337548493609326,
+              "observedWinRate": 0.2823529411764706
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 138,
+              "meanProbability": 0.2541160229162965,
+              "observedWinRate": 0.32608695652173914
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 169,
+              "meanProbability": 0.3531719286708594,
+              "observedWinRate": 0.3905325443786982
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 152,
+              "meanProbability": 0.45171314250963684,
+              "observedWinRate": 0.5592105263157895
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 239,
+              "meanProbability": 0.5495953500393759,
+              "observedWinRate": 0.6150627615062761
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 251,
+              "meanProbability": 0.6516789212379483,
+              "observedWinRate": 0.7529880478087649
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 212,
+              "meanProbability": 0.7508076302037049,
+              "observedWinRate": 0.7311320754716981
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 156,
+              "meanProbability": 0.8493507780700552,
+              "observedWinRate": 0.8653846153846154
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 74,
+              "meanProbability": 0.9339955228495077,
+              "observedWinRate": 0.918918918918919
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1535,
+          "coverage": 0.6775244299674267,
+          "meanWidth": 35.63973941368078
+        },
+        "total": {
+          "games": 1535,
+          "mae": 13.315297035148511,
+          "rmse": 16.599577176386138,
+          "meanError": -0.09785279332944263,
+          "medianAbsoluteError": 11.102892307692308,
+          "p90AbsoluteError": 27.458087375547596
+        }
+      },
+      "2024": {
+        "games": 1607,
+        "margin": {
+          "games": 1607,
+          "mae": 14.97976163357839,
+          "rmse": 19.237461554940122,
+          "meanError": 4.954474367446136,
+          "medianAbsoluteError": 11.682568340699682,
+          "p90AbsoluteError": 31.932785210913856
+        },
+        "winProbability": {
+          "games": 1607,
+          "brier": 0.20462911733042963,
+          "logLoss": 0.5958796487080097,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 39,
+              "meanProbability": 0.06612564102564103,
+              "observedWinRate": 0.20512820512820512
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 111,
+              "meanProbability": 0.15281351351351358,
+              "observedWinRate": 0.23423423423423423
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 126,
+              "meanProbability": 0.2502769841269841,
+              "observedWinRate": 0.38095238095238093
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 173,
+              "meanProbability": 0.3527265895953757,
+              "observedWinRate": 0.4797687861271676
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 187,
+              "meanProbability": 0.4500796791443854,
+              "observedWinRate": 0.5133689839572193
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 254,
+              "meanProbability": 0.5496240157480317,
+              "observedWinRate": 0.610236220472441
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 301,
+              "meanProbability": 0.6445475083056483,
+              "observedWinRate": 0.7209302325581395
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 203,
+              "meanProbability": 0.7462689655172415,
+              "observedWinRate": 0.7931034482758621
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 155,
+              "meanProbability": 0.848754193548387,
+              "observedWinRate": 0.8709677419354839
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 58,
+              "meanProbability": 0.9314000000000001,
+              "observedWinRate": 0.9827586206896551
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1607,
+          "brier": 0.20434722296934357,
+          "logLoss": 0.5956977390765785,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 47,
+              "meanProbability": 0.06565451141647508,
+              "observedWinRate": 0.23404255319148937
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 120,
+              "meanProbability": 0.14998398453351144,
+              "observedWinRate": 0.24166666666666667
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 136,
+              "meanProbability": 0.25130943879035383,
+              "observedWinRate": 0.41911764705882354
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 161,
+              "meanProbability": 0.35466821598794934,
+              "observedWinRate": 0.4720496894409938
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 172,
+              "meanProbability": 0.44829284930800734,
+              "observedWinRate": 0.5174418604651163
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 228,
+              "meanProbability": 0.5510802371331068,
+              "observedWinRate": 0.6052631578947368
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 281,
+              "meanProbability": 0.6507198917288791,
+              "observedWinRate": 0.701067615658363
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 210,
+              "meanProbability": 0.7474814347390334,
+              "observedWinRate": 0.7952380952380952
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 172,
+              "meanProbability": 0.8497090768692862,
+              "observedWinRate": 0.8546511627906976
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 80,
+              "meanProbability": 0.9325086986953218,
+              "observedWinRate": 0.9375
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1607,
+          "coverage": 0.6689483509645302,
+          "meanWidth": 35.665214685749845
+        },
+        "total": {
+          "games": 1607,
+          "mae": 13.072391608600066,
+          "rmse": 16.567935677671,
+          "meanError": 0.3673781642807218,
+          "medianAbsoluteError": 10.706779661016952,
+          "p90AbsoluteError": 26.94425227568272
+        }
+      },
+      "2025": {
+        "games": 1625,
+        "margin": {
+          "games": 1625,
+          "mae": 14.97261693908743,
+          "rmse": 19.249765847302655,
+          "meanError": 5.949533602222371,
+          "medianAbsoluteError": 11.914197856316276,
+          "p90AbsoluteError": 32.21265714318102
+        },
+        "winProbability": {
+          "games": 1625,
+          "brier": 0.1953108367938463,
+          "logLoss": 0.5729211487740198,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 83,
+              "meanProbability": 0.06229397590361447,
+              "observedWinRate": 0.08433734939759036
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 120,
+              "meanProbability": 0.1546225,
+              "observedWinRate": 0.31666666666666665
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 134,
+              "meanProbability": 0.24466641791044771,
+              "observedWinRate": 0.3358208955223881
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 167,
+              "meanProbability": 0.350591616766467,
+              "observedWinRate": 0.4550898203592814
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 218,
+              "meanProbability": 0.4541096330275228,
+              "observedWinRate": 0.5825688073394495
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 264,
+              "meanProbability": 0.5521037878787878,
+              "observedWinRate": 0.6136363636363636
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 270,
+              "meanProbability": 0.649245185185185,
+              "observedWinRate": 0.8074074074074075
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 178,
+              "meanProbability": 0.7478522471910113,
+              "observedWinRate": 0.8033707865168539
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 144,
+              "meanProbability": 0.8479215277777777,
+              "observedWinRate": 0.9097222222222222
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 47,
+              "meanProbability": 0.9298297872340429,
+              "observedWinRate": 1
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 1625,
+          "brier": 0.19445223946506873,
+          "logLoss": 0.5709667937848194,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 94,
+              "meanProbability": 0.06025897092770215,
+              "observedWinRate": 0.13829787234042554
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 133,
+              "meanProbability": 0.1548275292285395,
+              "observedWinRate": 0.2781954887218045
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 137,
+              "meanProbability": 0.24958995434839645,
+              "observedWinRate": 0.3722627737226277
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 152,
+              "meanProbability": 0.35124394393521935,
+              "observedWinRate": 0.4407894736842105
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 201,
+              "meanProbability": 0.45204893049635103,
+              "observedWinRate": 0.6119402985074627
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 229,
+              "meanProbability": 0.5493903234079837,
+              "observedWinRate": 0.5938864628820961
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 246,
+              "meanProbability": 0.6489829816476534,
+              "observedWinRate": 0.7845528455284553
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 204,
+              "meanProbability": 0.745181983456681,
+              "observedWinRate": 0.803921568627451
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 157,
+              "meanProbability": 0.8470259359500885,
+              "observedWinRate": 0.8853503184713376
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 72,
+              "meanProbability": 0.9298005990140208,
+              "observedWinRate": 0.9861111111111112
+            }
+          ]
+        },
+        "interval80": {
+          "games": 1625,
+          "coverage": 0.6732307692307692,
+          "meanWidth": 35.57846153846154
+        },
+        "total": {
+          "games": 1625,
+          "mae": 12.873178300408014,
+          "rmse": 15.91939789976534,
+          "meanError": 0.5094751367094054,
+          "medianAbsoluteError": 11.07820129832826,
+          "p90AbsoluteError": 26.15049945896687
+        }
+      },
+      "2026": {
+        "games": 647,
+        "margin": {
+          "games": 647,
+          "mae": 17.993031559365132,
+          "rmse": 23.120571028944042,
+          "meanError": 7.300216679419611,
+          "medianAbsoluteError": 14.671,
+          "p90AbsoluteError": 39.871986460996574
+        },
+        "winProbability": {
+          "games": 647,
+          "brier": 0.18731443962905686,
+          "logLoss": 0.5572273884114357,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 10,
+              "meanProbability": 0.17065999999999998,
+              "observedWinRate": 0.3
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 21,
+              "meanProbability": 0.2549952380952381,
+              "observedWinRate": 0.3333333333333333
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 39,
+              "meanProbability": 0.34992820512820505,
+              "observedWinRate": 0.3333333333333333
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 75,
+              "meanProbability": 0.44897600000000004,
+              "observedWinRate": 0.48
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 116,
+              "meanProbability": 0.5484163793103446,
+              "observedWinRate": 0.5172413793103449
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 168,
+              "meanProbability": 0.6486119047619048,
+              "observedWinRate": 0.8035714285714286
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 124,
+              "meanProbability": 0.7454661290322585,
+              "observedWinRate": 0.8145161290322581
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 72,
+              "meanProbability": 0.8518458333333334,
+              "observedWinRate": 0.8888888888888888
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 22,
+              "meanProbability": 0.9370681818181817,
+              "observedWinRate": 0.9545454545454546
+            }
+          ]
+        },
+        "baseWinProbability": {
+          "games": 647,
+          "brier": 0.18402088545332948,
+          "logLoss": 0.5489769506871074,
+          "logLossEpsilon": 1e-15,
+          "reliability": [
+            {
+              "lower": 0,
+              "upper": 0.1,
+              "games": 0,
+              "meanProbability": null,
+              "observedWinRate": null
+            },
+            {
+              "lower": 0.1,
+              "upper": 0.2,
+              "games": 13,
+              "meanProbability": 0.16028703837816807,
+              "observedWinRate": 0.23076923076923078
+            },
+            {
+              "lower": 0.2,
+              "upper": 0.3,
+              "games": 26,
+              "meanProbability": 0.2530090155384222,
+              "observedWinRate": 0.34615384615384615
+            },
+            {
+              "lower": 0.3,
+              "upper": 0.4,
+              "games": 43,
+              "meanProbability": 0.3530051354028201,
+              "observedWinRate": 0.37209302325581395
+            },
+            {
+              "lower": 0.4,
+              "upper": 0.5,
+              "games": 60,
+              "meanProbability": 0.4475044001340686,
+              "observedWinRate": 0.4666666666666667
+            },
+            {
+              "lower": 0.5,
+              "upper": 0.6,
+              "games": 97,
+              "meanProbability": 0.5451495973140067,
+              "observedWinRate": 0.5154639175257731
+            },
+            {
+              "lower": 0.6,
+              "upper": 0.7,
+              "games": 145,
+              "meanProbability": 0.6535358530644941,
+              "observedWinRate": 0.7517241379310344
+            },
+            {
+              "lower": 0.7,
+              "upper": 0.8,
+              "games": 140,
+              "meanProbability": 0.7490570077034269,
+              "observedWinRate": 0.8214285714285714
+            },
+            {
+              "lower": 0.8,
+              "upper": 0.9,
+              "games": 84,
+              "meanProbability": 0.8491786243495498,
+              "observedWinRate": 0.8809523809523809
+            },
+            {
+              "lower": 0.9,
+              "upper": 1,
+              "games": 39,
+              "meanProbability": 0.9323258442174366,
+              "observedWinRate": 0.9230769230769231
+            }
+          ]
+        },
+        "interval80": {
+          "games": 647,
+          "coverage": 0.624420401854714,
+          "meanWidth": 37.48995363214838
+        },
+        "total": {
+          "games": 647,
+          "mae": 12.654201984459554,
+          "rmse": 15.773000323288905,
+          "meanError": 0.5406344828878603,
+          "medianAbsoluteError": 11.247712418300658,
+          "p90AbsoluteError": 25.353293861402413
+        }
+      }
+    }
+  },
+  "files": [
+    "data/backtests/2022.json",
+    "data/backtests/2023.json",
+    "data/backtests/2024.json",
+    "data/backtests/2025.json",
+    "data/backtests/2026.json"
+  ]
+}

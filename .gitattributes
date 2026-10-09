@@ -1,0 +1,6 @@
+# Keep generated provider snapshots and evaluation records collapsed in code review.
+data/current-season.json linguist-generated=true
+data/backtests/*.json linguist-generated=true
+data/forecasts/*.json linguist-generated=true
+data/history/**/*.json linguist-generated=true
+data/history/**/*.json.gz linguist-generated=true

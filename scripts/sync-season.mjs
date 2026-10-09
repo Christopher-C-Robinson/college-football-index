@@ -1,148 +1,61 @@
-import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { estimateHomeField } from '../js/model.js';
+import { createCfbdClient, promptForApiKey } from './lib/cfbd.mjs';
+import { assertValidDataset, datasetMetadata, readJson, writeJsonAtomic } from './lib/dataset.mjs';
+import { resolveSeason } from './lib/season.mjs';
+import { updateSeasonForecastArchive } from './lib/season-forecasts.mjs';
+import { buildPreseason } from './lib/preseason.mjs';
 
-const scriptDirectory = dirname(fileURLToPath(import.meta.url));
-const projectDirectory = resolve(scriptDirectory, '..');
-const year = Number(process.argv[2] || new Date().getFullYear());
-
-async function promptForApiKey() {
-  const input = process.stdin;
-  const output = process.stdout;
-  if (!input.isTTY || typeof input.setRawMode !== 'function') {
-    throw new Error('Set CFBD_API_KEY in your environment when running without an interactive terminal.');
-  }
-  output.write('CFBD API key (input hidden): ');
-  const wasRaw = Boolean(input.isRaw);
-  input.setRawMode(true);
-  input.resume();
-  return new Promise(function (resolve, reject) {
-    let secret = '';
-    function finish(error) {
-      input.off('data', onData);
-      input.setRawMode(wasRaw);
-      input.pause();
-      output.write('\n');
-      if (error) reject(error);
-      else resolve(secret.trim());
-    }
-    function onData(chunk) {
-      for (const character of chunk.toString()) {
-        if (character === '\u0003') return finish(new Error('Sync cancelled.'));
-        if (character === '\r' || character === '\n') return finish();
-        if (character === '\u007f' || character === '\u0008') secret = secret.slice(0, -1);
-        else secret += character;
-      }
-    }
-    input.on('data', onData);
-  });
-}
-
-if (!Number.isInteger(year) || year < 2000 || year > 2100) {
-  throw new Error('Pass a valid season year, for example: node scripts/sync-season.mjs 2026');
-}
+const projectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const args = process.argv.slice(2);
+const force = args.includes('--force');
+const positional = args.filter(argument => argument !== '--force');
+if (positional.length > 1 || positional.some(argument => argument.startsWith('--'))) throw new Error('Usage: node scripts/sync-season.mjs [season] [--force]');
+const now = new Date();
+const season = resolveSeason(positional[0], now);
 const apiKey = process.env.CFBD_API_KEY || await promptForApiKey();
-if (!apiKey) throw new Error('An API key is required. The key is never read from or written to project files.');
-
-const baseUrl = 'https://api.collegefootballdata.com';
-let apiCalls = 0;
-
-async function request(endpoint, params) {
-  const url = new URL(baseUrl + endpoint);
-  Object.entries(params).forEach(function (entry) { url.searchParams.set(entry[0], String(entry[1])); });
-  apiCalls += 1;
-  const response = await fetch(url, { headers: { Authorization: 'Bearer ' + apiKey } });
-  if (!response.ok) {
-    const detail = (await response.text()).slice(0, 300);
-    throw new Error('CFBD request failed (' + response.status + ') for ' + endpoint + ': ' + detail);
-  }
-  return response.json();
+const cacheDirectory = resolve(projectDirectory, '.cache/history');
+const client = createCfbdClient({ apiKey, cacheDirectory, force, now, reserveCalls: 5 });
+const usage = await client.getUsage();
+console.log('CFBD monthly calls remaining: ' + (usage.remainingCalls ?? 'unavailable') + '.');
+const outputPath = resolve(projectDirectory, 'data/current-season.json');
+const previous = await readJson(outputPath, { optional: true });
+const history = [];
+const archives = [];
+const seasonsForHomeField = Array.from({ length: 5 }, (_, index) => season - 4 + index);
+const seasonsToCollect = Array.from({ length: 6 }, (_, index) => season - 5 + index);
+let current;
+for (const year of seasonsToCollect) {
+  const dataset = await client.fetchSeasonDataset(year, { includeStats: year === season, seed: year === season ? previous : null });
+  archives.push(dataset);
+  history.push(...dataset.games);
+  if (year === season) current = dataset;
 }
-
-async function fetchSeasonSchedule(season) {
-  const schedules = [];
-  for (const classification of ['fbs', 'fcs']) {
-    const result = await request('/games', { year: season, seasonType: 'regular', classification: classification });
-    if (Array.isArray(result)) schedules.push(...result);
-  }
-  return schedules;
-}
-
-function uniqueGames(schedules) {
-  const gamesById = new Map();
-  schedules.forEach(function (game) {
-    const id = game.id || [game.season, game.startDate, game.homeTeam, game.awayTeam].join('|');
-    gamesById.set(String(id), game);
-  });
-  return Array.from(gamesById.values()).sort(function (a, b) {
-    return String(a.startDate || '').localeCompare(String(b.startDate || ''));
-  });
-}
-
-const seasonsForHomeField = Array.from({ length: 5 }, function (_, index) { return year - 4 + index; });
-const historySchedules = [];
-let currentSchedules = [];
-for (const season of seasonsForHomeField) {
-  const seasonGames = await fetchSeasonSchedule(season);
-  historySchedules.push(...seasonGames);
-  if (season === year) currentSchedules = seasonGames;
-}
-const teamMetadata = await request('/teams', { year: year });
-const games = uniqueGames(currentSchedules);
-const homeField = estimateHomeField(uniqueGames(historySchedules), year);
-const completedWeeks = Array.from(new Set(games.filter(function (game) {
-  return game.completed && Number.isFinite(Number(game.week));
-}).map(function (game) { return Number(game.week); }))).sort(function (a, b) { return a - b; });
-
-const teamStats = [];
-for (const week of completedWeeks) {
-  const weekStats = [];
-  for (const classification of ['fbs', 'fcs']) {
-    const result = await request('/games/teams', {
-      year: year,
-      week: week,
-      seasonType: 'regular',
-      classification: classification
-    });
-    if (Array.isArray(result)) weekStats.push(...result);
-  }
-  const unique = new Map();
-  weekStats.forEach(function (entry) { unique.set(String(entry.id || entry.gameId), entry); });
-  teamStats.push(...unique.values());
-}
-
-const resultsThrough = games.filter(function (game) { return game.completed; })
-  .map(function (game) { return String(game.startDate || '').slice(0, 10); })
-  .filter(Boolean)
-  .sort()
-  .pop() || null;
-
+const homeField = estimateHomeField(history, season);
 const dataset = {
-  meta: {
-    season: year,
-    asOf: new Date().toISOString().slice(0, 10),
-    resultsThrough: resultsThrough,
-    generatedAt: new Date().toISOString(),
-    provider: 'CollegeFootballData.com API',
-    scope: 'Current regular-season FBS + FCS schedule/results and team box scores, plus five seasons of home-field history',
-    homeFieldSeasons: seasonsForHomeField,
-    starter: false,
-    completeD1: true,
-    apiCalls: apiCalls
-  },
-  games: games,
-  homeField: homeField,
-  teamMetadata: Array.isArray(teamMetadata) ? teamMetadata.filter(function (team) {
-    return ['fbs', 'fcs'].includes(String(team.classification || '').toLowerCase());
-  }) : [],
-  teamStats: teamStats
+  ...current,
+  meta: datasetMetadata(season, current.games, {
+    ...current.meta, apiCalls: client.apiCalls, homeFieldSeasons: seasonsForHomeField,
+    scope: 'Regular-season and postseason FBS + FCS schedules/results and completed-game team box scores, plus five seasons of home-field history'
+  }, now),
+  homeField,
+  preseason: buildPreseason(archives, season, { asOf: now.toISOString() })
 };
-
-const outputPath = resolve(projectDirectory, 'data', 'current-season.json');
-await mkdir(dirname(outputPath), { recursive: true });
-await writeFile(outputPath, JSON.stringify(dataset, null, 2) + '\n', 'utf8');
-console.log('Saved ' + games.length + ' scheduled games and ' + teamStats.length + ' team box-score entries to data/current-season.json.');
+const report = assertValidDataset(dataset, { previous: previous?.meta?.season === season ? previous : null, now });
+dataset.meta.coverage = report.coverage;
+await writeJsonAtomic(outputPath, dataset);
+const forecasts = await updateSeasonForecastArchive(dataset, {
+  directory: resolve(projectDirectory, 'data/forecasts'),
+  baselineDirectory: resolve(projectDirectory, 'data/backtests')
+});
+console.log('Forecast archive: ' + forecasts.archive.predictions.length + ' predictions (' + forecasts.archive.meta.counts.snapshot + ' saved pregame, ' + forecasts.archive.meta.counts.reconstructed + ' reconstructed).');
+if (forecasts.newlyRetired) console.warn('Warning: ' + forecasts.newlyRetired + ' forecasts retired after schedule identity changes; original records remain in the archive.');
+if (forecasts.baselineIdentityMismatches.length) console.warn('Warning: ' + forecasts.baselineIdentityMismatches.length + ' baseline forecasts no longer match the schedule and remain unavailable.');
+console.log('Saved ' + dataset.games.length + ' scheduled games and ' + dataset.teamStats.length + ' team box-score entries.');
 console.log('Home-field model: ' + homeField.gamesUsed + ' completed FBS/FCS games across ' + homeField.seasons.length + ' seasons; league estimate ' + homeField.leaguePoints.toFixed(1) + ' points.');
-console.log('CFBD API calls: ' + apiCalls + ' (two schedule requests per season across five seasons, one metadata request, plus two per completed current-season week).');
-console.log('As of ' + dataset.meta.asOf + '. Keep the API key out of project files and source control.');
+console.log('Prior-season fallback: ' + dataset.preseason.teams.length + ' teams from ' + dataset.preseason.season + ', estimated with five seasons of venue history.');
+console.log('Rated-game box-score coverage: ' + (report.coverage.boxScoreCoverage * 100).toFixed(1) + '%.');
+for (const warning of report.warnings) console.warn('Warning: ' + warning);
+console.log('CFBD API calls: ' + client.apiCalls + '. Historical schedules and completed stats are cached in .cache/history.');
+console.log('Results through ' + dataset.meta.resultsThrough + '; generated ' + dataset.meta.generatedAt + '.');
