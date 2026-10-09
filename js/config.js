@@ -4,6 +4,8 @@ export const SCHEMA_VERSION = 2;
 // Rating/data definitions remain v2.0.0. Forecast v2.1.0 activates the frozen
 // residual-margin fit; uncertainty calibration remains an independent warning.
 export const FORECAST_VERSION = '2.1.0';
+// Explicit comparator for the frozen, pre-conference matchup forecast.
+export const MATCHUP_FORECAST_VERSION = '2.1.0';
 export const ACTIVE_MATCHUP_MODEL = Object.freeze({
   enabled: true,
   id: 'box-units-v1',

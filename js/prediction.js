@@ -1,5 +1,5 @@
 import { isRatedGame } from './model.js';
-import { MODEL_VERSION, MODEL_PARAMETERS, FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
+import { MODEL_VERSION, MODEL_PARAMETERS, FORECAST_VERSION, MATCHUP_FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
 import { matchupAdjustmentFor } from './matchup-model.js';
 
 function teamKey(value) {
@@ -41,8 +41,8 @@ function preseasonFor(model) {
 
 // The browser and historical replay use exactly the same prediction mathematics.
 export function predictMatchup(model, matchup, { allowColdStart = false, forecastModel = 'active' } = {}) {
-  if (!['active', 'baseline'].includes(forecastModel)) throw new Error('Forecast model must be active or baseline.');
-  const active = forecastModel === 'active' && ACTIVE_MATCHUP_MODEL.enabled;
+  if (!['active', 'matchup', 'baseline'].includes(forecastModel)) throw new Error('Forecast model must be active, matchup or baseline.');
+  const active = forecastModel !== 'baseline' && ACTIVE_MATCHUP_MODEL.enabled;
   const home = model.teams.get(teamKey(matchup.homeTeam));
   const away = model.teams.get(teamKey(matchup.awayTeam));
   if (!home || !away) throw new Error('Choose two teams in the loaded dataset.');
@@ -82,7 +82,7 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
   const variance = totals.length
     ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
   return {
-    modelVersion: active ? FORECAST_VERSION : MODEL_VERSION,
+    modelVersion: active ? forecastModel === 'matchup' ? MATCHUP_FORECAST_VERSION : FORECAST_VERSION : MODEL_VERSION,
     ...(active ? { baselineModelVersion: MODEL_VERSION, baselineMargin,
       matchupAdjustment: adjustment.points, matchupModel: adjustment.modelId,
       matchupEligible: adjustment.eligible, matchupFallbackReason: adjustment.reason,
