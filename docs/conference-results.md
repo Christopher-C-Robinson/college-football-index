@@ -6,7 +6,7 @@ Forecast **2.2.0** uses a conference-aware estimate of each team's power in the 
 
 The conference signal is part of the jointly fitted team strength; it is not an extra bonus added to a completed rating. Conference names, reputations and Power Four status do not award points. FBS and FCS use identical equations, and independent teams do not share an invented independent conference.
 
-The ranking board retains core power model **2.0.0** and its existing blend. Forecast power is separate. The venue estimates, fitted passing/rushing correction, score-total calculation and uncertainty parameters are unchanged. Conference-aware powers are calculated across the complete loaded FBS/FCS schedule; board filters and weight sliders do not change them. A team with no current-season results retains the labeled prior-season fallback when available.
+The original conference activation left the ranking board’s blend unchanged. The board now ranks teams by their average active-forecast win probability against every other rated FBS/FCS team on a neutral field, so its ordering includes conference-aware strength and the fitted passing/rushing effects. Core power model **2.0.0**, venue estimates, score-total calculation and uncertainty parameters remain unchanged. Conference-aware powers are calculated across the complete loaded FBS/FCS schedule; board filters do not change them. The simulator retains the labeled prior-season fallback for a team with no current-season results when available. See [neutral matchup ranking](neutral-matchup-rankings.md).
 
 ## Results
 

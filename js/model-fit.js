@@ -1,5 +1,5 @@
 import { buildModel, isRatedGame, MODEL_PARAMETERS } from './model.js';
-import { simulateMatchup } from './prediction.js';
+import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { FORECAST_VERSION } from './config.js';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();

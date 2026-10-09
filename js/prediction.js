@@ -39,6 +39,47 @@ function preseasonFor(model) {
   return { ...data, teams };
 }
 
+// A built model represents one immutable data snapshot. Reuse its summaries
+// across schedule forecasts and the full neutral-field ranking calculation.
+// Team ratings and matchup features still come from the shared forecast below.
+const snapshotSummaries = new WeakMap();
+
+function summariesFor(model) {
+  let summary = snapshotSummaries.get(model);
+  if (summary) return summary;
+  const scoring = new Map();
+  for (const team of model.teams.values()) scoring.set(team, scoringSummary(team));
+  const totals = model.ratedGames.map(game => game.homePoints + game.awayPoints);
+  const leagueTotal = totals.length ? totals.reduce((sum, total) => sum + total, 0) / totals.length : null;
+  const variance = totals.length
+    ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
+  summary = { scoring, totalGames: totals.length, leagueTotal, variance };
+  snapshotSummaries.set(model, summary);
+  return summary;
+}
+
+// Ranking eligibility follows exactly the same current-result and validated
+// preseason fallback rules as an ordinary forecast; unknown teams stay unranked.
+export function predictionTeamEligibility(model, teamName) {
+  const team = model.teams.get(teamKey(teamName));
+  if (!team) return { eligible: false, reason: 'The team is absent from this dataset.', currentGames: 0, priorSeason: null };
+  const summary = summariesFor(model);
+  const stats = summary.scoring.get(team);
+  const coldStart = !Number.isFinite(team.power) || !stats.games;
+  // Revalidate fallback provenance whenever used; imported preseason metadata
+  // must not inherit a previous validation merely because the model is cached.
+  const preseason = coldStart ? preseasonFor(model) : null;
+  const prior = coldStart ? preseason?.teams.get(teamKey(team.name)) : null;
+  return {
+    eligible: !coldStart || Boolean(prior),
+    reason: coldStart && !prior ? 'No completed FBS/FCS result or compatible previous-season forecast is available.' : null,
+    currentGames: stats.games,
+    coldStart,
+    priorSeason: prior ? preseason.season : null,
+    priorGames: prior?.games ?? null
+  };
+}
+
 // The browser and historical replay use exactly the same prediction mathematics.
 export function predictMatchup(model, matchup, { allowColdStart = false, forecastModel = 'active' } = {}) {
   if (!['active', 'matchup', 'baseline'].includes(forecastModel)) throw new Error('Forecast model must be active, matchup or baseline.');
@@ -49,8 +90,9 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
   if (!home || !away) throw new Error('Choose two teams in the loaded dataset.');
   if (teamKey(home.name) === teamKey(away.name)) throw new Error('Choose two different teams.');
   const parameters = { ...MODEL_PARAMETERS, ...model.parameters };
-  const homeStats = scoringSummary(home);
-  const awayStats = scoringSummary(away);
+  const summary = summariesFor(model);
+  const homeStats = summary.scoring.get(home);
+  const awayStats = summary.scoring.get(away);
   const homeColdStart = !Number.isFinite(home.power) || !homeStats.games;
   const awayColdStart = !Number.isFinite(away.power) || !awayStats.games;
   const preseason = homeColdStart || awayColdStart ? preseasonFor(model) : null;
@@ -78,10 +120,8 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
   const baselineMargin = homePower - awayPower + venuePoints;
   const adjustment = active ? matchupAdjustmentFor(model.unitProfiles, home.name, away.name) : null;
   const predictedMargin = baselineMargin + (adjustment?.points || 0);
-  const games = model.ratedGames;
-  const totals = games.map(game => game.homePoints + game.awayPoints);
-  const leagueTotal = totals.length
-    ? totals.reduce((sum, total) => sum + total, 0) / totals.length
+  const leagueTotal = summary.totalGames
+    ? summary.leagueTotal
     : usePrior ? preseason.leagueTotal : 2 * parameters.coldStartPointsPerTeam;
   const leaguePoints = leagueTotal / 2;
   const shrunk = (value, count) => value === null ? leaguePoints
@@ -90,8 +130,7 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
     shrunk(homeScoring.pointsFor, homeScoring.games) + shrunk(awayScoring.pointsAgainst, awayScoring.games)
     + shrunk(awayScoring.pointsFor, awayScoring.games) + shrunk(homeScoring.pointsAgainst, homeScoring.games)
   ) / 2);
-  const variance = totals.length
-    ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
+  const variance = summary.variance;
   return {
     modelVersion: conferenceActive ? FORECAST_VERSION : active ? MATCHUP_FORECAST_VERSION : MODEL_VERSION,
     ...(conferenceActive ? { unpooledHomePower, unpooledAwayPower, conferenceAdjustment,
@@ -122,7 +161,7 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
       parameters.simulationRatingScale / Math.sqrt(awayStats.games + 2)
     ),
     totalStdDev: Math.max(parameters.totalStdDevMin, Math.min(parameters.totalStdDevMax,
-      !totals.length && usePrior ? preseason.totalStdDev : Math.sqrt(variance))),
+      !summary.totalGames && usePrior ? preseason.totalStdDev : Math.sqrt(variance))),
     ...(usePrior ? {
       preseasonFallbackVersion: 1,
       preseasonSourceFingerprint: preseason.sourceFingerprint,

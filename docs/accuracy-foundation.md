@@ -13,6 +13,7 @@ The later forecast `2.1.0` release activates the separately evaluated box-unit m
 | `js/config.js` | Core/forecast/schema versions, frozen baseline parameters and active matchup correction |
 | `js/model.js` | Completion rules, power, venue estimation, raw efficiency, retrospective résumé |
 | `js/prediction.js` | Active matchup forecast and seeded simulator, plus explicit baseline replay, shared by browser/Node |
+| `js/neutral-rankings.js` | Full-field neutral pair forecasts and average win probabilities for board and schedule ranks |
 | `js/model-fit.js` | Whole-field current-snapshot simulations and completed-result comparisons |
 | `js/model-fit-view.js` | Current-fit summary, definitions, coverage gaps, and subdivision breakdown |
 | `js/unit-model.js` | Joint opponent-adjusted pass/rush profiles and symmetric challenger features |
@@ -23,9 +24,9 @@ The later forecast `2.1.0` release activates the separately evaluated box-unit m
 | `scripts/lib/cfbd.mjs` | Secret-authenticated acquisition, quota guard, raw cache |
 | `scripts/lib/dataset.mjs` | Integrity checks, metadata, duplicate handling, atomic output |
 
-The simulator uses predictive power, venue, and the frozen fitted passing/rushing matchup correction. It falls back to the baseline when required unit evidence is unavailable. The correction preserves the baseline projected total and translates its margin distribution; it does not recalibrate uncertainty. Changing descriptive CFI lens weights does not change a fixed matchup's predicted spread. Résumé still uses fitted retrospective probabilities and must not be interpreted as a forecasting score. Frozen pregame résumé is a later model release.
+The simulator uses predictive power, venue, and the frozen fitted passing/rushing matchup correction. It falls back to the baseline when required unit evidence is unavailable. The correction preserves the baseline projected total and translates its margin distribution; it does not recalibrate uncertainty. The board uses the same active forecast for its full-field neutral matchup ranking. Changing board filters does not change a fixed matchup’s predicted spread. Résumé still uses fitted retrospective probabilities and must not be interpreted as a forecasting score. Frozen pregame résumé is a later model release.
 
-Team Explorer simulates every scheduled matchup from the loaded snapshot, including completed games, using the same venue and simulation defaults as the hypothetical tool. Its comparisons with actual scores describe the current model's fit, rather than pregame forecasting accuracy. Current opponent ranks use the board's weights and full FBS/FCS field; filters do not renumber them.
+Team Explorer simulates every scheduled matchup from the loaded snapshot, including completed games, using the same venue and simulation defaults as the hypothetical tool. Its comparisons with actual scores describe the current model's fit, rather than pregame forecasting accuracy. Current opponent ranks use the board’s full-field neutral matchup ordering; filters do not recalculate or renumber them.
 
 The live predictor also supports optional preseason fallback policy `1`. For a team with zero current-season Division I results, it carries forward the previous season's adjusted power and scoring/allowed summaries; current results take over after the first rated game. The previous season's power is fitted with its own five-season venue history. Prior-season source hashes, generation times, model version, and active team years are retained. Source archives must precede the loaded snapshot, and rating uncertainty continues to use current-season game counts. The preserved historical baseline has no embedded preseason summaries and is unchanged; those reports do not establish the optional fallback's accuracy. A calibrated early-season blend remains future research.
 
@@ -35,9 +36,9 @@ The top summary runs the shared hypothetical simulator for each unique completed
 
 Winner match rate excludes tied actual results and exact 50/50 model probabilities. Brier/log loss exclude actual ties but score 50/50 probabilities. Margin error uses the uncapped actual margin and deterministic predicted margin. Score error is the mean absolute error across both teams' deterministic projected scores. Total error compares combined scoring with the model's projected total. Interval coverage checks whether each actual margin lies inside the simulated 10th–90th percentile bounds, inclusively. Empty denominators remain unavailable.
 
-Invalid/unavailable comparisons and duplicate records remain visible as coverage gaps. Computation yields between batches, cancels stale work on dataset switches, and caches each loaded dataset's completed report. Rankings-only slider changes and board filters do not rerun or modify the report.
+Invalid/unavailable comparisons and duplicate records remain visible as coverage gaps. Computation yields between batches, cancels stale work on dataset switches, and caches each loaded dataset's completed report. Board filters do not rerun or modify the report.
 
-These comparisons include completed results already used to fit power and scoring. They answer how closely the **current** model describes this season; they do not establish how accurately it forecast games before kickoff. The frozen historical evaluation below remains the source for pregame accuracy and parameter selection. No slider optimizer is added because CFI lens weights do not affect a fixed matchup's prediction.
+These comparisons include completed results already used to fit power and scoring. They answer how closely the **current** model describes this season; they do not establish how accurately it forecast games before kickoff. The frozen historical evaluation below remains the source for pregame accuracy and parameter selection. The neutral matchup ranking changes how the existing forecasts are summarized, rather than changing the forecast mathematics or adding an accuracy claim. See [ranking method](neutral-matchup-rankings.md).
 
 ## Frozen baseline temporal evaluation contract
 

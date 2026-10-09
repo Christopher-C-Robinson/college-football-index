@@ -1316,3 +1316,9 @@ html { scroll-padding-top: 104px; }
 .ranking-map-toggle:has(input:focus-visible) { outline: 2px solid var(--blue-mid); outline-offset: 2px; }
 .ranking-map-count { font-weight: 600; color: var(--ink-soft); }
 @media (max-width: 600px) { .ranking-map-key .ranking-map-toggle { min-height: 40px; } }
+
+/* Neutral full-field ranking explanation and export. */
+.ranking-explanation { padding: 18px 24px 24px; display: grid; gap: 14px; }
+.ranking-explanation p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+.ranking-explanation .button { justify-self: start; }
+@media (max-width: 680px) { .ranking-explanation { padding: 18px; } .ranking-explanation .button { width: 100%; } }
