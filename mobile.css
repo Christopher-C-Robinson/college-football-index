@@ -1,0 +1,89 @@
+/* Shared phone ergonomics, rankings, and model reports. */
+.ranking-map-swipe-hint { display: none; }
+.ranking-map-selected { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 24px; margin-top: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 7px; background: #f7f9fc; }
+.ranking-map-selected-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ranking-map-selected-identity strong { overflow-wrap: anywhere; }
+.ranking-map-selected-metrics { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 0; color: var(--ink-soft); font-size: 12px; }
+.ranking-map-selected-metrics span { display: flex; flex-direction: column; gap: 3px; }
+.ranking-map-selected-metrics strong { color: var(--ink); font: 500 14px var(--mono); }
+.ranking-map-selected-open { margin-left: auto; }
+
+@media (max-width: 680px) {
+  html { scroll-padding-top: 120px; }
+  .section-shell { width: calc(100% - 24px); }
+  .section-heading { flex-direction: column; align-items: stretch; gap: 16px; }
+  .section-heading > *, .panel-heading > *, .app-view, .panel, .data-grid > * { min-width: 0; }
+  .section-heading h1 { font-size: clamp(25px, 7vw, 31px); }
+  .model-stamp { align-self: flex-start; min-height: 44px; }
+  .site-header { padding: 0 12px; }
+  .site-header .brand, .header-actions { height: 52px; }
+  .main-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 50px; }
+  .main-nav a { min-width: 0; min-height: 44px; padding: 3px 4px; white-space: normal; text-align: center; font-size: 12px; line-height: 1.3; }
+  .header-actions .data-status { min-height: 44px; font-size: 11px; letter-spacing: 0; }
+  .panel { padding: 16px; }
+  .select-control, .searchable-select-input, .filter-control { height: 48px; min-height: 48px; font-size: 16px; }
+  .searchable-select-input { padding-right: 48px; }
+  .searchable-select-toggle { width: 44px; min-height: 44px; }
+  .searchable-select-option { min-height: 48px; padding: 12px; font-size: 16px; }
+  .searchable-select-popup { display: flex; flex-direction: column; }
+  .searchable-select-listbox { flex: 1 1 auto; min-height: 0; }
+  .button, .button-small, .text-button, .text-link { min-height: 44px; }
+  .text-button, .text-link { display: inline-flex; align-items: center; padding-top: 10px; padding-bottom: 10px; }
+  details > summary { min-height: 44px; padding-top: 12px; padding-bottom: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+  .weight-step { width: 44px; height: 44px; flex: none; }
+  .weight-control input[type="range"] { height: 44px; background: transparent; margin: 0; }
+  .weight-control input::-webkit-slider-runnable-track { height: 4px; background: #c6d0dc; border-radius: 3px; }
+  .weight-control input::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10px; }
+  .weight-control input::-moz-range-track { height: 4px; background: #c6d0dc; border-radius: 3px; }
+  .weight-control input::-moz-range-thumb { width: 22px; height: 22px; }
+
+  /* Each row keeps every metric visible without sideways panning. */
+  .rank-table-wrap { max-height: 72vh; max-height: 72dvh; overflow-x: hidden; overscroll-behavior: contain; }
+  .rank-table { display: block; width: 100%; min-width: 0; }
+  .rank-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .rank-table tbody { display: block; }
+  .rank-table tbody tr { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; padding: 12px; border-bottom: 1px solid var(--line); }
+  .rank-table tbody tr:last-child { border-bottom: 0; }
+  .rank-table td { display: block; min-width: 0; padding: 0; border: 0; white-space: normal; text-align: left; font-size: 13px; overflow-wrap: anywhere; }
+  .rank-table td:not(:first-child) { text-align: left; }
+  .rank-table td:first-child { grid-column: 1 / -1; display: flex; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .rank-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: var(--ink-soft); font: 11px/1.4 var(--sans); }
+  .rank-table td:last-child { grid-column: span 2; }
+  .rank-number { width: auto; min-width: 20px; margin-right: 8px; flex: none; }
+  .rank-team-button { min-width: 0; min-height: 44px; white-space: normal; text-align: left; }
+  .rank-team { font-size: 14px; line-height: 1.4; }
+  .rank-coverage { white-space: normal; font-size: 11px; }
+  .rank-index { font-size: 16px !important; }
+
+  .ranking-map-scroll { max-width: 100%; overflow: auto; overscroll-behavior-x: contain; }
+  .rankings-map-chart { width: 900px; min-width: 900px; min-height: 350px; max-height: none; }
+  .ranking-map-swipe-hint { display: block; margin: 12px 0 4px; color: var(--ink-soft); font-size: 12px; }
+  .ranking-map-key .ranking-map-toggle { min-height: 44px; padding: 8px 12px; }
+  .ranking-map-selected { align-items: stretch; gap: 12px; }
+  .ranking-map-selected-identity, .ranking-map-selected-metrics, .ranking-map-selected-open { width: 100%; }
+  .ranking-map-selected-metrics { gap: 12px 20px; }
+  .ranking-map-selected-open { margin-left: 0; }
+  .unit-table-scroll::before, .forecast-yardage-scroll::before { content: 'Swipe to see all columns →'; display: block; margin-bottom: 8px; color: var(--ink-soft); font: 12px/1.5 var(--sans); }
+  .forecast-range-label { font-size: 14px; }
+  .forecast-analytics-note { font-size: 12px; }
+  .forecast-game { scroll-margin-top: 12px; }
+  .team-logo.is-team-link[role="button"] { min-width: 44px; min-height: 44px; }
+
+  #model .model-fit-heading, #model .challenger-heading { flex-wrap: wrap; align-items: flex-start; }
+  #model .model-fit-metrics, #model .model-fit-diagnostics { gap: 10px; }
+  .model-fit-metric, .challenger-metrics > div { min-width: 0; }
+  .model-fit-metric dt, .model-fit-metric dd, .model-fit-metric p { overflow-wrap: anywhere; }
+  .challenger-metrics > div { display: block; }
+  .challenger-metrics dd { margin: 8px 0; text-align: left; font-size: 17px; }
+  .model-fit-table-wrap { max-width: 100%; overscroll-behavior-x: contain; }
+  .model-fit-table-wrap::before { content: 'Swipe to see all columns →'; display: block; margin-bottom: 8px; color: var(--ink-soft); font-size: 12px; }
+  .model-fit-table th:first-child { position: sticky; left: 0; z-index: 1; background: var(--paper); max-width: 130px; white-space: normal; }
+  .model-fit-table thead th:first-child { background: var(--cream); }
+  .method-card small, .data-box, .data-box p, .data-box-foot { overflow-wrap: anywhere; }
+}
+
+@media (max-width: 380px) {
+  .board-filters { grid-template-columns: minmax(0, 1fr); }
+  .board-filters label:last-child { grid-column: 1; }
+  .model-fit-metrics, .model-fit-diagnostics { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,401 @@
+/* Phone layouts for Team Explorer and Matchups. Desktop styles stay in styles.css. */
+@media (max-width: 680px) {
+  #dossier .panel,
+  #matchups .panel,
+  .season-projection-summary,
+  .unit-data-details,
+  .unit-both-profiles,
+  .unit-matchup,
+  .simulation-result,
+  .simulation-result-grid > *,
+  .compare-content {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #dossier .heading-controls {
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  #dossier .heading-controls .searchable-select,
+  #dossier .heading-controls .select-control {
+    width: 100%;
+    min-width: 0;
+    flex: none;
+  }
+
+  .team-file-heading {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .team-identity {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    gap: 12px;
+  }
+
+  .team-identity > div,
+  .team-record-block {
+    min-width: 0;
+  }
+
+  .team-identity h3,
+  .team-conference,
+  .team-record-block span,
+  .team-record-block small {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .team-record-block {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .team-record-block:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .season-projection-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .season-projection-accuracy-heading {
+    flex-wrap: wrap;
+    line-height: 1.5;
+  }
+
+  .season-projection-error-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .season-projection-error-metrics strong small {
+    display: block;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  #dossier details > summary,
+  #matchups details > summary {
+    min-height: 44px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .form-panel > summary > span,
+  .compare-section > summary > span {
+    display: block;
+    margin: 4px 0 0 15px;
+  }
+
+  .unit-strength-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .unit-strength-card {
+    padding: 14px;
+  }
+
+  .unit-edge-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .unit-table-scroll,
+  .forecast-yardage-scroll,
+  .season-chart-scroll,
+  .forecast-matchup-context,
+  .forecast-exact-scores {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .unit-profile-table {
+    min-width: 600px;
+  }
+
+  .unit-matchup-table {
+    min-width: 700px;
+  }
+
+  .unit-profile-table th:first-child,
+  .unit-matchup-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 140px;
+    max-width: 170px;
+    background: var(--unit-fill, var(--paper));
+    overflow-wrap: anywhere;
+  }
+
+  .forecast-game-heading,
+  .forecast-venue-meta {
+    overflow-wrap: anywhere;
+  }
+
+  .forecast-game-body.forecast-analytics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .forecast-margin-panel {
+    display: block;
+    grid-column: 1;
+  }
+
+  .forecast-margin-panel > .forecast-margin-headline {
+    margin-bottom: 8px;
+  }
+
+  .forecast-details-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .forecast-matchup-context .forecast-context-table {
+    min-width: 380px;
+  }
+
+  .forecast-exact-scores .forecast-context-table {
+    min-width: 420px;
+  }
+
+  .forecast-yardage-method .forecast-yardage-table {
+    min-width: 520px;
+  }
+
+  .forecast-yardage-legend > span {
+    display: block;
+  }
+
+  .simulation-section {
+    padding: 18px;
+  }
+
+  .simulation-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .simulation-controls {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .simulation-vs {
+    display: none;
+  }
+
+  .simulation-controls label:nth-of-type(3),
+  .simulation-controls .button {
+    grid-column: 1;
+    grid-row: auto;
+    width: 100%;
+  }
+
+  .simulation-result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .simulation-probability {
+    padding: 14px;
+  }
+
+  .simulation-team-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    overflow-wrap: anywhere;
+  }
+
+  .simulation-probability > strong {
+    font-size: 29px;
+  }
+
+  .simulation-score,
+  .simulation-range {
+    grid-column: 1 / -1;
+    min-height: 0;
+    padding: 16px;
+    overflow-wrap: anywhere;
+  }
+
+  .simulation-scoreline {
+    gap: 10px;
+  }
+
+  .simulation-score-team {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .simulation-score-team .team-logo {
+    grid-row: auto;
+  }
+
+  .simulation-score-team > span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .simulation-breakdown {
+    padding: 16px;
+  }
+
+  .simulation-breakdown dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .simulation-result > .forecast-yardage {
+    margin: 16px 0 0;
+  }
+
+  .compare-heading {
+    padding: 18px;
+  }
+
+  .compare-content,
+  .compare-section > .unit-matchup-container {
+    margin: 0 18px 18px;
+  }
+
+  .compare-team-headings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .compare-team-headings > div {
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow-wrap: anywhere;
+  }
+
+  .compare-team-headings > div:last-child {
+    align-items: flex-end;
+  }
+
+  .compare-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    padding: 14px 0;
+  }
+
+  .compare-label {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    font-size: 12px;
+  }
+
+  .compare-value {
+    min-width: 0;
+    grid-row: 2;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+
+  .compare-value:first-child {
+    grid-column: 1;
+  }
+
+  .compare-value:last-child {
+    grid-column: 2;
+  }
+
+  .compare-value .comparison-bar {
+    flex: none;
+    width: 36%;
+  }
+}
+
+@media (max-width: 480px) {
+  .forecast-matchup-header {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .forecast-matchup-team.is-left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .forecast-matchup-team.is-right {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .forecast-matchup-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .forecast-team-copy h4 {
+    font-size: 15px;
+  }
+
+  .forecast-matchup-team .forecast-rank {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .forecast-matchup-favorite,
+  .forecast-matchup-probability,
+  .forecast-neutral-label {
+    font-size: 12px;
+  }
+
+  .forecast-margin-factors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .season-projection-error-metrics {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .season-projection-error-metrics > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 4px 10px;
+  }
+
+  .season-projection-error-metrics > div + div {
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .season-projection-error-metrics > div > strong {
+    margin-top: 0;
+    text-align: right;
+  }
+
+  .season-projection-error-metrics > div > small {
+    grid-column: 1 / -1;
+  }
+}

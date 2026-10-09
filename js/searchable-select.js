@@ -34,6 +34,7 @@ function installGlobalListeners() {
     if (opened && !opened.contains(event.target)) opened.close();
   });
   window.addEventListener('resize', refreshPosition);
+  window.addEventListener('orientationchange', refreshPosition);
   window.addEventListener('scroll', refreshPosition, true);
   window.visualViewport?.addEventListener('resize', refreshPosition);
   window.visualViewport?.addEventListener('scroll', refreshPosition);
@@ -51,6 +52,8 @@ function enhance(select) {
   input.className = select.className + ' searchable-select-input';
   input.autocomplete = 'off';
   input.spellcheck = false;
+  input.inputMode = 'search';
+  input.enterKeyHint = 'search';
   input.setAttribute('autocapitalize', 'none');
   input.setAttribute('role', 'combobox');
   input.setAttribute('aria-autocomplete', 'list');
@@ -100,6 +103,8 @@ function enhance(select) {
   let matches = [];
   let active = -1;
   let pointerOpening = false;
+  let touchOpening = false;
+  let popupPointerType = '';
   let selectionFrame = null;
 
   function cancelSelectionFrame() {
@@ -107,15 +112,16 @@ function enhance(select) {
     selectionFrame = null;
   }
 
-  function selectInputText() {
+  function selectInputText(defer = true) {
     cancelSelectionFrame();
-    input.select();
+    input.setSelectionRange(0, input.value.length);
+    if (!defer) return;
     const value = input.value;
     // Pointer focus can place the caret after the focus handler runs. Repeat
     // once after that default action, while preserving any subsequent edit.
     selectionFrame = window.requestAnimationFrame(function () {
       selectionFrame = null;
-      if (document.activeElement === input && !popup.hidden && query === '' && input.value === value) input.select();
+      if (document.activeElement === input && !popup.hidden && query === '' && input.value === value) input.setSelectionRange(0, value.length);
     });
   }
 
@@ -131,7 +137,14 @@ function enhance(select) {
     const topEdge = viewport?.offsetTop || 0;
     const width = viewport?.width || window.innerWidth;
     const height = viewport?.height || window.innerHeight;
-    if (rect.bottom < topEdge || rect.top > topEdge + height) { close(); return; }
+    const outsideViewport = rect.bottom <= topEdge || rect.top >= topEdge + height || rect.right <= leftEdge || rect.left >= leftEdge + width;
+    // The keyboard can resize the visual viewport before the browser scrolls
+    // the focused field into view. Preserve its search during that transition.
+    popup.style.visibility = outsideViewport ? 'hidden' : '';
+    if (outsideViewport) {
+      if (document.activeElement !== input) close();
+      return;
+    }
     const widthAvailable = Math.max(0, width - 24);
     const popupWidth = Math.min(Math.max(rect.width, 240), widthAvailable);
     const below = Math.max(0, topEdge + height - rect.bottom - 12);
@@ -185,6 +198,7 @@ function enhance(select) {
 
   function close() {
     cancelSelectionFrame();
+    popupPointerType = '';
     popup.hidden = true;
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
@@ -217,13 +231,14 @@ function enhance(select) {
     else input.value = selectedLabel();
   }
 
-  function choose(index) {
+  function choose(index, dismissKeyboard = false) {
     const option = matches[index];
     if (!option || option.disabled) return;
     const previous = select.value;
     select.value = option.value;
-    input.focus({ preventScroll: true });
+    if (!dismissKeyboard) input.focus({ preventScroll: true });
     close();
+    if (dismissKeyboard) input.blur();
     if (previous !== select.value) select.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
@@ -236,21 +251,35 @@ function enhance(select) {
 
   const instance = { refresh, close, position, contains: target => wrapper.contains(target) || popup.contains(target) };
   instances.set(select, instance);
-  input.addEventListener('pointerdown', function () {
+  input.addEventListener('pointerdown', function (event) {
     pointerOpening = document.activeElement !== input || popup.hidden;
+    touchOpening = pointerOpening && event.pointerType === 'touch';
     if (!pointerOpening) cancelSelectionFrame();
   });
+  input.addEventListener('pointercancel', function () { pointerOpening = false; touchOpening = false; });
   input.addEventListener('focus', function () {
     if (popup.hidden) { query = ''; open(); }
-    selectInputText();
+    // Let a phone complete native focus and open its keyboard before selecting
+    // the label in click. Repeated selection during focus can disrupt editing.
+    if (!touchOpening) selectInputText();
   });
   input.addEventListener('click', function () {
-    if (pointerOpening || popup.hidden) { query = ''; open(); selectInputText(); }
+    if (pointerOpening || popup.hidden) { query = ''; open(); selectInputText(!touchOpening); }
     pointerOpening = false;
+    touchOpening = false;
   });
-  input.addEventListener('input', function () { cancelSelectionFrame(); query = input.value; open(true); });
+  input.addEventListener('beforeinput', cancelSelectionFrame);
+  input.addEventListener('compositionstart', cancelSelectionFrame);
+  input.addEventListener('input', function () {
+    cancelSelectionFrame();
+    pointerOpening = false;
+    touchOpening = false;
+    query = input.value;
+    open(true);
+  });
   input.addEventListener('keydown', function (event) {
     cancelSelectionFrame();
+    if (event.isComposing || event.keyCode === 229) return;
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); open(); move(event.key === 'ArrowDown' ? 1 : -1); }
     else if (event.key === 'Enter') { event.preventDefault(); if (popup.hidden) { query = ''; open(); } else choose(active); }
     else if (event.key === 'Escape') { event.preventDefault(); close(); }
@@ -261,15 +290,23 @@ function enhance(select) {
       activate(event.key === 'Home' ? enabled[0] : enabled[enabled.length - 1]);
     }
   });
+  toggle.addEventListener('pointerdown', function (event) { touchOpening = event.pointerType === 'touch'; });
+  toggle.addEventListener('pointercancel', function () { touchOpening = false; });
   toggle.addEventListener('click', function () {
     const wasOpen = !popup.hidden;
     input.focus({ preventScroll: true });
-    if (wasOpen) close(); else { query = ''; open(); selectInputText(); }
+    if (wasOpen) close(); else { query = ''; open(); selectInputText(!touchOpening); }
+    touchOpening = false;
   });
-  popup.addEventListener('pointerdown', function (event) { if (event.target.closest('[role="option"]')) event.preventDefault(); });
+  popup.addEventListener('pointerdown', function (event) {
+    popupPointerType = event.pointerType;
+    if (event.target.closest('[role="option"]')) event.preventDefault();
+  });
+  popup.addEventListener('pointercancel', function () { popupPointerType = ''; });
   popup.addEventListener('click', function (event) {
     const row = event.target.closest('[role="option"]');
-    if (row) choose(Number(row.dataset.index));
+    if (row) choose(Number(row.dataset.index), event.pointerType === 'touch' || popupPointerType === 'touch');
+    popupPointerType = '';
   });
   popup.addEventListener('pointermove', function (event) {
     if (event.pointerType === 'touch') return;
