@@ -176,7 +176,7 @@ h1, h2, h3, p { margin-top: 0; }
 .searchable-select-input:disabled { opacity: .5; cursor: not-allowed; }
 .searchable-select-toggle { display: grid; place-items: center; position: absolute; right: 1px; top: 1px; bottom: 1px; width: 29px; min-height: 0; padding: 0; border: 0; background: transparent; color: inherit; font-size: 17px; cursor: pointer; }
 .searchable-select-toggle:disabled { opacity: .5; cursor: not-allowed; }
-.searchable-select-popup { position: fixed; z-index: 1000; box-sizing: border-box; border: 1px solid #8d9da9; background: var(--paper); color: var(--ink); box-shadow: 0 8px 28px rgba(10,20,30,.24); overflow: hidden; }
+.searchable-select-popup { position: absolute; z-index: 1000; box-sizing: border-box; border: 1px solid #8d9da9; background: var(--paper); color: var(--ink); box-shadow: 0 8px 28px rgba(10,20,30,.24); overflow: hidden; }
 .searchable-select-popup[hidden] { display: none; }
 .searchable-select-popup.is-dark { background: #1d3041; color: #e5e7dc; border-color: #637b8f; }
 .searchable-select-listbox { max-height: inherit; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 4px; }

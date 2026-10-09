@@ -2,7 +2,7 @@ import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRat
 import { simulateMatchup } from './prediction.js';
 import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
-import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=1c2d69fb94f0';
+import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=961cf4566c10';
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=f5b0734a5855';
 import { renderRankingsMap } from './rankings-map.js?v=f2ecac964737';
 import { rankBoardTeams, boardMatchup } from './board-order.js';

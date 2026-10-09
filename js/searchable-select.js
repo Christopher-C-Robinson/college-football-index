@@ -79,8 +79,8 @@ function enhance(select) {
   select.setAttribute('aria-hidden', 'true');
   select.tabIndex = -1;
 
-  // A body portal escapes the board's overflow boundary and follows the visible
-  // viewport when a phone keyboard opens or the page scrolls.
+  // A body portal escapes panel clipping. Document coordinates keep the menu
+  // attached to its input when a phone keyboard pans the visual viewport.
   const popup = document.createElement('div');
   popup.className = 'searchable-select-popup' + (dark ? ' is-dark' : '');
   popup.hidden = true;
@@ -133,28 +133,35 @@ function enhance(select) {
     if (popup.hidden) return;
     const rect = input.getBoundingClientRect();
     const viewport = window.visualViewport;
-    const leftEdge = viewport?.offsetLeft || 0;
-    const topEdge = viewport?.offsetTop || 0;
+    const leftEdge = viewport?.pageLeft ?? window.scrollX;
+    const topEdge = viewport?.pageTop ?? window.scrollY;
     const width = viewport?.width || window.innerWidth;
     const height = viewport?.height || window.innerHeight;
-    const outsideViewport = rect.bottom <= topEdge || rect.top >= topEdge + height || rect.right <= leftEdge || rect.left >= leftEdge + width;
-    // The keyboard can resize the visual viewport before the browser scrolls
-    // the focused field into view. Preserve its search during that transition.
-    popup.style.visibility = outsideViewport ? 'hidden' : '';
-    if (outsideViewport) {
-      if (document.activeElement !== input) close();
+    const anchor = { top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY, left: rect.left + window.scrollX, right: rect.right + window.scrollX };
+    const outsideViewport = anchor.bottom <= topEdge || anchor.top >= topEdge + height || anchor.right <= leftEdge || anchor.left >= leftEdge + width;
+    if (outsideViewport && document.activeElement !== input) {
+      close();
       return;
     }
+    // Keyboard resize and auto-scroll can arrive separately. Keep a focused
+    // menu visible during that transition instead of hiding or collapsing it.
     const widthAvailable = Math.max(0, width - 24);
     const popupWidth = Math.min(Math.max(rect.width, 240), widthAvailable);
-    const below = Math.max(0, topEdge + height - rect.bottom - 12);
-    const above = Math.max(0, rect.top - topEdge - 12);
+    const below = Math.max(0, topEdge + height - anchor.bottom - 18);
+    const above = Math.max(0, anchor.top - topEdge - 18);
     const useBelow = below >= Math.min(240, above);
+    const space = useBelow ? below : above;
+    const viewportLimit = Math.max(0, height - 24);
+    const maxHeight = Math.min(320, viewportLimit, space < 64 ? Math.max(space, 120) : space);
     popup.style.width = popupWidth + 'px';
-    popup.style.left = Math.max(leftEdge + 12, Math.min(rect.left, leftEdge + width - popupWidth - 12)) + 'px';
-    popup.style.maxHeight = Math.min(320, useBelow ? below : above) + 'px';
+    popup.style.left = Math.max(leftEdge + 12, Math.min(anchor.left, leftEdge + width - popupWidth - 12)) + 'px';
+    popup.style.maxHeight = maxHeight + 'px';
+    // Size the scrolling element directly; an auto-height flex parent with an
+    // inherited max-height can collapse the list in mobile WebKit.
+    listbox.style.maxHeight = Math.max(0, maxHeight - 2) + 'px';
     const popupHeight = popup.getBoundingClientRect().height;
-    popup.style.top = (useBelow ? rect.bottom + 6 : Math.max(topEdge + 6, rect.top - popupHeight - 6)) + 'px';
+    const preferredTop = useBelow ? anchor.bottom + 6 : anchor.top - popupHeight - 6;
+    popup.style.top = Math.max(topEdge + 12, Math.min(preferredTop, topEdge + height - popupHeight - 12)) + 'px';
   }
 
   function activate(index, scroll = true) {
