@@ -1050,6 +1050,10 @@ html { scroll-padding-top: 104px; }
 .season-chart-axis { fill: var(--ink-soft); font: 10px var(--sans); }
 .season-chart-bar { fill: var(--blue-mid); opacity: .9; }
 .season-chart-bar.is-underdog { fill: #96a7b7; }
+.season-chart-game { cursor: pointer; text-decoration: none; }
+.season-chart-hit { fill: transparent; }
+.season-chart-game:hover .season-chart-hit, .season-chart-game:focus-visible .season-chart-hit { fill: rgba(var(--team-primary-rgb, 37, 91, 122), .06); stroke: var(--blue-mid); stroke-width: 1.5; }
+.season-chart-game:focus-visible { outline: none; }
 .season-chart-value { fill: var(--ink); font: 600 11px var(--sans); }
 .season-chart-label { fill: var(--ink); font: 600 11px var(--sans); }
 .season-chart-week { fill: var(--ink-soft); font: 9px var(--sans); }
@@ -1100,6 +1104,8 @@ html { scroll-padding-top: 104px; }
 .forecast-game.is-winner-actual { border-top-color: rgb(var(--game-winner-rgb)); }
 .forecast-game.is-winner-predicted { border-top-color: rgba(var(--game-winner-rgb), .35); }
 .forecast-game.is-canceled { background: #f6f7f9; }
+.forecast-game { scroll-margin-top: 90px; }
+.forecast-game:focus { outline: 3px solid var(--blue-mid); outline-offset: 4px; }
 .forecast-game-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px 16px; padding: 6px 18px; border-bottom: 1px solid var(--line); background: #f5f7fa; }
 .is-winner-actual .forecast-game-heading { background: rgba(var(--game-winner-rgb), .065); }
 .is-winner-predicted .forecast-game-heading { background: rgba(var(--game-winner-rgb), .025); }

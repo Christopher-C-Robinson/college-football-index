@@ -2,12 +2,12 @@ import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRat
 import { simulateMatchup } from './prediction.js';
 import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
-import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=dec15457f865';
+import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=1c2d69fb94f0';
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=f5b0734a5855';
-import { renderRankingsMap } from './rankings-map.js?v=243a12b7d1c9';
+import { renderRankingsMap } from './rankings-map.js?v=f2ecac964737';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
 import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=1ebe6abc5e68';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=14b9f8da5ddb';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
@@ -44,6 +44,7 @@ function showView({ focus = false } = {}) {
     if (link.dataset.viewLink === activeView) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
+  if (activeView === 'rankings') centerMobileMap();
   if (focus) {
     const panel = ids(activeView);
     const heading = panel?.querySelector('h1');
@@ -528,6 +529,17 @@ function renderMap(teams, ready) {
   select.value = available.some(team => teamKey(team.name) === teamKey(state.focusTeam)) ? state.focusTeam : '';
   select.dispatchEvent(new Event('searchable-select:refresh'));
   ids('rankings-map').innerHTML = renderRankingsMap(available, state.focusTeam, ready, { domainTeams: eligible, divisions: state.mapDivisions });
+  centerMobileMap();
+}
+
+function centerMobileMap() {
+  if (!window.matchMedia('(max-width: 680px)').matches || ids('rankings').hidden) return;
+  const scroll = ids('rankings-map').querySelector('.ranking-map-scroll');
+  if (!scroll?.clientWidth) return;
+  const selected = scroll.querySelector('.ranking-map-team.is-selected');
+  const mark = selected?.getBoundingClientRect();
+  const center = mark ? mark.left + mark.width / 2 - scroll.getBoundingClientRect().left + scroll.scrollLeft : scroll.scrollWidth / 2;
+  scroll.scrollLeft = Math.max(0, center - scroll.clientWidth / 2);
 }
 
 function renderBoard(resetMatchups = false) {
@@ -547,7 +559,7 @@ function renderBoard(resetMatchups = false) {
     const preview = filteredBoardTeams().filter(function (team) { return team.wins + team.losses + team.ties > 0; }).slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
     const previewRows = preview.map(function (team) {
       const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
-      return '<tr><td><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td><td class="rank-record">' + escapeHtml(formatRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fbsRecord(team)) + '</td><td class="rank-record">' + escapeHtml(fcsRecord(team)) + '</td><td class="rank-power">NOT RANKED</td></tr>';
+      return '<tr><td><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Division" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td><td data-label="Overall" class="rank-record">' + escapeHtml(formatRecord(team)) + '</td><td data-label="vs FBS" class="rank-record">' + escapeHtml(fbsRecord(team)) + '</td><td data-label="vs FCS" class="rank-record">' + escapeHtml(fcsRecord(team)) + '</td><td data-label="Model" class="rank-power">NOT RANKED</td></tr>';
     }).join('');
     const filters = selectedBoardFilters();
     const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -567,7 +579,7 @@ function renderBoard(resetMatchups = false) {
     const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
     const rank = team.composite === null ? '—' : String(++rankedCount);
     const modelLabel = team.composite === null ? 'NOT RANKED' : formatNumber(team.index, 1);
-    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td>' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td class="rank-index">' + modelLabel + '</td><td>' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
+    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Record" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td data-label="Power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="CFI score" class="rank-index">' + modelLabel + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -886,6 +898,17 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  const seasonGameLink = event.target.closest('[data-season-game-target]');
+  if (seasonGameLink) {
+    // Keep #dossier: the app router reserves fragments for top-level views.
+    event.preventDefault();
+    const game = ids(seasonGameLink.dataset.seasonGameTarget);
+    if (game) {
+      game.focus({ preventScroll: true });
+      game.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    }
+    return;
+  }
   const navigation = event.target.closest('a[href^="#"]');
   if (navigation && ['#rankings', '#top', '#dossier', '#matchups', '#compare', '#simulator', '#model', '#method', '#data'].includes(navigation.getAttribute('href'))) {
     event.preventDefault();

@@ -1,6 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
 import { renderTeamLogo } from './team-logo.js?v=f5b0734a5855';
-import { renderSeasonChart } from './season-chart.js';
+import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 
 function escapeHtml(value) {
@@ -249,14 +249,14 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
     teamBlock(selectedOnLeft ? opponent : selected, false, !selectedOnLeft) + '</div>';
 }
 
-function renderRow(row, teamName, rankingsReady, unitProfiles, analysis) {
+function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) {
   const forecast = usableForecast(row);
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
   const winner = winnerPresentation(row, teamName, forecast, actual);
   const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
   const cardLabel = teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label;
-  return '<article class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" aria-label="' + escapeHtml(cardLabel) + '">' +
+  return '<article id="' + seasonGameAnchor(index) + '" class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
     '<span class="forecast-venue-meta">' + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
@@ -272,7 +272,7 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis) {
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
-    analysis.rows.map(row => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis)).join('') + '</div>';
+    analysis.rows.map((row, index) => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis, index)).join('') + '</div>';
 }
 
 export function renderProjectionSummary(analysis) {
