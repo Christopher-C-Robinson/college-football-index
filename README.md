@@ -13,7 +13,7 @@ A neutral, transparent analysis site for every FBS and FCS team. One connected g
 
 Team logos come from CFBD metadata and appear in rankings, team profiles, schedules, and matchup results. All 266 teams in the bundled snapshot have logo links. Initials remain visible if a logo is missing or cannot load.
 
-The **Strength & schedule** map plots existing team power against average opponent power, follows board filters, and opens the explorer when a dot is selected. The **Season at a glance** chart plots the selected team's current-snapshot win chance for each game with actual W/L/T results. Missing forecasts remain gaps. Schedule headers show both teams and logos, with away on the left, home on the right, and the result or projected favorite in the center; neutral games are labeled separately.
+The **Strength & schedule** logo map plots existing team power against average opponent power, follows board filters, and opens the explorer when a logo is selected. Its searchable picker highlights a team while staying on the map; blue and copper logo borders distinguish FBS and FCS. The **Season at a glance** chart plots the selected team's current-snapshot win chance for each game with actual W/L/T results. Missing forecasts remain gaps. Schedule headers show both teams and logos, with away on the left, home on the right, and the result or projected favorite in the center; neutral games are labeled separately.
 
 ## What it measures
 

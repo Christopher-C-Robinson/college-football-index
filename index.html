@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#172333">
     <meta name="description" content="A transparent, schedule-adjusted analysis of every FBS and FCS college football team.">
     <title>College Football Index — FBS + FCS Team Analysis</title>
-    <link rel="stylesheet" href="./styles.css?v=c2e71df83317">
-    <script type="module" src="./js/app.js?v=7a78d0a5a61f"></script>
+    <link rel="stylesheet" href="./styles.css?v=0494eb5c153f">
+    <script type="module" src="./js/app.js?v=a8063b386014"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -38,7 +38,8 @@
             </article>
         <article class="panel rankings-map-panel" aria-labelledby="rankings-map-title">
           <div class="panel-heading"><div><h3 id="rankings-map-title">Strength &amp; schedule</h3><p class="panel-subtitle">Which teams are strong, and who have they faced?</p></div></div>
-          <p class="ranking-map-note">Select a dot to explore a team. Filters apply to this map.</p>
+          <p class="ranking-map-note">Select a logo to explore a team, or search to highlight it. Filters apply to this map.</p>
+          <label class="rankings-map-search" for="map-team-select"><span>Find a team on this map</span><select id="map-team-select" class="select-control" aria-label="Find a team on this map"><option value="">Find a team…</option></select></label>
           <div id="rankings-map" class="rankings-map-content" aria-live="polite"><p class="ranking-map-empty">Preparing the field map…</p></div>
         </article>
         <details class="ranking-settings panel"><summary>Customize the rankings <span>Adjust Index weights or download the table</span></summary>

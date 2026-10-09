@@ -1208,3 +1208,32 @@ html { scroll-padding-top: 104px; }
   .forecast-matchup-team .forecast-rank { font-size: 8px; }
   .season-chart { padding: 16px 10px 12px; }
 }
+
+/* Team logos on the strength and schedule map */
+.ranking-map-mark { transform-box: fill-box; transform-origin: center; pointer-events: auto; cursor: pointer; transition: scale .14s ease; }
+.ranking-map-mark:hover, .ranking-map-mark:focus-visible { scale: 1.4; outline: none; }
+.ranking-map-mark foreignObject { overflow: visible; pointer-events: none; }
+.ranking-map-mark .team-logo { display: inline-grid; width: var(--team-logo-size, 18px); height: var(--team-logo-size, 18px); border-radius: 3px; border: 2px solid #477c99; background: #fff; overflow: hidden; }
+.ranking-map-team.is-fcs .team-logo { border-color: #b47958; }
+.ranking-map-team.is-selected .team-logo { width: 24px; height: 24px; box-shadow: 0 0 0 2px var(--ink); }
+.ranking-map-team:focus-visible .team-logo { box-shadow: 0 0 0 2px var(--ink); }
+.ranking-map-mark .team-logo img { display: block; padding: 1px; }
+.ranking-map-mark .team-logo-fallback { padding: 1px; font-size: 6px; line-height: 1; }
+.ranking-map-hit { fill: transparent; pointer-events: all; }
+.ranking-map-team:focus-visible .ranking-map-mark { scale: 1.4; }
+.ranking-map-mark .ranking-map-dot { visibility: hidden; pointer-events: none; }
+.ranking-map-mark .ranking-map-dot.is-fcs { fill: #fff; stroke: #b47958; }
+.ranking-map-mark.is-selected .ranking-map-dot, .ranking-map-mark .ranking-map-dot.is-selected { fill: var(--blue-light); stroke: var(--ink); stroke-width: 2.5; }
+.ranking-map-mark.is-selected .team-logo { width: var(--team-logo-size, 24px); height: var(--team-logo-size, 24px); }
+.ranking-map-mark.is-selected .team-logo-fallback { font-size: 8px; }
+.ranking-map-mark:hover .ranking-map-dot, .ranking-map-mark:focus-visible .ranking-map-dot { stroke: var(--ink); stroke-width: 2; }
+@media (prefers-reduced-motion: reduce) { .ranking-map-mark { transition: none; } }
+
+/* Field-map team search and subdivision border key */
+.rankings-map-search { display: flex; flex-direction: column; gap: 6px; width: 280px; max-width: 100%; margin-top: 16px; }
+.rankings-map-search > span { color: var(--ink-soft); font-size: 12px; font-weight: 600; }
+.rankings-map-search .select-control, .rankings-map-search .searchable-select { width: 100%; min-width: 0; }
+.ranking-map-key i { width: 13px; height: 13px; border-radius: 3px; border: 2px solid #477c99; background: #fff; }
+.ranking-map-key .is-fcs, .ranking-map-key .ranking-map-fcs { border-color: #b47958; background: #fff; }
+.ranking-map-key .is-selected { width: 13px; height: 13px; border: 2px solid var(--ink); border-radius: 3px; background: #fff; }
+@media (max-width: 600px) { .rankings-map-search { width: 100%; } }

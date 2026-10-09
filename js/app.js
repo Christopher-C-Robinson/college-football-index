@@ -516,10 +516,21 @@ function syncMatchupsWithBoard(orderedTeams) {
   setMatchupTeams(matchup.teamA, matchup.teamB, { resetVenue: true });
 }
 
+function renderMap(teams, ready) {
+  const available = ready ? teams.filter(team => Number.isFinite(team.power) && Number.isFinite(team.opponentPower)) : [];
+  const select = ids('map-team-select');
+  select.disabled = !available.length;
+  select.innerHTML = '<option value="">' + (ready ? 'Search teams on this map' : 'Waiting for ratings') + '</option>' +
+    available.slice().sort((a, b) => a.name.localeCompare(b.name)).map(team => '<option value="' + escapeHtml(team.name) + '" data-search="' + escapeHtml([team.abbreviation, team.conference].filter(Boolean).join(' ')) + '">' + escapeHtml(team.name) + '</option>').join('');
+  select.value = available.some(team => teamKey(team.name) === teamKey(state.focusTeam)) ? state.focusTeam : '';
+  select.dispatchEvent(new Event('searchable-select:refresh'));
+  ids('rankings-map').innerHTML = renderRankingsMap(available, state.focusTeam, ready);
+}
+
 function renderBoard(resetMatchups = false) {
   const board = ids('board-content');
   const modelReady = state.model.broadCoverage;
-  if (!modelReady) ids('rankings-map').innerHTML = renderRankingsMap([], state.focusTeam, false);
+  if (!modelReady) renderMap([], false);
   ids('export-rankings').disabled = !modelReady;
   if (resetMatchups && !modelReady) syncMatchupsWithBoard([]);
   if (!state.model.ratedGameCount) {
@@ -546,7 +557,7 @@ function renderBoard(resetMatchups = false) {
     return;
   }
   const filtered = rankBoardTeams(filteredBoardTeams());
-  ids('rankings-map').innerHTML = renderRankingsMap(filtered, state.focusTeam);
+  renderMap(filtered, true);
   if (resetMatchups) syncMatchupsWithBoard(filtered);
   let rankedCount = 0;
   const rows = filtered.map(function (team, index) {
@@ -794,7 +805,7 @@ async function initialize() {
 }
 
 document.addEventListener('change', async function (event) {
-  if (event.target.id === 'team-select') {
+  if (['team-select', 'map-team-select'].includes(event.target.id)) {
     selectFocusTeam(event.target.value, false);
   } else if (['compare-a', 'sim-a'].includes(event.target.id)) {
     setMatchupTeams(event.target.value, state.compareB);
@@ -844,8 +855,8 @@ document.addEventListener('keydown', function (event) {
   }
   if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
   event.preventDefault();
-  // Dots are painted back to front; keyboard browsing follows board order.
-  const points = Array.from(ids('rankings-map').querySelectorAll('[data-map-team]')).reverse();
+  // Keyboard browsing follows board order even when the selected logo is painted last.
+  const points = Array.from(ids('rankings-map').querySelectorAll('[data-map-team]')).sort((a, b) => Number(a.dataset.mapOrder) - Number(b.dataset.mapOrder));
   const current = points.indexOf(point);
   const next = event.key === 'Home' ? 0 : event.key === 'End' ? points.length - 1
     : (current + (['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : -1) + points.length) % points.length;
