@@ -111,14 +111,37 @@ function winnerPresentation(row, teamName, forecast, actual) {
     label: 'Model favorite: ' + (selectedFavored ? teamName : row.opponentName) + ' · ' + number((selectedFavored ? forecast.winProbability : 1 - forecast.winProbability) * 100) + '% win chance' };
 }
 
-function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisionSize, rankingsReady = false) {
+function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisionSize, rankingsReady = false, rankingsStatus = 'waiting') {
   const division = String(classification || '').toUpperCase();
   if (!['FBS', 'FCS'].includes(division)) return '<span class="forecast-rank is-unranked">Not ranked in FBS/FCS</span>';
-  if (!Number.isInteger(rank) || rank < 1) return '<span class="forecast-rank is-unranked">' + (rankingsReady ? 'Unranked' : 'Rankings pending') + '</span>';
-  const overallTitle = 'Current CFI rank across ' + (finite(fieldSize) ? fieldSize + ' ranked ' : '') + 'FBS and FCS teams, using the current lens weights. Board filters do not change this rank.';
-  const subdivisionTitle = 'Current rank within ' + division + (finite(subdivisionSize) ? ' across ' + subdivisionSize + ' ranked teams' : '') + ', using the same lens weights.';
-  return '<span class="forecast-rank" title="' + escapeHtml(overallTitle) + '">Current CFI #' + rank + '</span>' +
+  if (!Number.isInteger(rank) || rank < 1) return '<span class="forecast-rank is-unranked">' + (rankingsReady ? 'Unranked' : rankingsStatus === 'calculating' ? 'Calculating neutral ranks' : rankingsStatus === 'unavailable' ? 'Neutral rank unavailable' : 'Neutral rank pending') + '</span>';
+  const overallTitle = 'Current neutral matchup rank across ' + (finite(fieldSize) ? fieldSize + ' model-ready ' : '') + 'FBS and FCS teams, based on average neutral-field win chance against the full field. Board filters do not change this rank.';
+  const subdivisionTitle = 'Current rank within ' + division + (finite(subdivisionSize) ? ' across ' + subdivisionSize + ' ranked teams' : '') + ', ordered by the same full-field neutral matchup comparison.';
+  return '<span class="forecast-rank" title="' + escapeHtml(overallTitle) + '">Neutral #' + rank + '</span>' +
     (Number.isInteger(subdivisionRank) && subdivisionRank > 0 ? '<span class="forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + subdivisionRank + '</span>' : '');
+}
+
+export function updateSeasonRankElements(summaryContainer, scheduleContainer, analysis) {
+  const ranks = new Map([[recordTeamKey(analysis.teamName), {
+    rank: analysis.teamRank, subdivisionRank: analysis.teamSubdivisionRank,
+    classification: analysis.classification, fieldSize: analysis.rankFieldSize,
+    subdivisionSize: analysis.subdivisionFieldSize, ready: analysis.rankingsReady, status: analysis.rankingsStatus
+  }]]);
+  for (const row of analysis.rows) {
+    ranks.set(recordTeamKey(row.opponentName), {
+      rank: row.opponentRank, subdivisionRank: row.opponentSubdivisionRank,
+      classification: row.classification, fieldSize: row.rankFieldSize,
+      subdivisionSize: row.subdivisionFieldSize, ready: row.rankingsReady, status: row.rankingsStatus
+    });
+  }
+  for (const container of [summaryContainer, scheduleContainer].filter(Boolean)) {
+    for (const element of container.querySelectorAll('[data-season-rank-team]')) {
+      const team = ranks.get(element.dataset.seasonRankTeam);
+      if (!team) continue;
+      element.innerHTML = rankBadges(team.rank, team.subdivisionRank, team.classification, team.fieldSize,
+        team.subdivisionSize, team.ready, team.status);
+    }
+  }
 }
 
 function forecastPriorSources(forecast, teamName, opponentName) {
@@ -284,13 +307,13 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
   const selectedOnLeft = neutral || row.site === 'Away';
   const selected = { ...row.matchup?.team, name: teamName };
   const opponent = { ...row.matchup?.opponent, name: row.opponentName };
-  const selectedRanks = analysis ? rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) : '';
-  const opponentRanks = rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? analysis?.rankingsReady);
+  const selectedRanks = analysis ? rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady, analysis.rankingsStatus) : '';
+  const opponentRanks = rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? analysis?.rankingsReady, row.rankingsStatus ?? analysis?.rankingsStatus);
   const teamBlock = (team, left, selectedTeam) => '<div class="forecast-matchup-team ' + (left ? 'is-left' : 'is-right') + '">' +
     (!neutral ? '<span class="forecast-team-location">' + (left ? 'Away' : 'Home') + '</span>' : '') +
     '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 48 }) + '<div class="forecast-team-copy"><h4>' + escapeHtml(team.name) + '</h4>' +
     teamRecords(team) +
-    '<div class="forecast-ranks" aria-label="' + escapeHtml(team.name) + ' current rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
+    '<div class="forecast-ranks" data-season-rank-team="' + escapeHtml(recordTeamKey(team.name)) + '" aria-label="' + escapeHtml(team.name) + ' neutral matchup rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
   const scores = actual || forecast;
   const leftScore = scores ? selectedOnLeft ? scores.for : scores.against : null;
   const rightScore = scores ? selectedOnLeft ? scores.against : scores.for : null;
@@ -346,8 +369,8 @@ export function renderProjectionSummary(analysis) {
   const graded = summary.gradedGames || 0;
   const coverage = missing ? plural(missing, 'remaining game') + ' without a forecast.' : totalRemaining ? 'All listed remaining games modeled.' : 'No listed games remain.';
   const currentRecord = recordText(summary);
-  return '<div class="season-projection-team-rank"><span>CURRENT TEAM RANK</span><div class="forecast-ranks" aria-label="Selected team current rankings">' +
-    rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification || analysis.teamClassification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) + '</div></div>' +
+  return '<div class="season-projection-team-rank"><span>NEUTRAL MATCHUP RANK</span><div class="forecast-ranks" data-season-rank-team="' + escapeHtml(recordTeamKey(analysis.teamName)) + '" aria-label="Selected team neutral matchup rankings">' +
+    rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification || analysis.teamClassification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady, analysis.rankingsStatus) + '</div></div>' +
     '<div class="season-projection-metrics"><div class="season-projection-metric"><span>PROJECTED REMAINING WINS</span><strong>' +
     (expectedWinsAvailable ? Math.round(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>Rounded expected wins; full game probabilities drive this projection. ' + escapeHtml(coverage) + '</p></div>' +
     '<div class="season-projection-metric"><span>PROJECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
@@ -365,5 +388,5 @@ export function renderProjectionSummary(analysis) {
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
   return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their current record and rounded projected final record for the listed schedule. These records use today’s snapshot, even on past games. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results. Yardage estimates are experimental.</p>' +
-    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Neutral matchup ranks compare every model-ready FBS and FCS team against the full field at a neutral site, ordered by average win chance. Subdivision ranks follow that same full-field ordering. Filters hide teams without changing these ranks. A rank summarizes the full field, so a particular matchup or home/away effect can favor a team farther down the rankings. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }

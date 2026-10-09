@@ -1,15 +1,16 @@
 import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION, MODEL_PARAMETERS } from './model.js';
-import { simulateMatchup } from './prediction.js';
+import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
 import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=961cf4566c10';
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545b336420';
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
-import { rankBoardTeams, boardMatchup } from './board-order.js';
-import { buildSeasonProjections, completeOpponentSeasonRecords } from './season-projections.js?v=ccbd22b2e4df';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements } from './season-projections-view.js?v=663f9e881e9e';
+import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
+import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
+import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=471d6fa90b4d';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements } from './season-projections-view.js?v=b42d78654c85';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
-import { buildModelFit } from './model-fit.js';
+import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
 import { loadChallengerStatus } from './challenger-status.js';
@@ -21,9 +22,11 @@ const STORAGE_KEY = 'college-football-index-season-v1';
 const FOCUS_STORAGE_KEY = 'college-football-index-focused-team';
 const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
-const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 }, mapDivisions: { fbs: true, fcs: true } };
+const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, mapDivisions: { fbs: true, fcs: true } };
 const seasonAnalysisCache = new Map();
 let opponentRecordRequest = 0;
+let neutralRankingController = null;
+let neutralRankingError = '';
 const modelFitCache = new WeakMap();
 let modelFitRequest = 0;
 const ids = function (id) { return document.getElementById(id); };
@@ -430,6 +433,10 @@ function renderDossier() {
     analysis = buildSeasonProjections(state.model, team.name);
     seasonAnalysisCache.set(teamKey(team.name), analysis);
   }
+  if (neutralRankingError) {
+    analysis.rankingsStatus = 'unavailable';
+    for (const row of analysis.rows) row.rankingsStatus = 'unavailable';
+  }
   const canceled = analysis.rows.filter(row => row.status === 'canceled').length;
   ids('schedule-count').textContent = played.length + ' FINAL · ' + analysis.summary.totalRemainingGames + ' UNPLAYED' + (canceled ? ' · ' + canceled + ' CANCELED' : '');
   ids('season-projection-summary').hidden = false;
@@ -548,7 +555,7 @@ function setMatchupTeams(teamA, teamB, { resetVenue = false } = {}) {
 }
 
 function syncMatchupsWithBoard(orderedTeams) {
-  const matchup = boardMatchup(orderedTeams, state.model.broadCoverage);
+  const matchup = boardMatchup(orderedTeams, getNeutralRankings(state.model)?.status === 'ready');
   setMatchupTeams(matchup.teamA, matchup.teamB, { resetVenue: true });
 }
 
@@ -579,9 +586,11 @@ function centerMobileMap() {
 function renderBoard(resetMatchups = false) {
   const board = ids('board-content');
   const modelReady = state.model.broadCoverage;
+  const rankingReport = getNeutralRankings(state.model);
+  const rankingsReady = modelReady && rankingReport?.status === 'ready';
   if (!modelReady) renderMap([], false);
-  ids('export-rankings').disabled = !modelReady;
-  if (resetMatchups && !modelReady) syncMatchupsWithBoard([]);
+  ids('export-rankings').disabled = !rankingsReady;
+  if (resetMatchups && !rankingsReady) syncMatchupsWithBoard([]);
   if (!state.model.ratedGameCount) {
     const message = state.model.allTeams.length ? 'The schedule is loaded, but no completed FBS/FCS games are available yet.' : 'Import the complete FBS + FCS dataset to start the all-team comparison.';
     board.innerHTML = '<div class="board-lock"><strong>All-team ratings are waiting for game results.</strong><p>' + escapeHtml(message) + ' Both subdivisions will be compared across conference schedules.</p><a href="#data">Open the data room.</a></div>';
@@ -607,13 +616,15 @@ function renderBoard(resetMatchups = false) {
   }
   const filtered = rankBoardTeams(filteredBoardTeams());
   renderMap(filtered, true);
-  if (resetMatchups) syncMatchupsWithBoard(filtered);
+  if (resetMatchups && rankingsReady) syncMatchupsWithBoard(filtered);
   let rankedCount = 0;
   const rows = filtered.map(function (team, index) {
     const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
-    const rank = team.composite === null ? '—' : String(++rankedCount);
-    const modelLabel = team.composite === null ? 'NOT RANKED' : formatNumber(team.index, 1);
-    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Record" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td data-label="Power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="CFI score" class="rank-index">' + modelLabel + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
+    const ranked = rankingsReady && Number.isInteger(team.neutralRank);
+    const rank = ranked ? String(team.neutralRank) : '—';
+    if (ranked) rankedCount += 1;
+    const modelLabel = ranked ? formatNumber(team.neutralScore * 100, 1) + '%' : rankingsReady ? 'NOT RANKED' : '—';
+    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Record" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td data-label="Results power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="Avg. neutral win chance" class="rank-index">' + modelLabel + (team.neutralPriorSeason ? '<span class="rank-coverage">Uses ' + team.neutralPriorSeason + ' data</span>' : '') + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -624,7 +635,8 @@ function renderBoard(resetMatchups = false) {
     board.innerHTML = count + '<div class="board-lock"><strong>No teams match those filters.</strong><p>Choose another subdivision, tier, or conference.</p></div>';
     return;
   }
-  board.innerHTML = count + '<div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>TEAM</th><th>Record</th><th title="Opponent-adjusted scoring strength, in points">Power</th><th title="Average opponent power, in points">Schedule</th><th title="Blended ranking score using your selected weights">CFI score</th><th>Data coverage</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  const pending = rankingsReady ? '' : '<div class="board-lock board-lock-compact"><strong>' + (neutralRankingError ? 'Neutral ranks unavailable.' : rankingReport?.status === 'unavailable' ? 'Neutral ranks unavailable.' : 'Calculating neutral matchup ranks…') + '</strong><p>' + escapeHtml(neutralRankingError || rankingReport?.reason || 'The full field is evaluated in small batches. Team records and result metrics are available while rankings finish.') + '</p></div>';
+  board.innerHTML = pending + count + '<div class="rank-table-wrap"><table class="rank-table"><thead><tr><th>TEAM</th><th>Record</th><th title="Opponent-adjusted results power, in points; neutral ranks also include conference and matchup effects">Results power</th><th title="Average opponent power, in points">Schedule</th><th title="Average forecast win chance against every other eligible FBS/FCS team on a neutral field">Avg. neutral win chance</th><th>Data coverage</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 
 function compareMetrics(team) {
@@ -660,7 +672,7 @@ function renderCompare() {
     const valueB = '<span class="comparison-bar"><i style="width:' + (other.scale === null ? 0 : other.scale) + '%"></i></span><span>' + escapeHtml(other.display) + '</span>';
     return '<div class="compare-row"><div class="compare-value' + (aBetter ? ' is-strong' : '') + '">' + valueA + '</div><div class="compare-label">' + escapeHtml(metric.label) + '</div><div class="compare-value' + (bBetter ? ' is-strong' : '') + '">' + valueB + '</div></div>';
   }).join('');
-  const footnote = state.model.broadCoverage ? 'Values use the current FBS + FCS results graph. Ranking weights do not change these individual measures or matchup predictions.' : 'Power, opponent quality, and expected wins remain unavailable until the FBS + FCS results graph is broad enough.';
+  const footnote = state.model.broadCoverage ? 'Values use the current FBS + FCS results graph. Overall ranks come from forecast win chances across the full neutral field.' : 'Power, opponent quality, and expected wins remain unavailable until the FBS + FCS results graph is broad enough.';
   ids('compare-content').innerHTML = '<div class="compare-team-headings"><div>' + renderTeamLogo(a, { size: 40 }) + '<strong>' + escapeHtml(a.name) + '</strong></div><div>' + renderTeamLogo(b, { size: 40 }) + '<strong>' + escapeHtml(b.name) + '</strong></div></div>' + rows + '<div class="compare-empty">' + escapeHtml(a.name) + ' · ' + escapeHtml(formatRecord(a)) + ' overall · ' + escapeHtml(fbsRecord(a)) + ' vs FBS · ' + escapeHtml(fcsRecord(a)) + ' vs FCS<br>' + escapeHtml(b.name) + ' · ' + escapeHtml(formatRecord(b)) + ' overall · ' + escapeHtml(fbsRecord(b)) + ' vs FBS · ' + escapeHtml(fcsRecord(b)) + ' vs FCS<br>' + escapeHtml(footnote) + '</div>';
 }
 
@@ -746,49 +758,72 @@ function runMatchupSimulation() {
     '</div>' + yardage + '<details class="simulation-method"><summary>How this forecast works</summary><p>Forecast v' + escapeHtml(prediction.modelVersion) + ' · ' + SIMULATION_RUNS.toLocaleString() + ' simulated outcomes. ' + escapeHtml(sampleLabel) + ' Team strength starts with opponent-adjusted results. The conference adjustment is the net change in this matchup after both teams’ ratings share information with their conferences. It can be nonzero within one conference because each team has a different schedule and set of opponents. The selected venue and historically fitted passing/rushing matchup effects complete the margin. The total uses team scoring and points allowed with the full-field average. These adjustments change the scoring split; they do not change the total. Injuries and weather are not modeled.</p><p>Experimental yardage estimates multiply opponent-adjusted yards per attempt by separately opponent-adjusted attempt volume with a four-game prior. They have not been validated for forecasting accuracy, omit venue and game-state effects, and do not change projected points or win chances. Totals add the rounded passing and rushing estimates.</p></details>';
 }
 
-function updateWeightsDisplay() {
-  const total = state.weights.power + state.weights.efficiency + state.weights.resume || 1;
-  ['power', 'efficiency', 'resume'].forEach(function (name) {
-    const value = state.weights[name];
-    ids('weight-' + name + '-value').textContent = Number((value / total * 100).toFixed(1)) + '%';
-    const input = ids('weight-' + name);
-    input.setAttribute('aria-valuetext', value + ' points; ' + Number((value / total * 100).toFixed(1)) + '% of the blend');
-    for (const direction of ['decrease', 'increase']) {
-      const button = ids('weight-' + name + '-' + direction);
-      if (button) button.disabled = direction === 'decrease' ? value <= Number(input.min) : value >= Number(input.max);
+async function updateNeutralRankings() {
+  neutralRankingController?.abort();
+  const controller = new AbortController();
+  neutralRankingController = controller;
+  neutralRankingError = '';
+  const model = state.model;
+  const current = () => !controller.signal.aborted && state.model === model;
+  const status = ids('neutral-ranking-status');
+  status.textContent = model.broadCoverage ? 'Calculating neutral matchups across the full field…' : 'Neutral rankings require a connected FBS/FCS results graph.';
+  let lastProgress = -1;
+  try {
+    const report = await buildNeutralRankings(model, {
+      signal: controller.signal,
+      onProgress: progress => {
+        if (!current()) return;
+        const step = Math.floor(progress.percent / 10);
+        if (step === lastProgress) return;
+        lastProgress = step;
+        status.textContent = 'Calculating neutral matchups: ' + progress.completedPairings.toLocaleString() + ' / ' + progress.totalPairings.toLocaleString() + ' across ' + progress.eligibleTeams + ' teams.';
+      }
+    });
+    if (!current()) return;
+    status.textContent = report.status === 'ready'
+      ? report.eligibleTeams + ' of ' + report.fieldTeams + ' teams ranked · ' + report.totalPairings.toLocaleString() + ' neutral matchups · each team faces the same full field.' + (report.excluded.length ? ' ' + report.excluded.length + ' teams lack forecast evidence.' : '')
+      : report.reason || 'Neutral ranks are unavailable for this snapshot.';
+    for (const analysis of seasonAnalysisCache.values()) refreshSeasonProjectionRanks(model, analysis);
+    const selected = seasonAnalysisCache.get(teamKey(state.focusTeam));
+    if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
+    renderBoard(true);
+  } catch (error) {
+    if (!current()) return;
+    neutralRankingError = error.message || 'The loaded snapshot could not rank the full neutral field.';
+    status.textContent = 'Neutral ranks unavailable: ' + neutralRankingError;
+    for (const analysis of seasonAnalysisCache.values()) {
+      analysis.rankingsStatus = 'unavailable';
+      for (const row of analysis.rows) row.rankingsStatus = 'unavailable';
     }
-  });
-}
-
-function refreshModel() {
-  state.model = buildModel(state.raw, state.weights);
-  seasonAnalysisCache.clear();
-  setStatus();
-  updateWeightsDisplay();
-  renderBoard(true);
-  renderDossier();
-  renderDatasetStatus();
+    const selected = seasonAnalysisCache.get(teamKey(state.focusTeam));
+    if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
+    renderBoard(true);
+  }
 }
 
 function csvCell(value) { return '"' + String(value === undefined || value === null ? '' : value).replace(/"/g, '""') + '"'; }
 
 function exportRankings() {
-  if (!state.model.broadCoverage) return;
-  const rows = [['Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Power (pts/game)', 'Opponent Power', 'Expected Wins', 'Wins Above Expectation', 'Efficiency Index', 'Composite Index', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Model Version', 'Dataset Source', 'Generated At']];
-  rankBoardTeams(filteredBoardTeams()).filter(function (team) { return team.composite !== null; }).forEach(function (team, index) {
-    rows.push([index + 1, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), formatNumber(team.expectedWins, 2), formatNumber(team.winsAboveExpectation, 2), formatNumber(team.efficiency, 2), formatNumber(team.index, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, MODEL_VERSION, state.source, state.model.meta.generatedAt || '']);
-  });
-  const content = rows.map(function (row) { return row.map(csvCell).join(','); }).join('\n');
+  const report = getNeutralRankings(state.model);
+  if (report?.status !== 'ready') return;
+  const rows = [['Overall Neutral Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Neutral Forecast Win Chance (%)', 'Expected Wins vs Full Field', 'Neutral Opponents', 'Results Power (pts/game)', 'Opponent Power', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Ranking Method', 'Forecast Version', 'Dataset Source', 'Generated At']];
+  for (const team of rankBoardTeams(filteredBoardTeams()).filter(team => Number.isInteger(team.neutralRank))) {
+    const entry = report.entries.get(teamKey(team.name));
+    rows.push([entry.rank, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(entry.score * 100, 2), formatNumber(entry.expectedWins, 2), entry.opponents, formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, report.methodVersion, report.forecastVersion, state.source, state.model.meta.generatedAt || '']);
+  }
+  const content = rows.map(row => row.map(csvCell).join(',')).join('\n');
   const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));
   const link = document.createElement('a');
-  link.href = url; link.download = 'college-football-index-ratings-' + (state.model.meta.season || 'season') + '.csv'; link.click(); URL.revokeObjectURL(url);
+  link.href = url; link.download = 'college-football-neutral-rankings-' + (state.model.meta.season || 'season') + '.csv'; link.click(); URL.revokeObjectURL(url);
 }
 
 function setDataset(raw, message, persist, source = 'imported') {
   validateDataset(raw);
   const previousFocus = state.focusTeam;
+  neutralRankingController?.abort();
+  neutralRankingError = '';
   let storageWarning = '';
-  const model = buildModel(raw, state.weights);
+  const model = buildModel(raw);
   state.raw = raw;
   state.model = model;
   seasonAnalysisCache.clear();
@@ -804,10 +839,10 @@ function setDataset(raw, message, persist, source = 'imported') {
   setStatus();
   renderHero();
   renderDossier();
-  updateWeightsDisplay();
   renderBoard(true);
   renderDatasetStatus();
-  // Ranking weights do not change the predictor. Recompute whole-field fit
+  updateNeutralRankings();
+  // Recompute whole-field fit
   // only for dataset changes, keeping any old async result off a new snapshot.
   updateModelFit();
   ids('data-updated').textContent = 'SEASON DATA / ' + (raw.meta && (raw.meta.season || raw.meta.asOf) || 'UNKNOWN');
@@ -892,12 +927,6 @@ document.addEventListener('change', async function (event) {
   }
 });
 
-document.addEventListener('input', function (event) {
-  if (!event.target.dataset.weight) return;
-  state.weights[event.target.dataset.weight] = Number(event.target.value);
-  refreshModel();
-});
-
 function describeMapTeam(event) {
   const point = event.target.closest('[data-map-team]');
   const readout = ids('rankings-map-readout');
@@ -951,16 +980,6 @@ document.addEventListener('click', async function (event) {
   }
   if (event.target.closest('#clear-team')) {
     selectFocusTeam(null, false);
-    return;
-  }
-  const weightButton = event.target.closest('[data-weight-target][data-weight-step]');
-  if (weightButton) {
-    const input = ids('weight-' + weightButton.dataset.weightTarget);
-    const value = Math.min(Number(input.max), Math.max(Number(input.min), Number(input.value) + Number(weightButton.dataset.weightStep)));
-    if (value !== Number(input.value)) {
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
     return;
   }
   const teamButton = event.target.closest('[data-select-team]');

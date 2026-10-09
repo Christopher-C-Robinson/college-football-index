@@ -1,6 +1,6 @@
 import { isCompletedGame } from './model.js';
-import { simulateMatchup } from './prediction.js';
-import { rankBoardTeams } from './board-order.js';
+import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
+import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { FORECAST_VERSION } from './config.js';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 
@@ -204,17 +204,13 @@ function matchupTeam(team, name, effectivePower, seasonOutlook, pending = false)
   };
 }
 
-export function buildSeasonProjections(model, teamName) {
-  const team = model.teams.get(key(teamName));
-  if (!team) throw new Error('Choose a team in the loaded dataset.');
-  const season = model.meta.season;
-  const snapshotAt = model.meta.generatedAt || null;
-  const cache = projectionCache(model);
-  const selectedRecord = seasonRecord(model, team, cache);
-  // Full-field ranks use the same ordering and current weights as the board.
-  // Board filters select rows; they do not change an opponent's actual rank.
-  const rankedTeams = model.broadCoverage ? rankBoardTeams(model.allTeams
-    .filter(entry => divisionOne(entry.classification) && finite(entry.composite))) : [];
+export function refreshSeasonProjectionRanks(model, analysis) {
+  // Read the completed global neutral-matchup report without starting the
+  // round robin. Board filters never change team or subdivision ranks.
+  const rankings = getNeutralRankings(model);
+  const rankingsReady = model.broadCoverage && rankings?.status === 'ready';
+  const rankingsStatus = !model.broadCoverage ? 'waiting' : rankings?.status || 'calculating';
+  const rankedTeams = rankingsReady ? rankings.teams : [];
   const overallRanks = new Map(rankedTeams.map((entry, index) => [key(entry.name), index + 1]));
   const subdivisionRanks = new Map();
   const subdivisionSizes = new Map();
@@ -224,6 +220,32 @@ export function buildSeasonProjections(model, teamName) {
     subdivisionSizes.set(classification, rank);
     subdivisionRanks.set(key(entry.name), rank);
   }
+  Object.assign(analysis, {
+    teamRank: overallRanks.get(key(analysis.teamName)) || null,
+    teamSubdivisionRank: subdivisionRanks.get(key(analysis.teamName)) || null,
+    rankFieldSize: rankedTeams.length,
+    subdivisionFieldSize: subdivisionSizes.get(String(analysis.classification).toLowerCase()) || 0,
+    rankingsReady, rankingsStatus
+  });
+  for (const row of analysis.rows) {
+    Object.assign(row, {
+      opponentRank: overallRanks.get(key(row.opponentName)) || null,
+      opponentSubdivisionRank: subdivisionRanks.get(key(row.opponentName)) || null,
+      rankFieldSize: rankedTeams.length,
+      subdivisionFieldSize: subdivisionSizes.get(String(row.classification).toLowerCase()) || 0,
+      rankingsReady, rankingsStatus
+    });
+  }
+  return analysis;
+}
+
+export function buildSeasonProjections(model, teamName) {
+  const team = model.teams.get(key(teamName));
+  if (!team) throw new Error('Choose a team in the loaded dataset.');
+  const season = model.meta.season;
+  const snapshotAt = model.meta.generatedAt || null;
+  const cache = projectionCache(model);
+  const selectedRecord = seasonRecord(model, team, cache);
   const rows = team.games.slice().sort((a, b) => String(a.startDate || '').localeCompare(String(b.startDate || '')))
     .map(game => {
       const home = key(game.homeTeam) === key(team.name);
@@ -258,22 +280,13 @@ export function buildSeasonProjections(model, teamName) {
           team: matchupTeam(team, team.name, forecast?.teamPower, selectedRecord),
           opponent: matchupTeam(opponent, opponentName, forecast?.opponentPower,
             cache.records.get(key(opponentName)), divisionOne(opponent?.classification) && !cache.records.has(key(opponentName)))
-        },
-        opponentRank: overallRanks.get(key(opponentName)) || null,
-        opponentSubdivisionRank: subdivisionRanks.get(key(opponentName)) || null,
-        rankFieldSize: rankedTeams.length, subdivisionFieldSize: subdivisionSizes.get(classification.toLowerCase()) || 0,
-        rankingsReady: model.broadCoverage };
+        } };
     });
   const compared = rows.filter(row => row.error);
   const picks = compared.filter(row => row.actual.outcome !== 'T' && row.forecast.winProbability !== 0.5);
-  return {
+  return refreshSeasonProjectionRanks(model, {
     teamName: team.name, season, snapshotAt, resultsThrough: model.meta.resultsThrough || null, modelVersion: FORECAST_VERSION,
     classification: String(team.classification || '').toUpperCase(),
-    teamRank: overallRanks.get(key(team.name)) || null,
-    teamSubdivisionRank: subdivisionRanks.get(key(team.name)) || null,
-    rankFieldSize: rankedTeams.length,
-    subdivisionFieldSize: subdivisionSizes.get(String(team.classification).toLowerCase()) || 0,
-    rankingsReady: model.broadCoverage,
     rows,
     unitProfiles: model.unitProfiles || null,
     summary: {
@@ -284,5 +297,5 @@ export function buildSeasonProjections(model, teamName) {
       correctPicks: picks.filter(row => (row.forecast.winProbability > 0.5) === (row.actual.outcome === 'W')).length,
       pickGames: picks.length
     }
-  };
+  });
 }

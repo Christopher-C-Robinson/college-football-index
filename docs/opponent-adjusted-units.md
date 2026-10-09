@@ -8,7 +8,7 @@ The correction improved historical margin predictions, so it is active under the
 
 Only completed rated Division I games contribute. The box-derived definitions are **reported passing yards per reported pass attempt** and **reported rushing yards per reported rush attempt**. The first version does not relabel these as dropbacks, designed runs, EPA, or sack-adjusted efficiency. Team rushing boxes can include sacks and kneels; contextual play processing is a separate future definition.
 
-Preserve yards, attempts, covered games, eligible games, and raw rates. A missing observation or zero attempts produces an unavailable rate, not 0%. Defensive observations mirror the opponent's offensive production. Conflicting boxes or game identities cannot silently contribute twice. Full-field ranks include only teams with measured evidence for that unit; board filters and CFI sliders do not change them.
+Preserve yards, attempts, covered games, eligible games, and raw rates. A missing observation or zero attempts produces an unavailable rate, not 0%. Defensive observations mirror the opponent's offensive production. Conflicting boxes or game identities cannot silently contribute twice. Full-field ranks include only teams with measured evidence for that unit; board filters do not change them.
 
 ## Joint opponent adjustment
 
@@ -57,13 +57,13 @@ Each edge combines the relevant offense and opposing defense effects. Features n
 
 If either team lacks any required unit or passing-share evidence, the forecast uses the exact baseline result and labels the fallback. It does not substitute an average team and claim complete coverage.
 
-The active coefficients and feature scales are the frozen `summary.fit` from the original experiment, selected with ridge lambda 1,000 and fitted on 2022–2024. Live snapshot results supply the unit features, not newly fitted correction coefficients. The same implementation serves the hypothetical simulator, Team Explorer's entire schedule, current-model-fit comparisons, and newly generated forecast archives. Ranking sliders and board filters do not alter a fixed matchup's forecast.
+The active coefficients and feature scales are the frozen `summary.fit` from the original experiment, selected with ridge lambda 1,000 and fitted on 2022–2024. Live snapshot results supply the unit features, not newly fitted correction coefficients. The same implementation serves the hypothetical simulator, Team Explorer's entire schedule, current-model-fit comparisons, and newly generated forecast archives. Board filters do not alter a fixed matchup’s forecast. The neutral matchup ranking summarizes these active forecasts across the full rated FBS/FCS field.
 
 The correction changes the margin, scores, win probability, and margin range. Deterministic team scores are derived from the unchanged projected total and the corrected margin, with each score floored at zero; away from that floor, the correction moves the two scores by half its value in opposite directions. Simulated margins translate by the correction exactly as in the evaluated challenger; the correction does not widen the distribution or add a new total model. Passing and rushing contributions are fitted statistical associations, not causal estimates of points created by a particular play call.
 
 ### Versions and frozen archives
 
-`FORECAST_VERSION = '2.2.0'` identifies the active forecast, and `MATCHUP_FORECAST_VERSION = '2.1.0'` identifies the explicit pre-conference comparator. The core rating `MODEL_VERSION = '2.0.0'` and dataset schema `2` remain unchanged: ranking power, venue, CFI weights, and the underlying baseline simulator parameters have not been retuned. Forecast power now uses the separate conference fit. The unit definition remains `box-units-1`.
+`FORECAST_VERSION = '2.2.0'` identifies the active forecast, and `MATCHUP_FORECAST_VERSION = '2.1.0'` identifies the explicit pre-conference comparator. The core rating `MODEL_VERSION = '2.0.0'` and dataset schema `2` remain unchanged: the core power calculation, venue, and underlying baseline simulator parameters have not been retuned. The board’s neutral matchup ordering separately summarizes the active forecast rather than using the previous weighted blend. Forecast power now uses the separate conference fit. The unit definition remains `box-units-1`.
 
 Explicit `forecastModel: 'baseline'` selects the original predictor for historical replay; `forecastModel: 'matchup'` selects the frozen 2.1.0 comparison without conference pooling. Saved baseline rows and the original challenger report remain unchanged. Newly generated forecasts record the active forecast version and model provenance, including fallback reasons. Past forecasts retain their original versions.
 
@@ -112,7 +112,7 @@ Existing public schedule/box/history delivery still requires a separate migratio
 - `data/experiments/box-units-v1/summary.json`: derived evaluation and decision.
 - `js/challenger-status.js`: historical comparison and active release status beside current-model information.
 
-The historical experiment is independent of ranking sliders, team selection, board filters, and the current-model-fit headline. An improvement in retrospective fit alone is not a promotion criterion.
+The historical experiment is independent of board ordering, team selection, board filters, and the current-model-fit headline. An improvement in retrospective fit alone is not a promotion criterion.
 
 ## First frozen result
 
