@@ -1,5 +1,6 @@
 import { isRatedGame } from './model.js';
-import { MODEL_VERSION, MODEL_PARAMETERS } from './config.js';
+import { MODEL_VERSION, MODEL_PARAMETERS, FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
+import { matchupAdjustmentFor } from './matchup-model.js';
 
 function teamKey(value) {
   return String(value || '').toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -39,7 +40,9 @@ function preseasonFor(model) {
 }
 
 // The browser and historical replay use exactly the same prediction mathematics.
-export function predictMatchup(model, matchup, { allowColdStart = false } = {}) {
+export function predictMatchup(model, matchup, { allowColdStart = false, forecastModel = 'active' } = {}) {
+  if (!['active', 'baseline'].includes(forecastModel)) throw new Error('Forecast model must be active or baseline.');
+  const active = forecastModel === 'active' && ACTIVE_MATCHUP_MODEL.enabled;
   const home = model.teams.get(teamKey(matchup.homeTeam));
   const away = model.teams.get(teamKey(matchup.awayTeam));
   if (!home || !away) throw new Error('Choose two teams in the loaded dataset.');
@@ -61,7 +64,9 @@ export function predictMatchup(model, matchup, { allowColdStart = false } = {}) 
   const homeScoring = homePrior || homeStats;
   const awayScoring = awayPrior || awayStats;
   const venuePoints = matchup.neutralSite ? 0 : model.homeEdge(home.name, away.name);
-  const predictedMargin = homePower - awayPower + venuePoints;
+  const baselineMargin = homePower - awayPower + venuePoints;
+  const adjustment = active ? matchupAdjustmentFor(model.unitProfiles, home.name, away.name) : null;
+  const predictedMargin = baselineMargin + (adjustment?.points || 0);
   const games = model.ratedGames;
   const totals = games.map(game => game.homePoints + game.awayPoints);
   const leagueTotal = totals.length
@@ -77,7 +82,11 @@ export function predictMatchup(model, matchup, { allowColdStart = false } = {}) 
   const variance = totals.length
     ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
   return {
-    modelVersion: MODEL_VERSION,
+    modelVersion: active ? FORECAST_VERSION : MODEL_VERSION,
+    ...(active ? { baselineModelVersion: MODEL_VERSION, baselineMargin,
+      matchupAdjustment: adjustment.points, matchupModel: adjustment.modelId,
+      matchupEligible: adjustment.eligible, matchupFallbackReason: adjustment.reason,
+      matchupReportFingerprint: ACTIVE_MATCHUP_MODEL.reportFingerprint } : {}),
     homeTeam: home.name,
     awayTeam: away.name,
     neutralSite: Boolean(matchup.neutralSite),
@@ -135,25 +144,35 @@ export function simulateMatchup(model, matchup, options = {}) {
     prediction.homeTeam, prediction.awayTeam, prediction.neutralSite,
     prediction.homePower, prediction.awayPower].join('|');
   const random = seededRandom(seed);
+  const correction = prediction.matchupAdjustment || 0;
+  const baselineMargin = prediction.baselineMargin ?? prediction.predictedMargin;
   let homeWins = 0;
   const margins = [];
   for (let run = 0; run < runs; run += 1) {
     const probability = Math.min(1 - 1e-10, Math.max(1e-10, random()));
     const gameError = parameters.winProbabilityScale * Math.log(probability / (1 - probability));
-    const margin = prediction.predictedMargin + normalSample(random) * prediction.ratingStdDev + gameError;
+    const margin = baselineMargin + normalSample(random) * prediction.ratingStdDev + gameError;
     const total = Math.max(0, prediction.predictedTotal + normalSample(random) * prediction.totalStdDev);
     const homeScore = Math.max(0, Math.round((total + margin) / 2));
     const awayScore = Math.max(0, Math.round((total - margin) / 2));
     margins.push(homeScore - awayScore);
-    if (homeScore > awayScore || (homeScore === awayScore && random() < 0.5)) homeWins += 1;
+    // Translate the original score-margin distribution exactly as evaluated.
+    // Original ties consume the same random draw even after a correction, so
+    // paired baseline/candidate simulations preserve the original draws.
+    const resolvedMargin = homeScore === awayScore ? 0.5 - random() : homeScore - awayScore;
+    const shifted = resolvedMargin + correction;
+    homeWins += correction === 0 ? (resolvedMargin > 0 ? 1 : 0)
+      : shifted > 0 ? 1 : shifted === 0 ? 0.5 : 0;
   }
   margins.sort((a, b) => a - b);
   return {
     ...prediction,
     runs,
     simulatedHomeWinProbability: homeWins / runs,
-    marginLow80: margins[Math.floor((runs - 1) * 0.1)],
-    marginHigh80: margins[Math.floor((runs - 1) * 0.9)],
-    distribution: 'baseline logistic game error plus normal rating uncertainty; uncalibrated'
+    marginLow80: margins[Math.floor((runs - 1) * 0.1)] + correction,
+    marginHigh80: margins[Math.floor((runs - 1) * 0.9)] + correction,
+    distribution: prediction.matchupModel
+      ? 'baseline score-margin distribution translated by fitted pass/rush correction; uncalibrated'
+      : 'baseline logistic game error plus normal rating uncertainty; uncalibrated'
   };
 }

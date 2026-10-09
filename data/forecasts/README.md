@@ -10,6 +10,8 @@ These compact files preserve pregame projections for research and future accurac
 
 The initial archive includes the 2022–2025 completed-season baselines and the 2026 baseline through October 7. Scheduled FBS/FCS games with known kickoff times also receive saved pregame forecasts. The browser can project matchups with a time marked TBD, but those do not receive an archived pregame record until kickoff timing is resolved. Lower-division opponents, canceled games, and past games without a valid forecast remain explicit gaps in this evaluation archive.
 
+Forecast v2.1.0 applies the evaluated opponent-adjusted passing/rushing correction. A refresh replaces future v2.0.0 forecasts with v2.1.0 forecasts even when the input snapshot has not changed. Games that already started retain their original forecast and version. The archive's `meta.modelVersion` identifies the generator, `meta.modelVersions` lists the versions present, and each row records its own version. New rows also record the baseline margin, fitted matchup adjustment, eligibility/fallback reason, and experiment fingerprint. Current Explorer projections always use the active forecast; these preserved archives can contain several forecast versions.
+
 ## Regeneration
 
 No API key or network access is needed to create forecasts from bundled inputs:

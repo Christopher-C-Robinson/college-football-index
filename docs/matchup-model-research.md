@@ -1,8 +1,8 @@
 # Matchup strengths and weaknesses
 
-Research date: October 8, 2026. This is a design proposal, not a change to the production prediction formula.
+Research date: October 8, 2026. This document records the broader design and the first implemented layer.
 
-Implementation update: `box-units-1` now supplies the four jointly opponent-adjusted box-derived passing/rushing profiles and descriptive matchup context. The forecast candidate is evaluated separately; see [definitions, limitations, and promotion gates](opponent-adjusted-units.md). Richer drive/play/kicking layers below remain proposals.
+Implementation update: `box-units-1` supplies the four jointly opponent-adjusted box-derived passing/rushing profiles. Forecast `2.1.0` now uses the frozen historical matchup correction in simulator and schedule predictions when unit evidence is available, with an explicit baseline fallback. The user authorized activation because historical margin and aggregate probability errors improved; interval calibration remains unfinished. See [definitions, limitations, original gates, and activation decision](opponent-adjusted-units.md). Richer drive/play/kicking layers below remain proposals.
 
 ## Answer
 
@@ -10,7 +10,7 @@ Yes. We can estimate how a team's passing, rushing, finishing, and special teams
 
 The requirement is **opponent-adjusted unit ratings**, using the same connected-schedule principle as power. Raw totals or national percentiles alone do not meet it. Gaining 400 yards against a defense expected to allow 400 represents performance near expectation; 400 against a defense expected to allow 200 is stronger. Pace and attempts matter too, so the comparison should primarily use efficiency per qualifying opportunity, then project volume separately. Those expected defensive levels must themselves be adjusted for the offenses faced.
 
-The current simulator does **not** make those adjustments. `js/prediction.js` uses opponent-adjusted scoring power and venue for margin, shrunk scoring/allowed averages for the total, and result counts for rating uncertainty. The board's separate efficiency index uses offensive/defensive yards per play, third-down rates, and turnover margin. Changing the board's efficiency weight does not add a tactical adjustment to the simulator.
+The current simulator applies a passing/rushing matchup correction learned from historical pregame errors. `js/prediction.js` starts with opponent-adjusted scoring power and venue, then combines both teams' passing/rushing offense-versus-defense edges and observed attempt shares with frozen coefficients. The correction changes predicted margin, scores, probability, and range location. Shrunk scoring/allowed averages still supply the total, and result counts still supply rating uncertainty; these parts have not been improved or calibrated by this release. The board's separate efficiency index uses offensive/defensive yards per play, third-down rates, and turnover margin. Changing the board's efficiency weight does not alter a fixed matchup's forecast.
 
 ## What is already downloaded
 
@@ -21,12 +21,12 @@ Audit of `data/current-season.json`, generated October 8 with results through Oc
 - All these appearances contain usable passing attempts/completions, passing yards, rushing attempts/yards, third-down counts, fourth-down counts, turnovers, interceptions thrown, fumbles lost, penalty counts/yards, and possession time.
 - The file has 703 boxes in total. Another 56 are FCS games against lower-division opponents, outside the current rating graph.
 
-This establishes coverage in this particular snapshot, not in every historical season. None of the newly proposed inputs have been fitted or validated as forecasting features.
+This establishes coverage in this particular snapshot, not in every historical season. Box-derived pass/rush unit features have since been fitted and evaluated on reconstructed historical pregame snapshots. Richer conversion, drive, finishing, and kicking inputs remain unvalidated as forecasting additions.
 
 | Input | Already usable from boxes | Additional work |
 |---|---|---|
-| Passing offense and defense | Yards/attempt, completions/attempt, TD and interception rates; mirror opponent production for defense | Separate sacks/dropbacks consistently; opponent adjustment |
-| Rushing offense and defense | Yards/attempt, TD rate, run/pass tendency; mirror opponent production | Distinguish designed runs, sacks, and kneels |
+| Passing offense and defense | Opponent-adjusted yards/attempt is active; completions/attempt, TD and interception counts are available | Separate sacks/dropbacks consistently; evaluate additional rates |
+| Rushing offense and defense | Opponent-adjusted yards/attempt and observed attempt share are active; TD counts are available | Distinguish designed runs, sacks, and kneels |
 | Third/fourth downs | Conversions and attempts, offense and allowed | Account for distance and selection effects where plays exist |
 | Turnovers | Giveaways and takeaways | Use per-play/per-drive rates and shrink small samples |
 | Penalties | Count and yards | Context and denominator selection |
@@ -138,12 +138,12 @@ Planning estimates for 31 daily runs, using the repo's existing 7–12 calls/day
 
 These are budget estimates, not measured new-endpoint usage. Retries, backfills, and other activity share the account quota. Add raw plays/drives incrementally after measuring response coverage and cost; retain a correction/retry reserve.
 
-Recommended implementation sequence:
+Implementation status and next steps:
 
-1. Build and expose opponent-adjusted pass/rush unit profiles from existing boxes, with raw rates, attempts, opponent context, and coverage available as supporting detail. Apply opponent adjustment to conversion/finishing candidates where their definitions and samples support it; do not substitute raw rankings for unit strength.
+1. **Implemented:** jointly opponent-adjusted pass/rush unit profiles and the frozen box-unit correction in forecast `2.1.0`. Views lead with unit strength and matchup explanations, keeping rates, attempts, ranks, and coverage in supporting detail. Historical 2025 margin MAE improved from 14.97 to 14.66 points; the original interval gate failed and remains documented. Apply the same opponent-adjustment discipline to future conversion/finishing candidates where their definitions and samples support it.
 2. Collect advanced summaries and sample historical plays/drives to audit FBS/FCS coverage and definitions.
 3. Build dated, opponent-adjusted feature snapshots; compare a small box-score candidate against a richer efficiency candidate in walk-forward replay.
-4. Promote only features with repeatable predictive gains and calibrated uncertainty. Keep a versioned fallback for missing metrics.
+4. Prefer features with repeatable predictive gains, retain a versioned fallback for missing metrics, and measure calibration separately. The user authorized the first correction despite unfinished uncertainty calibration; future range changes need their own historical coverage evaluation.
 5. Show a matchup explanation beside the forecast: overall strength, venue, passing fit, rushing fit, and finishing/special teams, with learned point contributions only where the fitted model supports that interpretation.
 
 The schedule color change is independent of this research: solid winner colors identify completed results; pale favorite colors identify unplayed forecasts. It does not alter predictions.

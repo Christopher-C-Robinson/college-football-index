@@ -1,6 +1,7 @@
 import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js';
 import { rankBoardTeams } from './board-order.js';
+import { FORECAST_VERSION } from './config.js';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const idOf = value => value.id ?? value.gameId;
@@ -13,9 +14,14 @@ function orientForecast(prediction, home, generatedAt) {
     for: home ? prediction.projectedHomeScore : prediction.projectedAwayScore,
     against: home ? prediction.projectedAwayScore : prediction.projectedHomeScore,
     margin: home ? prediction.predictedMargin : -prediction.predictedMargin,
-    winProbability: home ? prediction.homeWinProbability : 1 - prediction.homeWinProbability,
+    winProbability: home ? prediction.simulatedHomeWinProbability : 1 - prediction.simulatedHomeWinProbability,
     neutralMargin: home ? prediction.homePower - prediction.awayPower : prediction.awayPower - prediction.homePower,
     venueAdjustment: home ? prediction.venuePoints : -prediction.venuePoints,
+    baselineMargin: home ? prediction.baselineMargin : -prediction.baselineMargin,
+    matchupAdjustment: home ? prediction.matchupAdjustment : -prediction.matchupAdjustment,
+    matchupEligible: prediction.matchupEligible,
+    matchupModel: prediction.matchupModel,
+    matchupFallbackReason: prediction.matchupFallbackReason,
     marginLow80: home ? prediction.marginLow80 : -prediction.marginHigh80,
     marginHigh80: home ? prediction.marginHigh80 : -prediction.marginLow80,
     teamPower: home ? prediction.homePower : prediction.awayPower,
@@ -132,7 +138,7 @@ export function buildSeasonProjections(model, teamName) {
   const expectedAdditionalWins = projected.reduce((sum, row) => sum + row.forecast.winProbability, 0);
   const fullRemainingCoverage = projected.length === remaining.length;
   return {
-    teamName: team.name, season, snapshotAt, resultsThrough: model.meta.resultsThrough || null, modelVersion: model.modelVersion,
+    teamName: team.name, season, snapshotAt, resultsThrough: model.meta.resultsThrough || null, modelVersion: FORECAST_VERSION,
     classification: String(team.classification || '').toUpperCase(),
     teamRank: overallRanks.get(key(team.name)) || null,
     teamSubdivisionRank: subdivisionRanks.get(key(team.name)) || null,

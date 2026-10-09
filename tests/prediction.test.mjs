@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildModel, MODEL_PARAMETERS, MODEL_VERSION } from '../js/model.js';
+import { buildModel, MODEL_PARAMETERS } from '../js/model.js';
+import { FORECAST_VERSION } from '../js/config.js';
 import { predictMatchup, simulateMatchup } from '../js/prediction.js';
 
 function game(id, homeTeam, awayTeam, homePoints, awayPoints, options = {}) {
@@ -29,7 +30,7 @@ test('neutral predictions reverse margin, scores, and win chance symmetrically',
   const model = smallLeague();
   const forward = predictMatchup(model, { homeTeam: 'Alpha', awayTeam: 'Beta', neutralSite: true });
   const reverse = predictMatchup(model, { homeTeam: 'Beta', awayTeam: 'Alpha', neutralSite: true });
-  assert.equal(forward.modelVersion, MODEL_VERSION);
+  assert.equal(forward.modelVersion, FORECAST_VERSION);
   assert.equal(forward.venuePoints, 0);
   close(forward.predictedMargin, -reverse.predictedMargin);
   close(forward.predictedTotal, reverse.predictedTotal);

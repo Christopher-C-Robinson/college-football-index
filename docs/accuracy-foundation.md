@@ -1,16 +1,18 @@
-# Accuracy foundation: model 2.0.0
+# Accuracy foundation: core model 2.0.0, forecast 2.1.0
 
-This release establishes a reproducible evaluation baseline. It fixes objectively incorrect inputs and makes future model changes measurable. It does not tune the 28-point cap, prior, venue pooling, probability scale, composite weights, or simulator error distribution.
+The original foundation release established a reproducible evaluation baseline. It fixed objectively incorrect inputs and made future model changes measurable. It did not tune the 28-point cap, prior, venue pooling, probability scale, composite weights, or simulator error distribution.
 
-The [first saved baseline](../data/backtests/README.md) covers 6,307 games in completed 2022–2025 seasons and 647 games in incomplete 2026. Completed-season margin MAE is 14.91 points; the simulator's middle 80% range contained 67.6% of outcomes. These measurements establish calibration work to do; this release does not claim predictive gains. Exact compressed inputs are committed for replay without API calls.
+The [first saved baseline](../data/backtests/README.md) covers 6,307 games in completed 2022–2025 seasons and 647 games in incomplete 2026. Completed-season margin MAE is 14.91 points; the simulator's middle 80% range contained 67.6% of outcomes. Those measurements establish the original reference and calibration work to do. Exact compressed inputs are committed for replay without API calls.
+
+The later forecast `2.1.0` release activates the separately evaluated box-unit matchup correction. On the 1,625-game 2025 comparison, it lowered margin MAE from 14.97 to 14.66 points and improved aggregate Brier/log loss. The user requested activation based on the accuracy improvement. Interval coverage remains below its target, and FBS–FCS probability scores worsened slightly. Core rating `MODEL_VERSION = '2.0.0'` is unchanged; `FORECAST_VERSION = '2.1.0'` identifies the active inference release. See [unit definitions and the activation decision](opponent-adjusted-units.md).
 
 ## Shared implementation
 
 | File | Responsibility |
 |---|---|
-| `js/config.js` | Model/schema versions and frozen baseline parameters |
+| `js/config.js` | Core/forecast/schema versions, frozen baseline parameters and active matchup correction |
 | `js/model.js` | Completion rules, power, venue estimation, raw efficiency, retrospective résumé |
-| `js/prediction.js` | Deterministic matchup forecast and seeded simulator, shared by browser/Node |
+| `js/prediction.js` | Active matchup forecast and seeded simulator, plus explicit baseline replay, shared by browser/Node |
 | `js/model-fit.js` | Whole-field current-snapshot simulations and completed-result comparisons |
 | `js/model-fit-view.js` | Current-fit summary, definitions, coverage gaps, and subdivision breakdown |
 | `js/unit-model.js` | Joint opponent-adjusted pass/rush profiles and symmetric challenger features |
@@ -21,7 +23,7 @@ The [first saved baseline](../data/backtests/README.md) covers 6,307 games in co
 | `scripts/lib/cfbd.mjs` | Secret-authenticated acquisition, quota guard, raw cache |
 | `scripts/lib/dataset.mjs` | Integrity checks, metadata, duplicate handling, atomic output |
 
-The simulator uses predictive power. Changing descriptive CFI lens weights does not change the predicted spread. Résumé still uses fitted retrospective probabilities and must not be interpreted as a forecasting score. Frozen pregame résumé is a later model release.
+The simulator uses predictive power, venue, and the frozen fitted passing/rushing matchup correction. It falls back to the baseline when required unit evidence is unavailable. The correction preserves the baseline projected total and translates its margin distribution; it does not recalibrate uncertainty. Changing descriptive CFI lens weights does not change a fixed matchup's predicted spread. Résumé still uses fitted retrospective probabilities and must not be interpreted as a forecasting score. Frozen pregame résumé is a later model release.
 
 Team Explorer simulates every scheduled matchup from the loaded snapshot, including completed games, using the same venue and simulation defaults as the hypothetical tool. Its comparisons with actual scores describe the current model's fit, rather than pregame forecasting accuracy. Current opponent ranks use the board's weights and full FBS/FCS field; filters do not renumber them.
 
@@ -37,7 +39,9 @@ Invalid/unavailable comparisons and duplicate records remain visible as coverage
 
 These comparisons include completed results already used to fit power and scoring. They answer how closely the **current** model describes this season; they do not establish how accurately it forecast games before kickoff. The frozen historical evaluation below remains the source for pregame accuracy and parameter selection. No slider optimizer is added because CFI lens weights do not affect a fixed matchup's prediction.
 
-## Temporal evaluation contract
+## Frozen baseline temporal evaluation contract
+
+These rules describe the preserved `2.0.0` baseline. Replay explicitly requests `forecastModel: 'baseline'`; activation of `2.1.0` does not alter saved prediction rows, evaluation reports, or their configuration identities. Newly generated active forecast archives record `2.1.0` and correction provenance. Rows from different forecast versions must remain distinguishable rather than being treated as one unchanged model.
 
 1. Load season-specific raw archives. For an evaluation season, require all four earlier venue seasons; do not silently shorten the warmup.
 2. Order target games by actual kickoff timestamp. Postseason week 1 is not confused with regular-season week 1. Exclude unresolved/TBD kickoffs from targets and training; record excluded target counts.
@@ -75,11 +79,13 @@ Splits include FBS–FBS, FBS–FCS (either host), FCS–FCS; home/neutral; earl
 
 ## Experiment discipline
 
-The first box-unit challenger and its frozen selection/holdout design are documented in [opponent-adjusted units](opponent-adjusted-units.md). It uses the existing pregame snapshots; the website separately displays current-snapshot unit profiles. Derived aggregate results and the promotion decision live in `data/experiments/box-units-v1/summary.json`; per-game feature/audit rows stay in `.cache`. The signature power/venue model remains the active predictor until a candidate satisfies the predeclared gates and is activated through a versioned release.
+The first box-unit challenger and its frozen selection/holdout design are documented in [opponent-adjusted units](opponent-adjusted-units.md). It uses the existing pregame snapshots; the website displays current-snapshot unit profiles and now uses their fitted matchup correction in active forecasts. Derived aggregate results and the original research decision live in `data/experiments/box-units-v1/summary.json`; per-game feature/audit rows stay in `.cache`.
+
+The original experiment retained the baseline because both models missed the intended 80% range coverage. That report remains frozen. Forecast `2.1.0` adopts the evaluated correction under the user's subsequent accuracy-first activation decision: margin MAE improves with a paired interval below zero, no subdivision has material margin harm, and aggregate Brier/log loss do not deteriorate. The coverage shortfall remains visible and requires separate calibration work. This later release policy is not presented as the original predeclared gate having passed.
 
 Use a distinct output directory for each candidate and record its exact code/configuration. Existing predictions cannot be silently rewritten; the CLI rejects changed reports unless `--force` is explicit. Scoring rejects mixed versions/configurations/temporal policies and duplicate game forecasts.
 
-Use older seasons to select parameters and reserve later seasons as a final holdout. Repeatedly selecting changes against the same final seasons makes them development data. This release supplies evaluation machinery, not an automated optimizer or a claim of statistical significance. Later releases should add paired game-error comparisons, uncertainty on performance differences, and untouched season holdouts before promoting more complex models.
+Use older seasons to select parameters and reserve later seasons as a final holdout. Repeatedly selecting changes against the same final seasons makes them development data. The box-unit comparison adds paired week-block error intervals, with repeated-team dependence across weeks still a limitation. Future features and calibration changes need new evaluations and untouched or rolling holdouts; activating this correction does not validate richer drive, red-zone, or kicking inputs.
 
 ## Provider contracts
 

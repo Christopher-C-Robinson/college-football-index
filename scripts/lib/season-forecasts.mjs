@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { buildModel, isCompletedGame, isRatedGame } from '../../js/model.js';
 import { simulateMatchup } from '../../js/prediction.js';
-import { MODEL_VERSION, MODEL_PARAMETERS } from '../../js/config.js';
+import { FORECAST_VERSION, MODEL_PARAMETERS } from '../../js/config.js';
 import { fingerprint } from './backtest.mjs';
 import { RATED_SEASON_TYPES, assertValidDataset, readJson, writeJsonAtomic } from './dataset.mjs';
 
@@ -199,7 +199,7 @@ export function buildSeasonForecastArchive(dataset, { previous = null, baseline 
     if (!upcoming) continue;
     // Re-running the same source snapshot preserves the actual creation time.
     if (prior?.origin === 'snapshot' && prior.sourceFingerprint === sourceFingerprint
-      && prior.modelVersion === MODEL_VERSION) { predictions.push(prior); continue; }
+      && prior.modelVersion === FORECAST_VERSION) { predictions.push(prior); continue; }
     model ||= buildModel(dataset);
     const result = simulateMatchup(model, {
       homeTeam: game.homeTeam, awayTeam: game.awayTeam, neutralSite: game.neutralSite === true
@@ -212,6 +212,10 @@ export function buildSeasonForecastArchive(dataset, { previous = null, baseline 
       baseHomeWinProbability: result.homeWinProbability,
       generatedAt, predictionGeneratedAt: dataset.meta.generatedAt,
       sourceResultsThrough: dataset.meta.resultsThrough || null, modelVersion: result.modelVersion,
+      baselineModelVersion: result.baselineModelVersion, baselineMargin: result.baselineMargin,
+      matchupAdjustment: result.matchupAdjustment, matchupModel: result.matchupModel,
+      matchupEligible: result.matchupEligible, matchupFallbackReason: result.matchupFallbackReason,
+      matchupReportFingerprint: result.matchupReportFingerprint,
       runs: result.runs, origin: 'snapshot', sourceFingerprint,
       homeColdStart: result.homeColdStart, awayColdStart: result.awayColdStart,
       ...preseasonMetadata(result)
@@ -220,7 +224,8 @@ export function buildSeasonForecastArchive(dataset, { previous = null, baseline 
   predictions.sort((a, b) => timestamp(a.startDate) - timestamp(b.startDate) || String(a.gameId).localeCompare(String(b.gameId)));
   const archive = {
     meta: {
-      forecastFormatVersion: FORECAST_FORMAT_VERSION, season, modelVersion: MODEL_VERSION,
+      forecastFormatVersion: FORECAST_FORMAT_VERSION, season, modelVersion: FORECAST_VERSION,
+      modelVersions: [...new Set(predictions.map(row => row.modelVersion))].sort(),
       generatedAt, datasetGeneratedAt: dataset.meta.generatedAt, resultsThrough: dataset.meta.resultsThrough || null,
       datasetFingerprint: sourceFingerprint, predictionFingerprint: fingerprint(predictions),
       retiredPredictionFingerprint: fingerprint(retiredPredictions),

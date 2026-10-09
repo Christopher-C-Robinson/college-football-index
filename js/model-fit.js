@@ -1,5 +1,6 @@
 import { buildModel, isRatedGame, MODEL_PARAMETERS } from './model.js';
 import { simulateMatchup } from './prediction.js';
+import { FORECAST_VERSION } from './config.js';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -185,7 +186,7 @@ export async function buildModelFit(model, { onProgress, isCanceled } = {}) {
     season: snapshot.meta.season ?? null,
     snapshotAt: snapshot.meta.generatedAt || null,
     resultsThrough: snapshot.meta.resultsThrough || null,
-    modelVersion: snapshot.modelVersion,
+    modelVersion: FORECAST_VERSION,
     runs: snapshot.parameters.simulationRuns ?? MODEL_PARAMETERS.simulationRuns,
     ratedGames: total,
     gradedGames: rows.length,

@@ -1,6 +1,8 @@
 # Opponent-adjusted passing and rushing: box-units-1
 
-This release adds descriptive unit profiles and a separately evaluated forecasting challenger. The four profiles are passing offense, passing defense, rushing offense, and rushing defense. FBS and FCS use the same connected schedule, equations, and priors. Subdivision and conference labels do not enter the fit.
+Forecast `2.1.0` uses the evaluated box-unit matchup correction by default. The four profiles are passing offense, passing defense, rushing offense, and rushing defense. FBS and FCS use the same connected schedule, equations, and priors. Subdivision and conference labels do not enter the fit.
+
+The correction improved historical margin predictions, so it is active under the user's accuracy-first release decision. Its uncertainty ranges remain too narrow. Activation does not claim that calibration is solved or that every subdivision's probability scores improved.
 
 ## Measurement contract
 
@@ -24,9 +26,9 @@ This is a coupled schedule adjustment: each defense is estimated against the off
 
 Attempts control weighting, not a statistical claim that every play is an independent observation. Sparse schedule connections, correlated plays, and differences in data coverage remain limitations. Coverage is shown as evidence, not a fabricated probability of confidence.
 
-## Forecast challenger contract
+## Active matchup forecast
 
-The champion remains the shared power/venue model. The candidate learns an additive correction to its **pregame margin errors**, using four features:
+The forecast starts with the shared power/venue model and adds a correction fitted to its historical **pregame margin errors**, using four features:
 
 1. Home-minus-away passing matchup edge.
 2. Home-minus-away rushing matchup edge.
@@ -35,7 +37,17 @@ The champion remains the shared power/venue model. The candidate learns an addit
 
 Each edge combines the relevant offense and opposing defense effects. Features negate when the teams swap. Ridge fitting uses zero intercept and root-mean-square feature scaling about zero, preserving neutral reversal. Reported passing share is a box-derived exposure proxy; it is not a game-state-adjusted tactical tendency.
 
-If either team lacks any required unit or passing-share evidence, the candidate uses the exact baseline forecast. It does not substitute an average team and claim complete coverage.
+If either team lacks any required unit or passing-share evidence, the forecast uses the exact baseline result and labels the fallback. It does not substitute an average team and claim complete coverage.
+
+The active coefficients and feature scales are the frozen `summary.fit` from the original experiment, selected with ridge lambda 1,000 and fitted on 2022–2024. Live snapshot results supply the unit features, not newly fitted correction coefficients. The same implementation serves the hypothetical simulator, Team Explorer's entire schedule, current-model-fit comparisons, and newly generated forecast archives. Ranking sliders and board filters do not alter a fixed matchup's forecast.
+
+The correction changes the margin, scores, win probability, and margin range. Deterministic team scores are derived from the unchanged projected total and the corrected margin, with each score floored at zero; away from that floor, the correction moves the two scores by half its value in opposite directions. Simulated margins translate by the correction exactly as in the evaluated challenger; the correction does not widen the distribution or add a new total model. Passing and rushing contributions are fitted statistical associations, not causal estimates of points created by a particular play call.
+
+### Versions and frozen archives
+
+`FORECAST_VERSION = '2.1.0'` identifies the active forecast. The core rating `MODEL_VERSION = '2.0.0'` and dataset schema `2` remain unchanged: power, venue, CFI weights, and the underlying baseline simulator parameters have not been retuned. The unit definition remains `box-units-1`.
+
+Explicit `forecastModel: 'baseline'` selects the original predictor for historical replay. Saved baseline rows and the original challenger report remain unchanged. Newly generated forecasts record the active forecast version and matchup-model provenance, including when unavailable unit data causes a baseline fallback. Past forecasts are never relabeled as forecasts from `2.1.0`.
 
 ### Frozen chronological design
 
@@ -51,13 +63,19 @@ Construct unit features from the same cutoff-eligible results/boxes as the froze
 
 Historical inputs are corrected final provider archives. The existing kickoff-plus-24-hour availability policy and Monday cutoffs remain declared reconstructions of availability, not proof of original publication times. The optional live zero-current-results prior-season fallback is not part of the frozen historical baseline.
 
-### Promotion gates
+### Original research gates
 
 Compare identical games, reporting margin MAE/RMSE/bias, winner matches, Brier/log loss, range coverage and width, subdivision splits, and eligible/fallback games. Use a deterministic paired week-block bootstrap for the mean absolute-error difference; repeated-team dependence across weeks remains a limitation.
 
-The candidate must reduce holdout margin MAE with the paired 95% interval entirely below zero, avoid subdivision MAE deterioration above 0.5 points, avoid Brier/log-loss deterioration, and bring middle-80% coverage within three percentage points of target. These are predeclared research gates, not universal statistical standards. The first candidate shifts the existing predictive distribution; it does not fit a new calibration or claim that its ranges are calibrated.
+The original experiment required lower holdout margin MAE with the paired 95% interval entirely below zero, no subdivision MAE deterioration above 0.5 points, no aggregate Brier/log-loss deterioration, and middle-80% coverage within three percentage points of target. These were predeclared research gates, not universal statistical standards. The experiment shifts the existing predictive distribution; it does not fit a new calibration or claim that its ranges are calibrated.
 
-Passing these gates establishes readiness for a versioned inference release. Failing any gate retains the existing forecast and leaves the adjusted profiles available as descriptive matchup information.
+The original report failed only the interval-coverage gate and retains that historical decision. The report is not rewritten to make activation appear to have passed the original requirements.
+
+### Activation decision for forecast 2.1.0
+
+The user subsequently requested activation of the more accurate model. The release decision prioritizes the measured margin improvement with its paired interval below zero, no material subdivision margin harm, and no aggregate probability-score deterioration. The frozen candidate satisfies those criteria. The failed coverage requirement is disclosed as unfinished calibration work rather than used to retain the less accurate baseline.
+
+This is an explicit change to the activation policy after seeing the evaluation. It is not a fresh independent validation. Both baseline and candidate miss the intended 80% coverage, and the FBS–FCS probability scores worsened slightly even though that group's margin error improved. Future calibration changes need their own versioned evaluation.
 
 ## Public and private artifacts
 
@@ -69,10 +87,12 @@ Existing public schedule/box/history delivery still requires a separate migratio
 
 - `js/unit-model.js`: canonical observations, joint fits, profiles, and symmetric candidate features.
 - `js/unit-profile-view.js`: selected-team and matchup presentations.
+- `js/config.js`: frozen active correction configuration and core/forecast versions.
+- `js/prediction.js`: shared active inference and explicit historical baseline path.
 - `scripts/matchup-challenger.mjs`: reproducible experiment CLI.
 - `scripts/lib/matchup-challenger.mjs`: chronological coefficient selection, prediction comparison and promotion gates.
 - `data/experiments/box-units-v1/summary.json`: derived evaluation and decision.
-- `js/challenger-status.js`: historical candidate scorecard beside current-model information.
+- `js/challenger-status.js`: historical comparison and active release status beside current-model information.
 
 The historical experiment is independent of ranking sliders, team selection, board filters, and the current-model-fit headline. An improvement in retrospective fit alone is not a promotion criterion.
 
@@ -80,7 +100,7 @@ The historical experiment is independent of ranking sliders, team selection, boa
 
 On the 1,625-game 2025 candidate holdout, margin MAE improved from 14.9726 to 14.6573 points. The paired week-block 95% interval for the mean change was −0.4599 to −0.1701 points. Brier improved from 0.19531 to 0.19167; log loss improved from 0.57292 to 0.56526. All three subdivision groups improved margin MAE, but the FBS–FCS group's probability scores worsened slightly. The selected ridge lambda was 1,000.
 
-The candidate had complete required features for 1,455 games; 170 games used the exact baseline fallback. Middle-80% coverage improved from 67.32% to 68.25%, failing the predeclared 77–83% requirement. **Decision: retain the baseline forecast.** The adjusted profiles remain available for matchup analysis.
+The candidate had complete required features for 1,455 games; 170 games used the exact baseline fallback. Middle-80% coverage improved from 67.32% to 68.25%, failing the predeclared 77–83% requirement. **Original experiment decision: retain the baseline forecast. Current release decision: activate the evaluated correction as forecast 2.1.0, with the coverage shortfall visible.**
 
 Incomplete 2026 monitoring is separate: margin MAE improved from 17.9930 to 17.8076, while log loss worsened slightly. These observations are not additional tuning data for this frozen experiment. The 2025 baseline results had already been inspected before this candidate; “holdout” here means excluded from the candidate's coefficient fitting and lambda selection, not outcomes that nobody had previously viewed.
 

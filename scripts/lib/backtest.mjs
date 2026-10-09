@@ -117,7 +117,7 @@ export function replaySeason(archives, season, options = {}) {
     for (const game of games) {
       const predicted = simulateMatchup(model, {
         homeTeam: game.homeTeam, awayTeam: game.awayTeam, neutralSite: game.neutralSite === true
-      }, { allowColdStart: true, runs: simulationRuns, seed: [MODEL_VERSION, cutoff, gameId(game)].join('|') });
+      }, { forecastModel: 'baseline', allowColdStart: true, runs: simulationRuns, seed: [MODEL_VERSION, cutoff, gameId(game)].join('|') });
       const { homeWinProbability: baseHomeWinProbability, simulatedHomeWinProbability: homeWinProbability, ...fields } = predicted;
       predictions.push({
         season, week: game.week, seasonType: game.seasonType, gameId: gameId(game),

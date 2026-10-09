@@ -1,5 +1,6 @@
 import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION, MODEL_PARAMETERS } from './model.js';
 import { simulateMatchup } from './prediction.js';
+import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
 import { enhanceSearchableSelects } from './searchable-select.js';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
@@ -212,13 +213,13 @@ function renderDatasetStatus() {
   const timestamp = info.generatedAt ? 'Generated ' + info.generatedAt : 'Generation date not recorded';
   const through = info.resultsThrough ? 'Results through ' + info.resultsThrough : 'Results date not recorded';
   const datasetVersion = info.datasetModelVersion ? 'Dataset model v' + info.datasetModelVersion : 'Dataset model version not recorded';
-  status.innerHTML = '<div class="dataset-provenance-heading"><strong>' + escapeHtml(info.sourceLabel) + ' · ' + escapeHtml(info.season) + '</strong><span>MODEL v' + escapeHtml(MODEL_VERSION) + '</span></div>' +
+  status.innerHTML = '<div class="dataset-provenance-heading"><strong>' + escapeHtml(info.sourceLabel) + ' · ' + escapeHtml(info.season) + '</strong><span>FORECAST v' + escapeHtml(FORECAST_VERSION) + '</span></div>' +
     '<p>' + escapeHtml(timestamp) + ' · ' + escapeHtml(through) + '</p>' +
     '<p class="dataset-provenance-detail">' + escapeHtml(info.provider) + ' · ' + escapeHtml(datasetVersion) + (info.schemaVersion ? ' · Schema ' + escapeHtml(info.schemaVersion) : '') + '</p>' +
     (info.notice ? '<p class="dataset-notice">' + escapeHtml(info.notice) + '</p>' : '') +
     (info.source === 'imported' ? '<button type="button" class="text-button" data-return-public>Return to public snapshot</button>' : '');
   const stamp = ids('model-version');
-  if (stamp) stamp.textContent = 'v' + MODEL_VERSION;
+  if (stamp) stamp.textContent = 'v' + FORECAST_VERSION;
   ids('dataset-source').textContent = info.sourceLabel.toUpperCase();
 }
 
@@ -585,13 +586,21 @@ function runMatchupSimulation() {
     ? 'Preseason fallback: ' + priorLabels.join('; ') + '. These teams have no current-season FBS/FCS results; uncertainty reflects that limited evidence.'
     : state.model.broadCoverage ? 'Broad FBS + FCS coverage is available.'
       : 'Early sample: ' + state.model.ratedGameCount + ' completed games across ' + state.model.ratedTeamCount + ' teams. Treat this as exploratory.';
-  const baseline = (reversed ? 1 - prediction.homeWinProbability : prediction.homeWinProbability) * 100;
+  const orientation = reversed ? -1 : 1;
+  const neutralMargin = orientation * (prediction.homePower - prediction.awayPower);
+  const venuePoints = orientation * prediction.venuePoints;
+  const matchupPoints = orientation * (prediction.matchupAdjustment || 0);
+  const signedPoints = value => (value > 0 ? '+' : '') + formatNumber(value, 1);
   output.innerHTML = '<div class="simulation-result-grid">' +
-    '<div class="simulation-probability"><span>' + escapeHtml(teamA.name) + ' WIN CHANCE</span><strong>' + chanceA.toFixed(1) + '%</strong><small>Base model: ' + baseline.toFixed(1) + '%</small></div>' +
+    '<div class="simulation-probability"><span>' + escapeHtml(teamA.name) + ' WIN CHANCE</span><strong>' + chanceA.toFixed(1) + '%</strong><small>Matchup forecast v' + escapeHtml(prediction.modelVersion) + '</small></div>' +
     '<div class="simulation-probability"><span>' + escapeHtml(teamB.name) + ' WIN CHANCE</span><strong>' + chanceB.toFixed(1) + '%</strong><small>' + escapeHtml(venueLabel) + '</small></div>' +
     '<div class="simulation-score"><span>PROJECTED SCORE · ' + SIMULATION_RUNS.toLocaleString() + ' RUNS</span><strong>' + escapeHtml(teamA.name) + ' ' + formatNumber(projectedScoreA, 0) + ' <i>—</i> ' + formatNumber(projectedScoreB, 0) + ' ' + escapeHtml(teamB.name) + '</strong><small>Model margin: ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' points</small></div>' +
     '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Exploratory range from the current model; historical coverage has not been calibrated.</small></div>' +
-    '</div><p class="simulation-method">' + escapeHtml(sampleLabel) + ' The spread uses opponent-adjusted power and the selected venue. The score total blends team scoring and points allowed with the full-field average. Injuries, weather, and matchup-specific play styles are not modeled.</p>';
+    '</div><div class="simulation-breakdown"><p>How the margin adds up <span>Positive points favor ' + escapeHtml(teamA.name) + '</span></p><dl>' +
+    '<div><dt>Neutral team strength</dt><dd>' + signedPoints(neutralMargin) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signedPoints(venuePoints) + '</dd></div>' +
+    '<div><dt>Passing + rushing matchup</dt><dd>' + signedPoints(matchupPoints) + '</dd></div><div><dt>Projected margin</dt><dd>' + signedPoints(predictedMargin) + '</dd></div></dl>' +
+    (prediction.matchupEligible === false ? '<p class="simulation-fallback">Unit data is incomplete for this pairing; the matchup adjustment is 0 and the forecast uses power + venue.</p>' : '') +
+    '</div><details class="simulation-method"><summary>How this forecast works</summary><p>' + escapeHtml(sampleLabel) + ' The margin combines opponent-adjusted power, the selected venue, and historically fitted passing/rushing matchup effects. The total uses team scoring and points allowed with the full-field average. The matchup adjustment changes the scoring split; it does not change the total. Injuries and weather are not modeled.</p></details>';
 }
 
 function updateWeightsDisplay() {

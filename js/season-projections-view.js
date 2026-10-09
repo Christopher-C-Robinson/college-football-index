@@ -112,8 +112,10 @@ function matchupOutlook(row, teamName, forecast, actual) {
     '<div class="forecast-win-heading"><span>' + escapeHtml(teamName) + '<small>win chance</small></span><strong>' + number(probability) + '%</strong></div>' +
     '<div class="forecast-win-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span style="width:' + probability.toFixed(3) + '%"></span></div>' +
     '<div class="forecast-win-labels"><span>' + escapeHtml(teamName) + '</span><span>' + escapeHtml(row.opponentName) + '</span></div>' +
-    '<dl class="forecast-margin-factors" title="The power gap and venue adjustment sum to the projected margin before rounding."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
-    '<div><dt>Neutral strength gap</dt><dd>' + signed(forecast.neutralMargin) + '</dd></div><div><dt>Venue adjustment</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div></dl>' +
+    '<dl class="forecast-margin-factors" title="Neutral strength + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
+    '<div><dt>Neutral team strength</dt><dd>' + signed(forecast.neutralMargin) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
+    '<div class="forecast-unit-factor"><dt>Passing + rushing matchup</dt><dd>' + signed(forecast.matchupAdjustment ?? 0) + '</dd></div></dl>' +
+    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 matchup adjustment; using power + venue.' : '') + '</p>' +
     marginGraphic(forecast, actual) + '</section>';
 }
 
@@ -198,5 +200,5 @@ export function renderProjectionSummary(analysis) {
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
   return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Scores show ' + escapeHtml(analysis.teamName) + ' first.</p>' +
-    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. A positive margin miss means a better scoring margin than the current model projects. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities remain an uncalibrated baseline.</p></details>';
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines neutral team strength, home/away effects, and the fitted passing/rushing matchup adjustment. Missing unit data gives a labeled zero adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }
