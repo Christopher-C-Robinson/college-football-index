@@ -1137,7 +1137,7 @@ html { scroll-padding-top: 104px; }
 .forecast-probability-bar > span { position: relative; display: block; height: 100%; min-width: 0; background: rgb(var(--probability-team-rgb, 71, 124, 153)); box-shadow: inset 0 0 0 1px rgba(23,35,51,.25); }
 .forecast-probability-bar > .is-selected { background-color: rgb(var(--probability-team-rgb, 71, 124, 153)); }
 .forecast-probability-bar > .is-opponent { background-color: rgb(var(--probability-team-rgb, 126, 140, 155)); background-image: repeating-linear-gradient(135deg, transparent 0, transparent 3px, rgba(23,35,51,.22) 3px, rgba(23,35,51,.22) 5px); }
-.forecast-probability-bar > span:not([style*="width:0.000%"]):not([style*="width: 0.000%"]):not([style*="width:0%"]):not([style*="width: 0%"]) + span:not([style*="width:0.000%"]):not([style*="width: 0.000%"]):not([style*="width:0%"]):not([style*="width: 0%"])::before { content: ''; position: absolute; z-index: 1; top: 0; bottom: 0; left: 0; width: 3px; box-sizing: border-box; transform: translateX(-50%); border-left: 1px solid #172333; border-right: 1px solid #172333; background: #fff; pointer-events: none; }
+.forecast-probability-bar.has-divider > span + span::before { content: ''; position: absolute; z-index: 2; top: 0; bottom: 0; left: 0; width: 4px; transform: translateX(-50%); background: var(--bar-divider-color); pointer-events: none; }
 .forecast-probability-labels { display: flex; justify-content: space-between; gap: 14px; margin-top: 7px; color: var(--ink-soft); font: 12px/1.4 var(--sans); }
 .forecast-probability-labels > span { min-width: 0; max-width: 48%; }
 .forecast-probability-labels > span:last-child { text-align: right; }
@@ -1273,13 +1273,16 @@ html { scroll-padding-top: 104px; }
 .forecast-yardage-table tbody th > small { display: inline-block; margin-left: 7px; color: #758496; font: 11px/1.4 var(--sans); }
 .forecast-yardage-estimate { display: block; color: var(--ink); font: 600 15px/1.3 var(--mono); }
 .forecast-yardage-actual { display: block; margin-top: 2px; color: #6b7d90; font: 11px/1.35 var(--sans); white-space: nowrap; }
-.forecast-yardage-bar { display: flex; width: 130px; max-width: 95%; height: 6px; margin-top: 5px; overflow: hidden; border-radius: 2px; background: #e8edf3; }
-.forecast-yardage-bar > i { display: block; height: 100%; min-width: 0; background: rgb(var(--yardage-team-rgb, 71, 124, 153)); box-shadow: inset 0 0 0 1px rgba(23,35,51,.3); }
-.forecast-yardage-bar > .is-rush { background-image: repeating-linear-gradient(135deg, transparent 0, transparent 3px, rgba(23,35,51,.35) 3px, rgba(23,35,51,.35) 5px); }
-.forecast-yardage-key, .forecast-yardage-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px; margin: 8px 0 0; color: #6b7d90; font: 11px/1.45 var(--sans); }
-.forecast-yardage-key > span, .forecast-yardage-legend > span { display: inline-flex; align-items: center; gap: 5px; }
-.forecast-yardage-key i, .forecast-yardage-legend i { display: inline-block; width: 12px; height: 6px; border-radius: 2px; background: #718ca3; box-shadow: inset 0 0 0 1px rgba(23,35,51,.2); }
-.forecast-yardage-key .is-rush, .forecast-yardage-legend .is-rush { background-image: repeating-linear-gradient(135deg, transparent 0, transparent 3px, rgba(23,35,51,.45) 3px, rgba(23,35,51,.45) 5px); }
+/* Segment widths retain the shared yardage scale; labels and texture add non-color cues. */
+.forecast-yardage-bar { position: relative; display: flex; width: 300px; max-width: 95%; height: 24px; margin-top: 8px; overflow: hidden; border-radius: 4px; background: #e8edf3; }
+.forecast-yardage-segment { position: relative; display: flex; align-items: center; justify-content: center; flex: none; height: 100%; min-width: 0; overflow: hidden; font-style: normal; box-shadow: inset 0 0 0 1px var(--bar-divider-color); }
+.forecast-yardage-segment.is-pass { background: var(--yardage-pass-color); color: var(--yardage-pass-ink); }
+.forecast-yardage-segment.is-rush { background: var(--yardage-rush-color); color: var(--yardage-rush-ink); }
+.forecast-yardage-segment.is-rush::before { content: ''; position: absolute; inset: 0; opacity: .18; background: repeating-linear-gradient(135deg, transparent 0, transparent 6px, var(--yardage-rush-ink) 6px, var(--yardage-rush-ink) 8px); pointer-events: none; }
+.forecast-yardage-segment b { position: relative; z-index: 1; padding: 0 6px; font: 600 11px/1 var(--sans); white-space: nowrap; }
+.forecast-yardage-bar > .forecast-bar-divider { position: absolute; z-index: 2; top: 0; bottom: 0; width: 4px; transform: translateX(-50%); background: var(--bar-divider-color); pointer-events: none; }
+.forecast-yardage-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 14px; margin: 10px 0 0; color: #6b7d90; font: 11px/1.45 var(--sans); }
+.forecast-yardage-legend > span { display: inline-flex; align-items: center; gap: 5px; }
 .forecast-yardage-unavailable { margin: 8px 0 0; color: #6b7d90; font: 12px/1.65 var(--sans); }
 .team-logo[role="button"] { cursor: pointer; }
 .team-logo[role="button"]:focus-visible { outline: 2px solid var(--blue-mid); outline-offset: 3px; }
@@ -1288,7 +1291,7 @@ html { scroll-padding-top: 104px; }
   .forecast-yardage-table th:first-child { width: 40%; }
   .forecast-yardage-table th, .forecast-yardage-table td { padding-left: 7px; padding-right: 7px; }
   .forecast-yardage-table tbody th > small { display: block; margin: 2px 0 0; }
-  .forecast-yardage-bar { width: 110px; }
+  .forecast-yardage-bar { width: 100%; max-width: 100%; }
 }
 
 .forecast-score-location { flex: none; color: #718397; font: 11px/1.4 var(--sans); }

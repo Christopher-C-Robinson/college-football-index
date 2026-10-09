@@ -1,6 +1,7 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
 import { renderTeamLogo } from './team-logo.js?v=f5b0734a5855';
 import { renderSeasonChart } from './season-chart.js';
+import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -87,9 +88,11 @@ function matchupTeams(row, teamName, forecast, actual) {
   const neutral = row.site === 'Neutral site';
   const selected = { name: teamName, model: forecast?.for, actual: actual?.for,
     color: primaryColor(row.matchup?.team?.color) || '52, 92, 134', abbreviation: row.matchup?.team?.abbreviation || teamName,
+    secondaryColor: row.matchup?.team?.alternateColor,
     location: neutral ? 'Neutral' : row.site, yardage: row.yardage?.team, actualYardage: row.yardage?.actualTeam };
   const opponent = { name: row.opponentName, model: forecast?.against, actual: actual?.against,
     color: primaryColor(row.matchup?.opponent?.color) || '126, 140, 155', abbreviation: row.matchup?.opponent?.abbreviation || row.opponentName,
+    secondaryColor: row.matchup?.opponent?.alternateColor,
     location: neutral ? 'Neutral' : row.site === 'Home' ? 'Away' : 'Home', yardage: row.yardage?.opponent, actualYardage: row.yardage?.actualOpponent };
   return row.site === 'Home' && row.displayOrder !== 'selected-first' ? [opponent, selected] : [selected, opponent];
 }
@@ -128,9 +131,11 @@ function matchupOutlook(row, teamName, forecast, actual) {
   const probability = forecast.winProbability * 100;
   const probabilityLabel = teamName + ' win probability ' + number(probability) + ' percent; ' + row.opponentName + ' ' + number(100 - probability) + ' percent.';
   const teams = matchupTeams(row, teamName, forecast, actual).map(team => ({ ...team, probability: team.name === teamName ? probability : 100 - probability }));
+  const hasDivider = teams.every(team => Number(team.probability.toFixed(3)) > 0);
+  const divider = barDividerColor(teams[0].color, teams[1].color);
   return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5>' +
     '<div class="forecast-probability-headline"><strong>' + number(probability) + '%</strong><span>' + escapeHtml(teamName) + '</span></div>' +
-    '<div class="forecast-probability-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '">' + teams.map(team => '<span class="' + (team.name === teamName ? 'is-selected' : 'is-opponent') + '" style="width:' + team.probability.toFixed(3) + '%;--probability-team-rgb:' + team.color + '"></span>').join('') + '</div>' +
+    '<div class="forecast-probability-bar' + (hasDivider ? ' has-divider' : '') + '" style="--bar-divider-color:' + divider + '" role="img" aria-label="' + escapeHtml(probabilityLabel) + '">' + teams.map(team => '<span class="' + (team.name === teamName ? 'is-selected' : 'is-opponent') + '" style="width:' + team.probability.toFixed(3) + '%;--probability-team-rgb:' + team.color + '"></span>').join('') + '</div>' +
     '<div class="forecast-probability-labels">' + teams.map(team => '<span>' + escapeHtml(team.abbreviation) + '<strong>' + number(team.probability) + '%</strong></span>').join('') + '</div>' +
     '<p class="forecast-analytics-note">' + (actual ? 'Reprojected with current data, including this result.' : 'From the loaded snapshot.') + '</p></section>';
 }
@@ -146,11 +151,16 @@ export function renderYardagePanel(row, teamName, forecast = null, actual = null
     teams.map(team => {
       const estimate = team.yardage;
       const result = team.actualYardage;
-      const chart = estimate?.passing && estimate?.rushing && finite(estimate.total) && estimate.passing.yards >= 0 && estimate.rushing.yards >= 0 ? '<span class="forecast-yardage-bar" aria-hidden="true" style="--yardage-team-rgb:' + team.color + '"><i class="is-pass" style="width:' + (estimate.passing.yards / maximum * 100).toFixed(3) + '%"></i><i class="is-rush" style="width:' + (estimate.rushing.yards / maximum * 100).toFixed(3) + '%"></i></span>' : '';
+      const colors = yardageBarColors(team.color, team.secondaryColor);
+      const chart = estimate?.passing && estimate?.rushing && finite(estimate.total) && estimate.total > 0 && estimate.passing.yards >= 0 && estimate.rushing.yards >= 0 ?
+        '<span class="forecast-yardage-bar" aria-hidden="true" style="--yardage-pass-color:' + colors.passing + ';--yardage-rush-color:' + colors.rushing + ';--yardage-pass-ink:' + colors.passingInk + ';--yardage-rush-ink:' + colors.rushingInk + ';--bar-divider-color:' + colors.divider + '">' +
+        '<i class="forecast-yardage-segment is-pass" style="width:' + (estimate.passing.yards / maximum * 100).toFixed(3) + '%"><b>Pass</b></i>' +
+        '<i class="forecast-yardage-segment is-rush" style="width:' + (estimate.rushing.yards / maximum * 100).toFixed(3) + '%"><b>Rush</b></i>' +
+        (estimate.passing.yards > 0 && estimate.rushing.yards > 0 ? '<i class="forecast-bar-divider" style="left:' + (estimate.passing.yards / maximum * 100).toFixed(3) + '%"></i>' : '') + '</span>' : '';
       const displayedTotal = estimate?.passing && estimate?.rushing ? Math.round(estimate.passing.yards) + Math.round(estimate.rushing.yards) : null;
       return '<tr><th scope="row"><span class="forecast-yardage-team-name">' + escapeHtml(team.name) + '</span><small>' + team.location + '</small>' + chart + '</th>' +
         cell(estimate?.passing?.yards, result?.passing, false, estimate?.passing) + cell(estimate?.rushing?.yards, result?.rushing, false, estimate?.rushing) + cell(displayedTotal, result?.total, true, null, estimate?.total) + '</tr>';
-    }).join('') + '</tbody></table></div><div class="forecast-yardage-legend"><span><i class="is-pass" aria-hidden="true"></i>Passing</span><span><i class="is-rush" aria-hidden="true"></i>Rushing</span><span>~ estimated yards' + (actual ? ' · Final = recorded box score' : '') + '</span></div>' +
+    }).join('') + '</tbody></table></div><div class="forecast-yardage-legend"><span>Pass = solid · Rush = striped</span><span>Bar lengths share one yardage scale</span><span>~ estimated yards' + (actual ? ' · Final = recorded box score' : '') + '</span></div>' +
     (teams.some(team => !finite(team.yardage?.total) || (actual && !finite(team.actualYardage?.total))) ? '<p class="forecast-yardage-unavailable">— means missing matchup evidence' + (actual ? ' or box-score data' : '') + '; unavailable categories are not counted as zero.</p>' : '') + '</section>';
 }
 

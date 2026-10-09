@@ -6,8 +6,8 @@ import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-s
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=f5b0734a5855';
 import { renderRankingsMap } from './rankings-map.js?v=243a12b7d1c9';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
-import { buildSeasonProjections } from './season-projections.js?v=fe6759e00b96';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=2dccca6d0150';
+import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=1ebe6abc5e68';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';

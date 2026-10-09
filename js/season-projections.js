@@ -50,6 +50,7 @@ function matchupTeam(team, name, effectivePower) {
   return {
     name,
     color: team?.color || null,
+    alternateColor: team?.alternateColor || null,
     abbreviation: team?.abbreviation || '',
     logos: Array.isArray(team?.logos) ? team.logos.slice() : [],
     record: modeled ? team.wins + '–' + team.losses + (team.ties ? '–' + team.ties : '') : null,
