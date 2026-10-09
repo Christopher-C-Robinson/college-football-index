@@ -1,5 +1,5 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderTeamLogo } from './team-logo.js';
+import { renderTeamLogo } from './team-logo.js?v=f5b0734a5855';
 import { renderSeasonChart } from './season-chart.js';
 
 function escapeHtml(value) {
@@ -83,21 +83,28 @@ function forecastSource(forecast, analysis) {
     '</p><p class="forecast-analytics-note">Completed games are reprojected with the current snapshot, including their actual results. These comparisons show current model fit, not pregame accuracy.</p>';
 }
 
+function matchupTeams(row, teamName, forecast, actual) {
+  const neutral = row.site === 'Neutral site';
+  const selected = { name: teamName, model: forecast?.for, actual: actual?.for,
+    color: primaryColor(row.matchup?.team?.color) || '52, 92, 134', abbreviation: row.matchup?.team?.abbreviation || teamName,
+    location: neutral ? 'Neutral' : row.site, yardage: row.yardage?.team, actualYardage: row.yardage?.actualTeam };
+  const opponent = { name: row.opponentName, model: forecast?.against, actual: actual?.against,
+    color: primaryColor(row.matchup?.opponent?.color) || '126, 140, 155', abbreviation: row.matchup?.opponent?.abbreviation || row.opponentName,
+    location: neutral ? 'Neutral' : row.site === 'Home' ? 'Away' : 'Home', yardage: row.yardage?.opponent, actualYardage: row.yardage?.actualOpponent };
+  return row.site === 'Home' && row.displayOrder !== 'selected-first' ? [opponent, selected] : [selected, opponent];
+}
+
 function scoreComparison(row, teamName, forecast, actual) {
-  const teams = [
-    { name: teamName, model: forecast?.for, actual: actual?.for, color: primaryColor(row.matchup?.team?.color) || '52, 92, 134' },
-    { name: row.opponentName, model: forecast?.against, actual: actual?.against, color: primaryColor(row.matchup?.opponent?.color) || '126, 140, 155' }
-  ];
+  const teams = matchupTeams(row, teamName, forecast, actual);
   const maximum = Math.max(1, ...teams.flatMap(team => [team.model, team.actual]).filter(finite));
   const bar = (value, label, color, type) => '<div class="forecast-score-bar-row"><span class="forecast-score-bar-label">' + label + '</span>' +
-    (finite(value) ? '<span class="forecast-score-track" aria-hidden="true"><span class="forecast-score-fill ' + type + '" style="width:' + Math.max(0, Math.min(100, value / maximum * 100)).toFixed(3) + '%;--score-team-rgb:' + color + '"></span></span><strong class="forecast-score-value" title="' + label + ' points: ' + value + '">' + number(value, type === 'is-actual' ? 0 : 1) + '</strong>' :
-      '<span class="forecast-score-missing">' + (label === 'Actual' ? row.status === 'canceled' ? 'Canceled' : row.status === 'final' ? 'Unavailable' : 'Not final' : 'Unavailable') + '</span>') + '</div>';
-  return '<section class="forecast-analytics-panel forecast-score-comparison" aria-label="' + escapeHtml(teamName + ' first: current projected and actual points') + '"><h5 class="forecast-section-title">Points · model vs. actual</h5>' +
-    '<div class="forecast-score-key">' + escapeHtml(teamName) + ' listed first</div>' +
-    teams.map(team => '<div class="forecast-score-team"><div class="forecast-score-team-heading"><strong>' + escapeHtml(team.name) + '</strong>' +
-      (finite(team.model) && finite(team.actual) ? '<span class="forecast-score-delta" title="Actual points minus current projected points: ' + (team.actual - team.model) + '">' + signed(team.actual - team.model) + ' pts</span>' : '') + '</div>' +
-      bar(team.model, 'Model', team.color, 'is-model') + bar(team.actual, 'Actual', team.color, 'is-actual') + '</div>').join('') +
-    '<p class="forecast-analytics-note">' + (actual && forecast ? 'Difference = actual − model.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Actual scores appear when final.') + '</p></section>';
+    (finite(value) ? '<span class="forecast-score-track" aria-hidden="true"><span class="forecast-score-fill ' + type + '" style="width:' + Math.max(0, Math.min(100, value / maximum * 100)).toFixed(3) + '%;--score-team-rgb:' + color + '"></span></span><strong class="forecast-score-value" title="' + label + ' points, unrounded: ' + value + '">' + Math.round(value) + '</strong>' :
+      '<span class="forecast-score-missing">' + (label === 'Final' ? row.status === 'canceled' ? 'Canceled' : row.status === 'final' ? 'Unavailable' : 'Not final' : 'Unavailable') + '</span>') + '</div>';
+  return '<section class="forecast-analytics-panel forecast-score-comparison" aria-label="Projected and final points, in scoreboard order"><h5 class="forecast-section-title">Projected vs. final points</h5>' +
+    '<div class="forecast-score-key">' + (row.site === 'Neutral site' ? escapeHtml(teams[0].name) + ' first · neutral site' : 'Away first · same order as scoreboard') + '</div>' +
+    teams.map(team => '<div class="forecast-score-team"><div class="forecast-score-team-heading"><strong>' + escapeHtml(team.name) + '</strong><span class="forecast-score-location">' + team.location + '</span></div>' +
+      bar(team.model, 'Projected', team.color, 'is-model') + bar(team.actual, 'Final', team.color, 'is-actual') + '</div>').join('') +
+    '<p class="forecast-analytics-note">' + (actual && forecast ? 'Projection uses current data, including this result.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Projection uses the current snapshot.') + '</p></section>';
 }
 
 function marginGraphic(forecast, actual, teamName) {
@@ -120,13 +127,42 @@ function matchupOutlook(row, teamName, forecast, actual) {
   if (!forecast) return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'Prediction unavailable.') + '</p></section>';
   const probability = forecast.winProbability * 100;
   const probabilityLabel = teamName + ' win probability ' + number(probability) + ' percent; ' + row.opponentName + ' ' + number(100 - probability) + ' percent.';
-  const selectedColor = primaryColor(row.matchup?.team?.color) || '52, 92, 134';
-  const opponentColor = primaryColor(row.matchup?.opponent?.color) || '126, 140, 155';
+  const teams = matchupTeams(row, teamName, forecast, actual).map(team => ({ ...team, probability: team.name === teamName ? probability : 100 - probability }));
   return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5>' +
     '<div class="forecast-probability-headline"><strong>' + number(probability) + '%</strong><span>' + escapeHtml(teamName) + '</span></div>' +
-    '<div class="forecast-probability-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span class="is-selected" style="width:' + probability.toFixed(3) + '%;--probability-team-rgb:' + selectedColor + '"></span><span class="is-opponent" style="width:' + (100 - probability).toFixed(3) + '%;--probability-team-rgb:' + opponentColor + '"></span></div>' +
-    '<div class="forecast-probability-labels"><span>' + escapeHtml(row.matchup?.team?.abbreviation || teamName) + '<strong>' + number(probability) + '%</strong></span><span>' + escapeHtml(row.matchup?.opponent?.abbreviation || row.opponentName) + '<strong>' + number(100 - probability) + '%</strong></span></div>' +
+    '<div class="forecast-probability-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '">' + teams.map(team => '<span class="' + (team.name === teamName ? 'is-selected' : 'is-opponent') + '" style="width:' + team.probability.toFixed(3) + '%;--probability-team-rgb:' + team.color + '"></span>').join('') + '</div>' +
+    '<div class="forecast-probability-labels">' + teams.map(team => '<span>' + escapeHtml(team.abbreviation) + '<strong>' + number(team.probability) + '%</strong></span>').join('') + '</div>' +
     '<p class="forecast-analytics-note">' + (actual ? 'Reprojected with current data, including this result.' : 'From the loaded snapshot.') + '</p></section>';
+}
+
+export function renderYardagePanel(row, teamName, forecast = null, actual = null) {
+  const teams = matchupTeams(row, teamName, forecast, actual);
+  const maximum = Math.max(1, ...teams.map(team => team.yardage?.total).filter(finite));
+  const cell = (estimate, result, total = false, context = null, rawEstimate = estimate) => '<td' + (total ? ' class="is-total"' : '') + '><strong class="forecast-yardage-estimate"' + (finite(rawEstimate) ? ' title="Unrounded yardage estimate: ' + rawEstimate + (context ? '; ' + number(context.attempts) + ' expected attempts × ' + number(context.rate, 2) + ' adjusted yards/attempt' : '') + '"' : '') + '>' +
+    (finite(estimate) ? '~' + Math.round(estimate) : '—') + '</strong>' + (actual ? '<small class="forecast-yardage-actual">Final ' + (finite(result) ? number(result, 0) : '—') + '</small>' : '') + '</td>';
+  return '<section class="forecast-yardage" aria-label="Experimental passing and rushing yardage estimates"><div class="forecast-yardage-heading"><h5>Passing &amp; rushing yards</h5><span>Experimental estimate</span></div>' +
+    '<p class="forecast-yardage-caption">Both efficiency and attempt volume account for opponents played.</p>' +
+    '<div class="forecast-yardage-scroll"><table class="forecast-yardage-table"><caption class="sr-only">Estimated yards from the current snapshot, compared with final box scores when available. Teams follow the displayed matchup order.</caption><thead><tr><th scope="col">Team</th><th scope="col">Passing</th><th scope="col">Rushing</th><th scope="col">Total</th></tr></thead><tbody>' +
+    teams.map(team => {
+      const estimate = team.yardage;
+      const result = team.actualYardage;
+      const chart = estimate?.passing && estimate?.rushing && finite(estimate.total) && estimate.passing.yards >= 0 && estimate.rushing.yards >= 0 ? '<span class="forecast-yardage-bar" aria-hidden="true" style="--yardage-team-rgb:' + team.color + '"><i class="is-pass" style="width:' + (estimate.passing.yards / maximum * 100).toFixed(3) + '%"></i><i class="is-rush" style="width:' + (estimate.rushing.yards / maximum * 100).toFixed(3) + '%"></i></span>' : '';
+      const displayedTotal = estimate?.passing && estimate?.rushing ? Math.round(estimate.passing.yards) + Math.round(estimate.rushing.yards) : null;
+      return '<tr><th scope="row"><span class="forecast-yardage-team-name">' + escapeHtml(team.name) + '</span><small>' + team.location + '</small>' + chart + '</th>' +
+        cell(estimate?.passing?.yards, result?.passing, false, estimate?.passing) + cell(estimate?.rushing?.yards, result?.rushing, false, estimate?.rushing) + cell(displayedTotal, result?.total, true, null, estimate?.total) + '</tr>';
+    }).join('') + '</tbody></table></div><div class="forecast-yardage-legend"><span><i class="is-pass" aria-hidden="true"></i>Passing</span><span><i class="is-rush" aria-hidden="true"></i>Rushing</span><span>~ estimated yards' + (actual ? ' · Final = recorded box score' : '') + '</span></div>' +
+    (teams.some(team => !finite(team.yardage?.total) || (actual && !finite(team.actualYardage?.total))) ? '<p class="forecast-yardage-unavailable">— means missing matchup evidence' + (actual ? ' or box-score data' : '') + '; unavailable categories are not counted as zero.</p>' : '') + '</section>';
+}
+
+function scoreAndYardageDetails(row, teamName, forecast, actual) {
+  const teams = matchupTeams(row, teamName, forecast, actual);
+  return '<section class="forecast-exact-scores"><h5 class="forecast-section-title">What the point projection uses</h5><p>Scoring and points-allowed averages, pulled toward the field average for small samples, estimate total points. Team strength, conference evidence, home/away effects, and the fitted passing/rushing matchup set the margin. The total and margin produce each team’s projected score. Simulations supply win chances and ranges; the displayed scores are not simulated-score averages.</p>' +
+    '<table class="forecast-context-table"><caption class="sr-only">Unrounded score comparison in scoreboard order</caption><thead><tr><th scope="col">Team</th><th scope="col">Projected<small>current snapshot</small></th><th scope="col">Final</th><th scope="col">Difference<small>final − projected</small></th></tr></thead><tbody>' +
+    teams.map(team => '<tr><th scope="row">' + escapeHtml(team.name) + '</th><td title="' + (finite(team.model) ? team.model : '') + '">' + number(team.model) + '</td><td>' + number(team.actual, 0) + '</td><td>' + signed(finite(team.model) && finite(team.actual) ? team.actual - team.model : null) + '</td></tr>').join('') + '</tbody></table><p class="forecast-table-note">Scoreboards round to whole points. Differences use the underlying projection before rounding.</p></section>' +
+    '<section class="forecast-yardage-method"><h5 class="forecast-section-title">How yardage is estimated</h5><p>For each attack, the existing adjusted offense is matched against the opponent’s adjusted defense to estimate yards per attempt. A separate opponent graph estimates passing and rushing attempts, with a four-game prior pulling small samples toward the field average. Attempts × yards per attempt gives category yards; passing + rushing gives total yards. Displayed total estimates add the rounded category estimates.</p>' +
+    '<div class="forecast-yardage-scroll"><table class="forecast-yardage-table"><caption class="sr-only">Experimental yardage assumptions and evidence</caption><thead><tr><th scope="col">Attack</th><th scope="col">Attempts</th><th scope="col">Adjusted yards/attempt</th><th scope="col">Volume evidence<small>offense / opposing defense games</small></th></tr></thead><tbody>' +
+    teams.flatMap(team => [['Passing', team.yardage?.passing], ['Rushing', team.yardage?.rushing]].map(([label, unit]) => '<tr><th scope="row">' + escapeHtml(team.name) + '<small>' + label + '</small></th><td>' + number(unit?.attempts) + '</td><td>' + number(unit?.rate, 2) + '</td><td>' + (unit ? unit.offenseGames + ' / ' + unit.defenseGames : '—') + '</td></tr>')).join('') + '</tbody></table></div>' +
+    '<p>Yardage context: ' + escapeHtml(teams.find(team => team.yardage)?.yardage?.definitionVersion || 'yardage-context-1') + ' is experimental and has not been validated for forecasting accuracy. It does not alter the point forecast or win chances. It currently omits venue, game state, overtime length, injuries, and weather. Reported rushing can include sacks and kneels; passing uses reported net yards per pass attempt. Prior-season score fallbacks do not invent missing yardage evidence.</p></section>';
 }
 
 function marginPanel(row, teamName, forecast, actual) {
@@ -215,9 +251,11 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis) {
     '<span class="forecast-venue-meta">' + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
     '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + scoreComparison(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
+    renderYardagePanel(row, teamName, forecast, actual) +
     forecastPriorSources(forecast, teamName, row.opponentName) +
     '<details class="forecast-supporting-details"><summary>Matchup details &amp; model breakdown</summary><div class="forecast-details-grid">' + pointBreakdown(row, teamName, forecast) +
     renderUnitMatchup(unitProfiles, teamName, row.opponentName, { embedded: true }) + matchupContext(row, teamName, forecast) +
+    scoreAndYardageDetails(row, teamName, forecast, actual) +
     forecastSource(forecast, analysis) + '</div></details></article>';
 }
 
@@ -258,6 +296,6 @@ export function renderProjectionSummary(analysis) {
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Scoreboards show away left and home right; neutral games show ' + escapeHtml(analysis.teamName) + ' left. Charts list ' + escapeHtml(analysis.teamName) + ' first; positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results.</p>' +
+  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results. Yardage estimates are experimental.</p>' +
     '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }

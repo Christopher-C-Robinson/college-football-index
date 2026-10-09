@@ -100,6 +100,24 @@ function enhance(select) {
   let matches = [];
   let active = -1;
   let pointerOpening = false;
+  let selectionFrame = null;
+
+  function cancelSelectionFrame() {
+    if (selectionFrame !== null) window.cancelAnimationFrame(selectionFrame);
+    selectionFrame = null;
+  }
+
+  function selectInputText() {
+    cancelSelectionFrame();
+    input.select();
+    const value = input.value;
+    // Pointer focus can place the caret after the focus handler runs. Repeat
+    // once after that default action, while preserving any subsequent edit.
+    selectionFrame = window.requestAnimationFrame(function () {
+      selectionFrame = null;
+      if (document.activeElement === input && !popup.hidden && query === '' && input.value === value) input.select();
+    });
+  }
 
   function selectedLabel() {
     return select.selectedOptions[0]?.label || '';
@@ -166,6 +184,7 @@ function enhance(select) {
   }
 
   function close() {
+    cancelSelectionFrame();
     popup.hidden = true;
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
@@ -217,11 +236,21 @@ function enhance(select) {
 
   const instance = { refresh, close, position, contains: target => wrapper.contains(target) || popup.contains(target) };
   instances.set(select, instance);
-  input.addEventListener('pointerdown', function () { pointerOpening = popup.hidden; });
-  input.addEventListener('focus', function () { if (popup.hidden) { query = ''; open(); } input.select(); });
-  input.addEventListener('click', function () { if (pointerOpening || popup.hidden) { query = ''; open(); input.select(); } pointerOpening = false; });
-  input.addEventListener('input', function () { query = input.value; open(true); });
+  input.addEventListener('pointerdown', function () {
+    pointerOpening = document.activeElement !== input || popup.hidden;
+    if (!pointerOpening) cancelSelectionFrame();
+  });
+  input.addEventListener('focus', function () {
+    if (popup.hidden) { query = ''; open(); }
+    selectInputText();
+  });
+  input.addEventListener('click', function () {
+    if (pointerOpening || popup.hidden) { query = ''; open(); selectInputText(); }
+    pointerOpening = false;
+  });
+  input.addEventListener('input', function () { cancelSelectionFrame(); query = input.value; open(true); });
   input.addEventListener('keydown', function (event) {
+    cancelSelectionFrame();
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); open(); move(event.key === 'ArrowDown' ? 1 : -1); }
     else if (event.key === 'Enter') { event.preventDefault(); if (popup.hidden) { query = ''; open(); } else choose(active); }
     else if (event.key === 'Escape') { event.preventDefault(); close(); }
@@ -235,7 +264,7 @@ function enhance(select) {
   toggle.addEventListener('click', function () {
     const wasOpen = !popup.hidden;
     input.focus({ preventScroll: true });
-    if (wasOpen) close(); else { query = ''; open(); input.select(); }
+    if (wasOpen) close(); else { query = ''; open(); selectInputText(); }
   });
   popup.addEventListener('pointerdown', function (event) { if (event.target.closest('[role="option"]')) event.preventDefault(); });
   popup.addEventListener('click', function (event) {

@@ -1,5 +1,5 @@
 import { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
-import { buildUnitProfiles } from './unit-model.js';
+import { buildUnitProfiles } from './unit-model.js?v=111ceae2905b';
 import { fitConferencePower } from './conference-model.js';
 import { ACTIVE_CONFERENCE_MODEL } from './config.js';
 

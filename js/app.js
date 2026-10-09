@@ -2,12 +2,13 @@ import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRat
 import { simulateMatchup } from './prediction.js';
 import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
-import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=a0aa79a55cd3';
-import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js';
-import { renderRankingsMap } from './rankings-map.js';
+import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=dec15457f865';
+import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=f5b0734a5855';
+import { renderRankingsMap } from './rankings-map.js?v=243a12b7d1c9';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
-import { buildSeasonProjections } from './season-projections.js';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote } from './season-projections-view.js';
+import { buildSeasonProjections } from './season-projections.js?v=fe6759e00b96';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=2dccca6d0150';
+import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
@@ -19,7 +20,7 @@ const STORAGE_KEY = 'college-football-index-season-v1';
 const FOCUS_STORAGE_KEY = 'college-football-index-focused-team';
 const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
-const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 } };
+const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 }, mapDivisions: { fbs: true, fcs: true } };
 const seasonAnalysisCache = new Map();
 const modelFitCache = new WeakMap();
 let modelFitRequest = 0;
@@ -517,14 +518,16 @@ function syncMatchupsWithBoard(orderedTeams) {
 }
 
 function renderMap(teams, ready) {
-  const available = ready ? teams.filter(team => Number.isFinite(team.power) && Number.isFinite(team.opponentPower)) : [];
+  const eligible = ready ? teams.filter(team => Number.isFinite(team.power) && Number.isFinite(team.opponentPower)) : [];
+  const available = eligible.filter(team => state.mapDivisions[String(team.classification).toLowerCase()] === true);
   const select = ids('map-team-select');
   select.disabled = !available.length;
-  select.innerHTML = '<option value="">' + (ready ? 'Search teams on this map' : 'Waiting for ratings') + '</option>' +
+  const searchPlaceholder = !ready ? 'Waiting for ratings' : !state.mapDivisions.fbs && !state.mapDivisions.fcs ? 'Turn on FBS or FCS below' : available.length ? 'Search teams on this map' : 'No teams match map filters';
+  select.innerHTML = '<option value="">' + searchPlaceholder + '</option>' +
     available.slice().sort((a, b) => a.name.localeCompare(b.name)).map(team => '<option value="' + escapeHtml(team.name) + '" data-search="' + escapeHtml([team.abbreviation, team.conference].filter(Boolean).join(' ')) + '">' + escapeHtml(team.name) + '</option>').join('');
   select.value = available.some(team => teamKey(team.name) === teamKey(state.focusTeam)) ? state.focusTeam : '';
   select.dispatchEvent(new Event('searchable-select:refresh'));
-  ids('rankings-map').innerHTML = renderRankingsMap(available, state.focusTeam, ready);
+  ids('rankings-map').innerHTML = renderRankingsMap(available, state.focusTeam, ready, { domainTeams: eligible, divisions: state.mapDivisions });
 }
 
 function renderBoard(resetMatchups = false) {
@@ -679,6 +682,11 @@ function runMatchupSimulation() {
   const venuePoints = orientation * prediction.venuePoints;
   const matchupPoints = orientation * (prediction.matchupAdjustment || 0);
   const signedPoints = value => (value > 0 ? '+' : '') + formatNumber(value, 1);
+  const yardage = renderYardagePanel({ opponentName: teamB.name, status: 'upcoming', displayOrder: 'selected-first',
+    site: venue === 'neutral' ? 'Neutral site' : reversed ? 'Away' : 'Home',
+    matchup: { team: teamA, opponent: teamB },
+    yardage: { team: estimateYardage(state.model.unitProfiles, teamA.name, teamB.name), opponent: estimateYardage(state.model.unitProfiles, teamB.name, teamA.name) }
+  }, teamA.name);
   output.innerHTML = '<div class="simulation-result-grid">' +
     '<div class="simulation-probability"><div class="simulation-team-heading">' + renderTeamLogo(teamA, { size: 40 }) + '<span>' + escapeHtml(teamA.name) + '</span></div><strong>' + chanceA.toFixed(1) + '%</strong><small>Win chance</small></div>' +
     '<div class="simulation-probability"><div class="simulation-team-heading">' + renderTeamLogo(teamB, { size: 40 }) + '<span>' + escapeHtml(teamB.name) + '</span></div><strong>' + chanceB.toFixed(1) + '%</strong><small>Win chance</small></div>' +
@@ -689,7 +697,7 @@ function runMatchupSimulation() {
     '<div><dt>Passing + rushing matchup</dt><dd>' + signedPoints(matchupPoints) + '</dd></div><div><dt>Projected margin</dt><dd>' + signedPoints(predictedMargin) + '</dd></div></dl>' +
     (prediction.conferenceFallbackReason ? '<p class="simulation-fallback">Conference adjustment unavailable: ' + escapeHtml(prediction.conferenceFallbackReason) + '</p>' : '') +
     (prediction.matchupEligible === false ? '<p class="simulation-fallback">Unit data is incomplete for this pairing; the passing/rushing adjustment is 0.</p>' : '') +
-    '</div><details class="simulation-method"><summary>How this forecast works</summary><p>Forecast v' + escapeHtml(prediction.modelVersion) + ' · ' + SIMULATION_RUNS.toLocaleString() + ' simulated outcomes. ' + escapeHtml(sampleLabel) + ' Team strength starts with opponent-adjusted results. The conference adjustment is the net change in this matchup after both teams’ ratings share information with their conferences. It can be nonzero within one conference because each team has a different schedule and set of opponents. The selected venue and historically fitted passing/rushing matchup effects complete the margin. The total uses team scoring and points allowed with the full-field average. These adjustments change the scoring split; they do not change the total. Injuries and weather are not modeled.</p></details>';
+    '</div>' + yardage + '<details class="simulation-method"><summary>How this forecast works</summary><p>Forecast v' + escapeHtml(prediction.modelVersion) + ' · ' + SIMULATION_RUNS.toLocaleString() + ' simulated outcomes. ' + escapeHtml(sampleLabel) + ' Team strength starts with opponent-adjusted results. The conference adjustment is the net change in this matchup after both teams’ ratings share information with their conferences. It can be nonzero within one conference because each team has a different schedule and set of opponents. The selected venue and historically fitted passing/rushing matchup effects complete the margin. The total uses team scoring and points allowed with the full-field average. These adjustments change the scoring split; they do not change the total. Injuries and weather are not modeled.</p><p>Experimental yardage estimates multiply opponent-adjusted yards per attempt by separately opponent-adjusted attempt volume with a four-game prior. They have not been validated for forecasting accuracy, omit venue and game-state effects, and do not change projected points or win chances. Totals add the rounded passing and rushing estimates.</p></details>';
 }
 
 function updateWeightsDisplay() {
@@ -805,7 +813,13 @@ async function initialize() {
 }
 
 document.addEventListener('change', async function (event) {
-  if (['team-select', 'map-team-select'].includes(event.target.id)) {
+  if (['fbs', 'fcs'].includes(event.target.dataset.mapDivision)) {
+    const division = event.target.dataset.mapDivision;
+    state.mapDivisions[division] = event.target.checked;
+    // Map-only filters must not rebuild the board or reset matchup selections.
+    renderMap(state.model?.broadCoverage ? rankBoardTeams(filteredBoardTeams()) : [], Boolean(state.model?.broadCoverage));
+    ids('rankings-map').querySelector('[data-map-division="' + division + '"]')?.focus({ preventScroll: true });
+  } else if (['team-select', 'map-team-select'].includes(event.target.id)) {
     selectFocusTeam(event.target.value, false);
   } else if (['compare-a', 'sim-a'].includes(event.target.id)) {
     setMatchupTeams(event.target.value, state.compareB);
@@ -846,6 +860,12 @@ function describeMapTeam(event) {
 document.addEventListener('pointerover', describeMapTeam);
 document.addEventListener('focusin', describeMapTeam);
 document.addEventListener('keydown', function (event) {
+  const logo = event.target.closest('[data-team-logo].is-team-link[data-select-team]');
+  if (logo && ['Enter', ' '].includes(event.key)) {
+    event.preventDefault();
+    selectFocusTeam(logo.dataset.selectTeam, true);
+    return;
+  }
   const point = event.target.closest('[data-map-team]');
   if (!point) return;
   if (['Enter', ' '].includes(event.key)) {

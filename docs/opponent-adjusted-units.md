@@ -26,6 +26,24 @@ This is a coupled schedule adjustment: each defense is estimated against the off
 
 Attempts control weighting, not a statistical claim that every play is an independent observation. Sparse schedule connections, correlated plays, and differences in data coverage remain limitations. Coverage is shown as evidence, not a fabricated probability of confidence.
 
+## Experimental yardage context
+
+`yardage-context-1` is a separate descriptive estimate displayed in schedule cards and the hypothetical simulator. It does not modify the active point forecast, probabilities, historical experiment coefficients, or unit-strength ranks.
+
+For each passing/rushing category, multiply the existing opponent-adjusted matchup rate by estimated attempts:
+
+```text
+matchup yards/attempt = field rate + offense effect − opposing defense effect
+estimated attempts   = max(0, field attempts/game + offense volume effect − opposing defense volume effect)
+estimated yards      = matchup yards/attempt × estimated attempts
+```
+
+Volume effects are jointly fitted over the same validated FBS/FCS game graph with equal weight per team-game. A separate fixed four-game ridge prior pulls them toward zero. The setting has not been selected with held-out forecasts. Positive defense-volume effects mean opponents attempted fewer plays in that category; they do not measure defensive efficiency. Valid zero-attempt games contribute to volume, while an absent positive-attempt rate remains unavailable. Negative net yardage is preserved.
+
+Actual game yards come from the same scheduled-team, score, statistic and duplicate checks as the rate model. A total is available only when both passing and rushing yards are known and their sum agrees with any reported total. Missing actual or projected categories stay unavailable. The displayed approximate total adds the individually rounded passing and rushing estimates; full-precision rate and attempt assumptions are available in the game breakdown.
+
+These estimates have not been validated for predictive accuracy and have no calibrated yardage intervals. They do not explicitly model venue, game state, overtime length, roster changes or weather. The existing box definitions still include sack/kneel accounting limitations. Disconnected schedules are anchored by the prior, not by observed cross-component evidence. Prior-season score summaries do not contain unit/volume histories and cannot supply missing yardage estimates. Past games use the current snapshot, including their actual results.
+
 ## Active matchup forecast
 
 The forecast starts with the shared power/venue model and adds a correction fitted to its historical **pregame margin errors**, using four features:

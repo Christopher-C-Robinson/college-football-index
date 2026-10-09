@@ -2,6 +2,7 @@ import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js';
 import { rankBoardTeams } from './board-order.js';
 import { FORECAST_VERSION } from './config.js';
+import { estimateYardage } from './yardage.js?v=42582ef8534f';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const idOf = value => value.id ?? value.gameId;
@@ -122,9 +123,16 @@ export function buildSeasonProjections(model, teamName) {
         teamScore: actual.for - forecast.for,
         opponentScore: actual.against - forecast.against
       } : null;
+      const actualYardage = done ? model.unitProfiles?.gameYardage?.get(String(idOf(game) ?? '').trim()) : null;
+      const yardage = {
+        team: !canceled && rated ? estimateYardage(model.unitProfiles, team.name, opponentName) : null,
+        opponent: !canceled && rated ? estimateYardage(model.unitProfiles, opponentName, team.name) : null,
+        actualTeam: actualYardage?.get(key(team.name)) || null,
+        actualOpponent: actualYardage?.get(key(opponentName)) || null
+      };
       return { gameId: idOf(game), date: game.startDate, week: game.week, opponentName, classification,
         site: game.neutralSite ? 'Neutral site' : home ? 'Home' : 'Away', venue: game.venue || '',
-        status, actual, forecast, error, unavailableReason, timeTBD: game.startTimeTBD === true,
+        status, actual, forecast, error, yardage, unavailableReason, timeTBD: game.startTimeTBD === true,
         matchup: {
           team: matchupTeam(team, team.name, forecast?.teamPower),
           opponent: matchupTeam(opponent, opponentName, forecast?.opponentPower)

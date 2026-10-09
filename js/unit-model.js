@@ -3,6 +3,9 @@
 export const UNIT_DEFINITION_VERSION = 'box-units-1';
 export const UNIT_PARAMETERS = Object.freeze({ priorAttempts: 100, iterations: 120, tolerance: 1e-7 });
 export const UNIT_FEATURE_NAMES = Object.freeze(['passNet', 'rushNet', 'passExposureNet', 'rushExposureNet']);
+export const YARDAGE_CONTEXT_VERSION = 'yardage-context-1';
+export const YARDAGE_VOLUME_PRIOR_GAMES = 4;
+const YARDAGE_VOLUME_PARAMETERS = Object.freeze({ priorAttempts: YARDAGE_VOLUME_PRIOR_GAMES, iterations: 120, tolerance: 1e-7 });
 
 const DEFINITIONS = Object.freeze({
   method: 'Attempt-weighted ridge: rate = league mean + offense effect - defense effect; common zero-centered priors.',
@@ -266,6 +269,8 @@ export function buildUnitProfiles(model, options = {}) {
   }
   for (const [id, reason] of rejected) { boxes.delete(id); diagnostics.rejectedBoxes.push({ gameId: id, reason }); }
   const observations = { pass: [], rush: [] };
+  const volumeObservations = { pass: [], rush: [] };
+  const gameYardage = new Map();
   let matchedBoxGames = 0;
   let usableBoxGames = 0;
   function recordUnit(unit, game, offenseName, defenseName, attempts, numerator) {
@@ -287,22 +292,46 @@ export function buildUnitProfiles(model, options = {}) {
       continue;
     }
     matchedBoxGames += 1;
+    const yardageSides = new Map();
     const observationsBefore = observations.pass.length + observations.rush.length;
     for (const [name, opponent] of [[key(game.homeTeam), key(game.awayTeam)], [key(game.awayTeam), key(game.homeTeam)]]) {
       const stats = box.sides.get(name).stats;
       const pass = passAttempts(stats);
       const rush = statInteger(stats, ['rushingAttempts', 'rushAttempts'], true);
-      recordUnit('pass', game, name, opponent, pass, statInteger(stats, ['netPassingYards', 'passingYards']));
-      recordUnit('rush', game, name, opponent, rush, statInteger(stats, ['rushingYards', 'rushYards']));
+      const passing = statInteger(stats, ['netPassingYards', 'passingYards']);
+      const rushing = statInteger(stats, ['rushingYards', 'rushYards']);
+      recordUnit('pass', game, name, opponent, pass, passing);
+      recordUnit('rush', game, name, opponent, rush, rushing);
+      // Counts fit a separate game-weighted volume model. Zero attempts are
+      // observations here, even though a zero denominator cannot define a rate.
+      for (const [unit, count] of [['pass', pass], ['rush', rush]]) {
+        if (count !== null) volumeObservations[unit].push({ gameId: gameId(game), offense: name, defense: opponent, attempts: 1, numerator: count });
+      }
+      const reportedTotal = statInteger(stats, ['totalYards']);
+      const combinedTotal = passing !== null && rushing !== null && Number.isSafeInteger(passing + rushing) ? passing + rushing : null;
+      const total = combinedTotal !== null && (!stats.has(key('totalYards')) || reportedTotal === combinedTotal) ? combinedTotal : null;
+      yardageSides.set(name, { passing, rushing, total, passAttempts: pass, rushAttempts: rush });
       if (pass !== null && rush !== null && pass + rush > 0) {
         const evidence = teams.get(name).passRateCoverage;
         evidence.games += 1; evidence.passAttempts += pass; evidence.rushAttempts += rush; evidence.attempts += pass + rush;
       }
     }
+    gameYardage.set(gameId(game), yardageSides);
     if (observations.pass.length + observations.rush.length > observationsBefore) usableBoxGames += 1;
   }
   const teamKeys = [...teams.keys()].sort();
   const fits = { pass: fitRates(observations.pass, teamKeys, parameters), rush: fitRates(observations.rush, teamKeys, parameters) };
+  const attemptVolumes = { definitionVersion: YARDAGE_CONTEXT_VERSION, priorGames: YARDAGE_VOLUME_PRIOR_GAMES };
+  for (const unit of ['pass', 'rush']) {
+    const fit = fitRates(volumeObservations[unit], teamKeys, YARDAGE_VOLUME_PARAMETERS);
+    const offenseGames = new Map(teamKeys.map(name => [name, 0]));
+    const defenseGames = new Map(teamKeys.map(name => [name, 0]));
+    volumeObservations[unit].forEach(row => {
+      offenseGames.set(row.offense, offenseGames.get(row.offense) + 1);
+      defenseGames.set(row.defense, defenseGames.get(row.defense) + 1);
+    });
+    attemptVolumes[unit] = { leagueMean: fit.leagueMean, offense: fit.offense, defense: fit.defense, offenseGames, defenseGames, diagnostics: fit.diagnostics };
+  }
   const profiles = new Map();
   for (const name of teamKeys) {
     const team = teams.get(name);
@@ -329,7 +358,7 @@ export function buildUnitProfiles(model, options = {}) {
     profiles.forEach(profile => { profile[unit].rankCount = ranked.length; });
   }
   return { definitionVersion: UNIT_DEFINITION_VERSION, parameters, definitions: DEFINITIONS,
-    leagueMeans: { pass: fits.pass.leagueMean, rush: fits.rush.leagueMean }, profiles,
+    leagueMeans: { pass: fits.pass.leagueMean, rush: fits.rush.leagueMean }, profiles, attemptVolumes, gameYardage,
     coverage: { ratedGames: orderedGames.length, matchedBoxGames, usableBoxGames, teams: profiles.size,
       pass: { games: new Set(observations.pass.map(row => row.gameId)).size, teamGames: observations.pass.length, attempts: fits.pass.diagnostics.attempts },
       rush: { games: new Set(observations.rush.map(row => row.gameId)).size, teamGames: observations.rush.length, attempts: fits.rush.diagnostics.attempts } },

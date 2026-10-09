@@ -46,7 +46,7 @@ export function renderTeamLogo(team, { size = 32, className = '', decorative = t
   const logo = preferredLogo(team, pixels);
   const classes = ['team-logo', ...String(className).split(/\s+/).filter(value => /^[a-z_][a-z\d_-]*$/i.test(value))].join(' ');
   const accessibility = decorative ? ' aria-hidden="true"' : ' role="img" aria-label="' + escapeHtml(name ? name + ' logo' : 'Team logo') + '"';
-  return '<span class="' + classes + '" data-team-logo data-logo-state="' + (logo ? 'loading' : 'fallback') + '" style="--team-logo-size:' + pixels + 'px"' + accessibility + '>' +
+  return '<span class="' + classes + '" data-team-logo' + (name ? ' data-team-name="' + escapeHtml(name) + '"' : '') + ' data-logo-state="' + (logo ? 'loading' : 'fallback') + '" style="--team-logo-size:' + pixels + 'px"' + accessibility + '>' +
     '<span class="team-logo-fallback">' + escapeHtml(initials(team)) + '</span>' +
     (logo ? '<img class="team-logo-image" src="' + escapeHtml(logo) + '" alt="" width="' + pixels + '" height="' + pixels + '" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '') + '</span>';
 }
@@ -58,16 +58,38 @@ function updateLogo(image) {
   wrapper.dataset.logoState = image.complete && image.naturalWidth > 0 ? 'loaded' : 'fallback';
 }
 
-/** Capture image events once, including logos added by later screen renders. */
+function prepareLogos(node) {
+  if (!node?.querySelectorAll) return;
+  const logos = [...(node.matches?.('[data-team-logo]') ? [node] : []), ...node.querySelectorAll('[data-team-logo]')];
+  for (const logo of logos) {
+    const name = logo.dataset.teamName;
+    // Ranking rows and the SVG map already provide one keyboard/click action.
+    // Keep their logo decorative instead of nesting an interactive control.
+    if (!name || logo.closest('svg') || logo.parentElement?.closest('button, a, summary, [role="button"], [role="link"]')) continue;
+    logo.classList.add('is-team-link');
+    logo.dataset.selectTeam = name;
+    logo.setAttribute('role', 'button');
+    logo.tabIndex = 0;
+    logo.removeAttribute('aria-hidden');
+    logo.setAttribute('aria-label', 'Open ' + name + ' in team explorer');
+    logo.title = 'Explore ' + name;
+  }
+  // A cached image can finish before listeners are installed or a later
+  // renderer inserts it. The same state update also keeps initials usable.
+  const images = [...(node.matches?.('img.team-logo-image') ? [node] : []), ...node.querySelectorAll('img.team-logo-image')];
+  for (const image of images) if (image.complete) updateLogo(image);
+}
+
+/** Capture image events and prepare team actions, including later renders. */
 export function installTeamLogoFallbacks(root = document) {
   if (!root?.addEventListener) return;
   if (!installedRoots.has(root)) {
     root.addEventListener('load', event => updateLogo(event.target), true);
     root.addEventListener('error', event => updateLogo(event.target), true);
+    new MutationObserver(records => {
+      for (const record of records) for (const node of record.addedNodes) prepareLogos(node);
+    }).observe(root, { childList: true, subtree: true });
     installedRoots.add(root);
   }
-  // A cached image can finish before listeners are installed.
-  root.querySelectorAll?.('img.team-logo-image').forEach(image => {
-    if (image.complete) updateLogo(image);
-  });
+  prepareLogos(root);
 }

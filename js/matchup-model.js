@@ -1,5 +1,5 @@
 import { ACTIVE_MATCHUP_MODEL, MODEL_VERSION } from './config.js';
-import { unitMatchupFeatures, UNIT_DEFINITION_VERSION } from './unit-model.js';
+import { unitMatchupFeatures, UNIT_DEFINITION_VERSION } from './unit-model.js?v=111ceae2905b';
 
 // Coefficients are frozen from the evaluated 2022–2024 fit. No runtime fitting,
 // conference bonuses, or ranking-slider weights enter this correction.
