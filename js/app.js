@@ -6,14 +6,15 @@ import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-s
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545b336420';
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
-import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=09b2c1abd40c';
+import { buildSeasonProjections, completeOpponentSeasonRecords } from './season-projections.js?v=ccbd22b2e4df';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements } from './season-projections-view.js?v=663f9e881e9e';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
 import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
+import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -22,6 +23,7 @@ const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
 const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, weights: { power: 55, efficiency: 30, resume: 15 }, mapDivisions: { fbs: true, fcs: true } };
 const seasonAnalysisCache = new Map();
+let opponentRecordRequest = 0;
 const modelFitCache = new WeakMap();
 let modelFitRequest = 0;
 const ids = function (id) { return document.getElementById(id); };
@@ -45,6 +47,8 @@ function showView({ focus = false } = {}) {
     else link.removeAttribute('aria-current');
   }
   if (activeView === 'rankings') centerMobileMap();
+  if (activeView === 'dossier') updateOpponentRecords();
+  else opponentRecordRequest += 1;
   if (focus) {
     const panel = ids(activeView);
     const heading = panel?.querySelector('h1');
@@ -151,6 +155,7 @@ function applyTeamTheme(team) {
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.content = team ? primary : NEUTRAL_THEME.primary;
   document.body.classList.toggle('has-team-theme', Boolean(team));
+  applyDeviceTheme(primary, secondary);
 }
 function teamGames(name) {
   return state.model.games.filter(function (game) {
@@ -378,6 +383,7 @@ function renderHero() {
 }
 
 function renderDossier() {
+  opponentRecordRequest += 1;
   const team = currentFocus();
   if (ids('clear-team')) ids('clear-team').hidden = !team;
   if (!team) {
@@ -437,6 +443,34 @@ function renderDossier() {
   }
   renderTrace(team, played);
   renderInsight(team, played);
+  if (activeView === 'dossier') updateOpponentRecords(analysis);
+}
+
+async function updateOpponentRecords(analysis = seasonAnalysisCache.get(teamKey(state.focusTeam))) {
+  if (!analysis || !analysis.rows.some(row => row.matchup?.opponent?.seasonOutlookPending)) return;
+  const model = state.model;
+  const focus = teamKey(state.focusTeam);
+  const request = ++opponentRecordRequest;
+  const container = ids('schedule-list');
+  const current = () => request === opponentRecordRequest && state.model === model
+    && teamKey(state.focusTeam) === focus && activeView === 'dossier' && seasonAnalysisCache.get(focus) === analysis;
+  try {
+    await completeOpponentSeasonRecords(model, analysis, {
+      isCanceled: () => !current(),
+      onRecord: (name, seasonOutlook) => {
+        if (!current()) return;
+        updateSeasonRecordElements(container, { name, seasonOutlook, seasonOutlookPending: false });
+      }
+    });
+  } catch (error) {
+    if (!current()) return;
+    for (const row of analysis.rows) {
+      const opponent = row.matchup?.opponent;
+      if (!opponent) continue;
+      opponent.seasonOutlookPending = false;
+      updateSeasonRecordElements(container, opponent);
+    }
+  }
 }
 
 function renderTrace(team, games) {
