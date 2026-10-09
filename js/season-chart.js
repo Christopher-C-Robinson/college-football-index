@@ -2,6 +2,12 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// The chart and schedule render the same rows in order. Row positions also
+// identify imported games whose provider IDs are missing or duplicated.
+export function seasonGameAnchor(index) {
+  return 'season-game-' + index;
+}
+
 function probabilityFor(row) {
   const value = row.forecast?.winProbability;
   return row.status !== 'canceled' && typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
@@ -51,13 +57,15 @@ export function renderSeasonChart(analysis) {
       '<text class="season-chart-value" x="' + x + '" y="' + (y(probability) - 8) + '" text-anchor="middle">' + Math.round(probability * 100) + '%</text>';
     const outcome = result ? '<g class="season-chart-outcome ' + ({ W: 'is-win', L: 'is-loss', T: 'is-tie' })[result] + '"><circle cx="' + x + '" cy="265" r="10"/><text x="' + x + '" y="269" text-anchor="middle">' + result + '</text></g>' :
       '<text class="season-chart-status" x="' + x + '" y="269" text-anchor="middle">' + (canceled ? 'Canceled' : probability === null ? 'No forecast' : row.status === 'unplayed' ? 'Not final' : 'Upcoming') + '</text>';
-    return '<g class="season-chart-game"><title>' + escapeHtml(description(row)) + '</title>' + bar +
+    const target = seasonGameAnchor(index);
+    return '<a class="season-chart-game" href="#' + target + '" data-season-game-target="' + target + '" aria-label="' + escapeHtml('View game: ' + description(row)) + '"><title>' + escapeHtml(description(row)) + '</title>' +
+      '<rect class="season-chart-hit" x="' + (left + slot * index + 2) + '" y="12" width="' + (slot - 4) + '" height="268" rx="5"/>' + bar +
       '<text class="season-chart-label" x="' + x + '" y="231" text-anchor="middle">' + escapeHtml(opponentLabel(row)) + '</text>' +
-      '<text class="season-chart-week" x="' + x + '" y="246" text-anchor="middle">WK ' + escapeHtml(row.week ?? '—') + '</text>' + outcome + '</g>';
+      '<text class="season-chart-week" x="' + x + '" y="246" text-anchor="middle">WK ' + escapeHtml(row.week ?? '—') + '</text>' + outcome + '</a>';
   }).join('');
   return '<figure class="season-chart" style="--season-chart-width:' + width + 'px"><figcaption class="season-chart-heading"><h4>Season at a glance</h4><p>' + escapeHtml(analysis.teamName) + ' win chance for every game, from the current snapshot.</p></figcaption>' +
-    '<div class="season-chart-scroll" style="--season-chart-width:' + width + 'px" tabindex="0" aria-label="Season win-chance chart; scroll horizontally on smaller screens"><svg class="season-chart-svg" viewBox="0 0 ' + width + ' 288" role="img" aria-labelledby="season-chart-title season-chart-description">' +
+    '<div class="season-chart-scroll" style="--season-chart-width:' + width + 'px" tabindex="0" aria-label="Season win-chance chart; scroll horizontally on smaller screens"><svg class="season-chart-svg" viewBox="0 0 ' + width + ' 288" role="group" aria-labelledby="season-chart-title season-chart-description">' +
     '<title id="season-chart-title">' + escapeHtml(analysis.teamName) + ' current season win chances and actual results</title>' +
     '<desc id="season-chart-description">' + escapeHtml(rows.map(description).join(' ')) + '</desc>' + grid + games + '</svg></div>' +
-    '<p class="season-chart-note">The dashed line marks a 50% chance. W/L/T badges show actual results; past-game bars use today\'s model, including those results. Gaps mean no forecast, not a 0% chance.</p></figure>';
+    '<p class="season-chart-note">Select a bar to jump to that game. The dashed line marks a 50% chance. W/L/T badges show actual results; past-game bars use today\'s model, including those results. Gaps mean no forecast, not a 0% chance.</p></figure>';
 }

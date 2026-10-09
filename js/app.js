@@ -7,7 +7,7 @@ import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=f5b07
 import { renderRankingsMap } from './rankings-map.js?v=243a12b7d1c9';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
 import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=1ebe6abc5e68';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=14b9f8da5ddb';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
@@ -886,6 +886,17 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  const seasonGameLink = event.target.closest('[data-season-game-target]');
+  if (seasonGameLink) {
+    // Keep #dossier: the app router reserves fragments for top-level views.
+    event.preventDefault();
+    const game = ids(seasonGameLink.dataset.seasonGameTarget);
+    if (game) {
+      game.focus({ preventScroll: true });
+      game.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    }
+    return;
+  }
   const navigation = event.target.closest('a[href^="#"]');
   if (navigation && ['#rankings', '#top', '#dossier', '#matchups', '#compare', '#simulator', '#model', '#method', '#data'].includes(navigation.getAttribute('href'))) {
     event.preventDefault();
