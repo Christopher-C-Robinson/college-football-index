@@ -54,7 +54,8 @@
   .rank-index { font-size: 16px !important; }
 
   .ranking-map-scroll { max-width: 100%; overflow: auto; overscroll-behavior-x: contain; }
-  .rankings-map-chart { width: 900px; min-width: 900px; min-height: 350px; max-height: none; }
+  .ranking-map-stage { width: 900px; min-width: 900px; }
+  .ranking-map-team { width: 44px; height: 44px; }
   .ranking-map-swipe-hint { display: block; margin: 12px 0 4px; color: var(--ink-soft); font-size: 12px; }
   .ranking-map-key .ranking-map-toggle { min-height: 44px; padding: 8px 12px; }
   .ranking-map-selected { align-items: stretch; gap: 12px; }
