@@ -1065,8 +1065,9 @@ html { scroll-padding-top: 104px; }
 }
 
 /* HTML marker buttons stay independent of mobile SVG image/group rendering. */
-.ranking-map-team { position: absolute; z-index: 1; display: grid; place-items: center; width: 36px; height: 36px; min-width: 0; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--ink); transform: translate(-50%, -50%); cursor: pointer; }
-.ranking-map-team > .team-logo { border: 2px solid #477c99; border-radius: 4px; background: #fff; pointer-events: none; }
+.ranking-map-team { position: absolute; z-index: 1; display: grid; place-items: center; width: 36px; height: 36px; min-width: 0; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--ink); transform: translate(-50%, -50%); cursor: pointer; pointer-events: none; }
+/* Only the visible logo receives taps; transparent focus boxes must not cover neighbors. */
+.ranking-map-team > .team-logo { border: 2px solid #477c99; border-radius: 4px; background: #fff; pointer-events: auto; }
 .ranking-map-team .team-logo-fallback { padding: 1px; background: #fff; color: #172333; font-size: 7px; }
 .ranking-map-team.is-fcs > .team-logo { border-color: #b47958; }
 .ranking-map-team.is-selected { z-index: 2; }
@@ -1109,6 +1110,12 @@ html { scroll-padding-top: 104px; }
 .forecast-team-identity .team-logo img { padding: 2px; }
 .forecast-team-copy { min-width: 0; }
 .forecast-team-copy h4 { margin: 0; color: var(--ink); font: 700 17px/1.3 var(--sans); letter-spacing: -.25px; overflow-wrap: anywhere; }
+.forecast-team-records { display: flex; flex-wrap: wrap; gap: 3px 12px; margin: 6px 0 0; font: 11px/1.4 var(--sans); }
+.forecast-team-records > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 5px; }
+.forecast-team-records dt { color: var(--ink-soft); }
+.forecast-team-records dd { margin: 0; color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
+.forecast-matchup-team.is-right .forecast-team-records { justify-content: flex-end; }
+.forecast-matchup-team.is-right .forecast-team-records > div { justify-content: flex-end; }
 .forecast-team-copy .forecast-ranks { gap: 4px; margin-top: 6px; }
 .forecast-matchup-team.is-right .forecast-ranks { justify-content: flex-end; }
 .forecast-matchup-team .forecast-rank { min-height: 0; padding: 3px 5px; border: 0; background: #edf2f7; color: #536b80; font: 11px/1.35 var(--sans); }
@@ -1217,6 +1224,7 @@ html { scroll-padding-top: 104px; }
   .forecast-team-identity { flex-direction: column; align-items: flex-start; gap: 7px; }
   .forecast-matchup-team.is-right .forecast-team-identity { flex-direction: column; align-items: flex-end; }
   .forecast-team-copy h4 { font-size: 15px; }
+  .forecast-team-records { flex-direction: column; gap: 3px; font-size: 10px; }
   .forecast-team-copy .forecast-ranks { gap: 3px; }
   .forecast-team-identity .team-logo { --team-logo-size: 42px !important; width: 42px; height: 42px; }
   .forecast-matchup-score { font-size: 30px; gap: 8px; }

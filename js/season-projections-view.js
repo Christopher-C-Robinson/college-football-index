@@ -12,6 +12,34 @@ const number = (value, digits = 1) => finite(value) ? value.toFixed(digits) : '�
 const signed = value => finite(value) ? (value > 0 ? '+' : '') + value.toFixed(1) : '—';
 const plural = (count, singular, multiple = singular + 's') => count + ' ' + (count === 1 ? singular : multiple);
 
+function recordText(record, projected = false) {
+  if (!record) return '—';
+  let wins = record.currentWins, losses = record.currentLosses;
+  if (!Number.isInteger(wins) || !Number.isInteger(losses)) return '—';
+  if (projected) {
+    if (!record.fullRemainingCoverage || !finite(record.projectedWins) || !finite(record.projectedLosses)) return '—';
+    const remaining = Number.isInteger(record.totalRemainingGames) ? record.totalRemainingGames
+      : Math.max(0, Math.round(record.projectedWins + record.projectedLosses) - wins - losses);
+    // Round the remaining wins once; derive losses so the record preserves
+    // completed results and the number of listed games.
+    const addedWins = Math.max(0, Math.min(remaining, Math.round(record.projectedWins - wins)));
+    wins += addedWins;
+    losses += remaining - addedWins;
+  }
+  return wins + '–' + losses + (record.currentTies ? '–' + Math.round(record.currentTies) : '');
+}
+
+function teamRecords(team) {
+  const outlook = team.seasonOutlook;
+  const current = outlook ? recordText(outlook) : team.record || '—';
+  const projected = recordText(outlook, true);
+  const detail = !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
+    ? 'Rounded final record from the current snapshot for the listed schedule; completed results are preserved.'
+    : plural(outlook.remainingUnmodeledGames, 'remaining game') + ' without a forecast; final record unavailable.';
+  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records"><div><dt>Current</dt><dd>' + escapeHtml(current) + '</dd></div>' +
+    '<div title="' + escapeHtml(detail) + '"><dt>Projected</dt><dd>' + escapeHtml(projected) + '</dd></div></dl>';
+}
+
 function dateText(value, timestamp = false) {
   const date = new Date(value);
   if (!value || !Number.isFinite(date.getTime())) return 'Date not recorded';
@@ -209,7 +237,8 @@ function matchupContext(row, teamName, forecast) {
   const power = (entry, value, priorSeason) => signed(finite(value) ? value : entry.power) +
     (priorSeason ? '<small>' + escapeHtml(priorSeason) + ' data</small>' : '<small>current season</small>');
   const rows = [
-    ['Record · current season', escapeHtml(team.record || '—'), escapeHtml(opponent.record || '—')],
+    ['Record · current season', escapeHtml(team.seasonOutlook ? recordText(team.seasonOutlook) : team.record || '—'), escapeHtml(opponent.seasonOutlook ? recordText(opponent.seasonOutlook) : opponent.record || '—')],
+    ['Projected final record', recordText(team.seasonOutlook, true), recordText(opponent.seasonOutlook, true)],
     ['FBS/FCS results · current', number(finite(forecast?.teamCurrentGames) ? forecast.teamCurrentGames : team.ratedGames, 0), number(finite(forecast?.opponentCurrentGames) ? forecast.opponentCurrentGames : opponent.ratedGames, 0)],
     ['Forecast strength · points', power(team, forecast?.teamPower, forecast?.teamPriorSeason), power(opponent, forecast?.opponentPower, forecast?.opponentPriorSeason)],
     ['Offense · yards/play', yardsPerPlay(team.offenseYpp, team.offenseYppCoverage), yardsPerPlay(opponent.offenseYpp, opponent.offenseYppCoverage)],
@@ -218,7 +247,7 @@ function matchupContext(row, teamName, forecast) {
   return '<section class="forecast-matchup-context"><h5 class="forecast-section-title">Team context · current season</h5>' +
     '<table class="forecast-context-table"><caption class="sr-only">Current matchup data for ' + escapeHtml(teamName + ' and ' + row.opponentName) + '</caption><thead><tr><th scope="col">Metric</th><th scope="col">' + escapeHtml(teamName) + '</th><th scope="col">' + escapeHtml(row.opponentName) + '</th></tr></thead><tbody>' +
     rows.map(([label, first, second]) => '<tr><th scope="row">' + label + '</th><td>' + first + '</td><td>' + second + '</td></tr>').join('') + '</tbody></table>' +
-    '<p class="forecast-table-note">Forecast strength includes the conference adjustment when available; its data source is labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
+    '<p class="forecast-table-note">Projected records round expected remaining wins to whole games and preserve completed results; they require forecasts for every listed remaining game. Forecast strength includes the conference adjustment when available; its data source is labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
 }
 
 function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) {
@@ -231,6 +260,7 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
   const teamBlock = (team, left, selectedTeam) => '<div class="forecast-matchup-team ' + (left ? 'is-left' : 'is-right') + '">' +
     (!neutral ? '<span class="forecast-team-location">' + (left ? 'Away' : 'Home') + '</span>' : '') +
     '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 48 }) + '<div class="forecast-team-copy"><h4>' + escapeHtml(team.name) + '</h4>' +
+    teamRecords(team) +
     '<div class="forecast-ranks" aria-label="' + escapeHtml(team.name) + ' current rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
   const scores = actual || forecast;
   const leftScore = scores ? selectedOnLeft ? scores.for : scores.against : null;
@@ -283,17 +313,16 @@ export function renderProjectionSummary(analysis) {
   const missing = summary.remainingUnmodeledGames || 0;
   const expectedWinsAvailable = finite(summary.expectedAdditionalWins) && (projectedGames > 0 || totalRemaining === 0);
   const finalRecordAvailable = summary.fullRemainingCoverage && finite(summary.projectedWins) && finite(summary.projectedLosses);
-  const projectedRecord = finalRecordAvailable ? number(summary.projectedWins) + '–' + number(summary.projectedLosses) +
-    (summary.currentTies ? '–' + number(summary.currentTies, 0) : '') : '—';
+  const projectedRecord = recordText(summary, true);
   const graded = summary.gradedGames || 0;
   const coverage = missing ? plural(missing, 'remaining game') + ' without a forecast.' : totalRemaining ? 'All listed remaining games modeled.' : 'No listed games remain.';
-  const currentRecord = number(summary.currentWins, 0) + '–' + number(summary.currentLosses, 0) + (summary.currentTies ? '–' + number(summary.currentTies, 0) : '');
+  const currentRecord = recordText(summary);
   return '<div class="season-projection-team-rank"><span>CURRENT TEAM RANK</span><div class="forecast-ranks" aria-label="Selected team current rankings">' +
     rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification || analysis.teamClassification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) + '</div></div>' +
     '<div class="season-projection-metrics"><div class="season-projection-metric"><span>EXPECTED REMAINING WINS</span><strong>' +
     (expectedWinsAvailable ? number(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>' + escapeHtml(coverage) + '</p></div>' +
-    '<div class="season-projection-metric"><span>EXPECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
-    (finalRecordAvailable ? 'For the schedule currently listed.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
+    '<div class="season-projection-metric"><span>PROJECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
+    (finalRecordAvailable ? 'Rounded to whole games for the listed schedule.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
     renderSeasonChart(analysis) +
     '<div class="season-projection-accuracy"><div class="season-projection-accuracy-heading"><span>CURRENT MODEL VS RESULTS</span><span>' + plural(graded, 'completed comparison') + '</span></div>' +
     '<div class="season-projection-error-metrics"><div><span>Margin error</span><strong>' + (graded ? number(summary.marginMae) : '—') + '<small> pts MAE</small></strong></div>' +
@@ -306,6 +335,6 @@ export function renderProjectionSummary(analysis) {
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results. Yardage estimates are experimental.</p>' +
+  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their current record and rounded projected final record for the listed schedule. These records use today’s snapshot, even on past games. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results. Yardage estimates are experimental.</p>' +
     '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }

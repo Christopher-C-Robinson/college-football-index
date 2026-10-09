@@ -1,0 +1,150 @@
+/* The device chooses appearance; team colors continue to identify the team. */
+:root { color-scheme: light dark; }
+.button-outline { color: var(--ink); border-color: var(--line); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cream: #0f1822;
+    --paper: #17232f;
+    --line: #354758;
+    --ink: #edf2f7;
+    --ink-soft: #b3c1cf;
+    --blue-mid: #8ab8d2;
+    --blue-light: #203949;
+    --accent: #edb088;
+    --rust: #e6a18b;
+    --surface-muted: #1d2d3b;
+    --surface-hover: #25394b;
+  }
+
+  /* Most components inherit the palette. These replace their light-only fills. */
+  .site-header { border-bottom-color: var(--line); box-shadow: 0 2px 14px #0003; }
+  .panel, .forecast-game { box-shadow: 0 2px 10px #0002; }
+  .rank-table thead,
+  .season-projection-metric,
+  .simulation-probability,
+  .simulation-score,
+  .simulation-range,
+  .data-box,
+  .ranking-map-selected,
+  .forecast-game.is-canceled,
+  .forecast-game-heading,
+  .forecast-analytics-panel,
+  .forecast-yardage,
+  .forecast-details-grid .unit-edge-card { background: var(--surface-muted); }
+  .rank-table tbody tr:hover { background: var(--blue-light); }
+  .forecast-details-grid { background: var(--cream); }
+  .forecast-supporting-details > summary { background: var(--paper); }
+  .forecast-supporting-details > summary:hover { background: var(--surface-hover); }
+  .forecast-analytics-panel, .forecast-yardage,
+  .forecast-yardage-table th, .forecast-yardage-table td,
+  .forecast-margin-miss, .data-box-foot,
+  .mini-insight, .chart-empty, .schedule-row { border-color: var(--line); }
+  .is-winner-actual .forecast-game-heading {
+    background: color-mix(in srgb, rgb(var(--game-winner-rgb)) 16%, var(--paper));
+  }
+  .is-winner-predicted .forecast-game-heading {
+    background: color-mix(in srgb, rgb(var(--game-winner-rgb)) 8%, var(--paper));
+  }
+
+  /* Raw primary colors are preserved in badges, team bars and logos. Text uses
+     the same hue adjusted for contrast against the current surface. */
+  .main-nav a[aria-current="page"] { color: var(--blue-mid); border-bottom-color: var(--blue-mid); background: var(--blue-light); }
+  .text-link, .text-button, .text-button:hover, .footer-top,
+  .model-stamp strong, .rank-team.is-focus,
+  .weight-control output, .weight-step, .weight-step:hover,
+  .weight-note-mark, .weight-panel .button-full,
+  .simulation-probability strong,
+  .simulation-breakdown dl > div:last-child dd,
+  .compare-value.is-strong, .data-recipe > summary,
+  .data-steps b, .data-steps a, .data-box-icon,
+  .snapshot-icon, .mini-insight strong,
+  .button-quiet:hover, .button-outline:hover { color: var(--blue-mid); }
+  .rank-index { color: var(--blue-mid) !important; }
+  .model-stamp:hover { border-color: var(--blue-mid); }
+  .button-primary { border-color: var(--blue-mid); }
+  .brand-mark { border: 1px solid var(--blue-mid); }
+  .button-primary:hover { background: var(--blue); color: var(--team-ink); box-shadow: 0 0 0 2px var(--blue-mid); }
+  .button-outline { color: var(--ink); border-color: var(--line); }
+  .weight-step, .weight-panel .button-full { background: var(--surface-muted); border-color: var(--line); }
+  .weight-step:hover { background: var(--blue-light); border-color: var(--blue-mid); }
+  .clear-team-button { border-color: var(--line); }
+  .weight-note-mark { border-color: var(--blue-mid); }
+  .weight-control input { background: var(--line); }
+  .weight-control input::-webkit-slider-runnable-track { background: var(--line); }
+  .weight-control input::-moz-range-track { background: var(--line); }
+  .weight-control input::-webkit-slider-thumb { background: var(--blue-mid); box-shadow: 0 0 0 1px var(--blue-mid); }
+  .weight-control input::-moz-range-thumb { background: var(--blue-mid); box-shadow: 0 0 0 1px var(--blue-mid); }
+  @media (max-width: 680px) { .weight-control input[type="range"] { background: transparent; } }
+
+  .select-control, .searchable-select-input, .filter-control,
+  .searchable-select-popup, .searchable-select-popup.is-dark { border-color: #607589; }
+  .select-control option, .filter-control option { color: var(--ink); background: var(--paper); }
+  .searchable-select-popup, .searchable-select-popup.is-dark { box-shadow: 0 10px 30px #0006; }
+  .searchable-select.is-dark .searchable-select-input:focus-visible { outline-color: var(--blue-mid); border-color: var(--blue-mid); }
+  .searchable-select-option.is-active,
+  .searchable-select-popup.is-dark .searchable-select-option.is-active { background: var(--blue-light); color: var(--ink); }
+  .unit-matchup-container { --unit-fill: var(--surface-muted); --unit-highlight: var(--blue-mid); }
+  .compare-value .comparison-bar, .forecast-score-track,
+  .forecast-probability-bar, .forecast-yardage-bar { background: #40546a; }
+  .forecast-score-fill, .forecast-probability-bar > span { box-shadow: inset 0 0 0 1px #dde8f78c; }
+
+  /* Retain light logo plates so dark and transparent provider logos stay clear. */
+  .team-logo { background: #fff; border-color: #708296; color-scheme: light; }
+  .team-logo-fallback { color: #172333; background: #e0e9ee; }
+  .forecast-matchup-team .forecast-rank { background: var(--surface-hover); color: var(--ink-soft); }
+  .forecast-matchup-team .forecast-rank.is-subdivision { background: transparent; }
+
+  .dataset-provenance-detail, .model-fit-kicker, .model-fit-metric p,
+  .model-fit-report-meta p, .model-fit-detail-note,
+  .model-fit-field-note, .model-fit-progress-heading span,
+  .model-fit-error span, .challenger-metrics dd span,
+  .challenger-metrics p, .challenger-note, .challenger-reasons,
+  .team-conference, .season-projection-team-rank > span,
+  .season-projection-accuracy-heading,
+  .season-projection-error-metrics span,
+  .season-projection-error-metrics > div > small,
+  .season-projection-error-metrics strong small,
+  .season-projection-accuracy > p, .season-projection-provenance,
+  .schedule-forecast-note, .forecast-rank.is-unranked,
+  .unit-matchup-compact > summary > span,
+  .rank-number, .compare-selects > span,
+  .forecast-team-location, .forecast-matchup-status,
+  .forecast-matchup-probability, .forecast-neutral-label,
+  .forecast-section-title, .forecast-analytics-note,
+  .forecast-score-key, .forecast-score-delta, .forecast-score-bar-label, .forecast-score-location,
+  .forecast-score-missing, .forecast-range-heading, .forecast-range-legend,
+  .forecast-unavailable, .forecast-factor-note, .forecast-table-note,
+  .forecast-context-table small, .forecast-source,
+  .forecast-yardage-heading > span, .forecast-yardage-caption,
+  .forecast-yardage-table thead th, .forecast-yardage-table tbody th > small,
+  .forecast-yardage-actual, .forecast-yardage-legend, .forecast-yardage-unavailable,
+  .chart-legend, .chart-caption, .chart-empty, .mini-insight, .ranking-map-toggle > small,
+  .schedule-date, .schedule-opponent small,
+  .forecast-matchup-team .forecast-rank.is-subdivision { color: var(--ink-soft); }
+  .forecast-matchup-score i, .simulation-score i { color: var(--ink-soft); }
+
+  .ranking-map-field { fill: var(--surface-muted); }
+  .ranking-map-grid, .chart-axis { stroke: var(--line); }
+  .ranking-map-axis, .ranking-map-zero, .chart-zero { stroke: #718aa3; }
+  .ranking-map-label.is-team { stroke: var(--surface-muted); }
+  .ranking-map-quadrant, .chart-label, .forecast-range-label { fill: var(--ink-soft); }
+  .ranking-map-tooltip.is-html { background: var(--surface-hover); color: var(--ink); }
+  .ranking-map-tooltip rect { fill: var(--surface-hover); }
+  .ranking-map-tooltip text { fill: var(--ink); }
+  .ranking-map-key .ranking-map-toggle { background: var(--paper); border-color: var(--line); }
+  .ranking-map-toggle:has(input:checked) { border-color: #7da8c6; background: #203949; }
+  .ranking-map-toggle.is-fcs:has(input:checked) { border-color: #d2a181; background: #3c2e29; }
+  .forecast-range-axis { stroke: #536b80; }
+  .forecast-range-zero { stroke: #9cb1c6; }
+  .forecast-range-model, .forecast-range-actual { stroke: var(--paper); }
+  .forecast-range-band { opacity: .4; }
+  .forecast-range-actual { fill: #df9a74; }
+  .forecast-range-legend i.is-actual { background: #df9a74; }
+
+  .model-ready-badge.is-ready { border-color: #41735f; background: #203c31; color: #9ce0c3; }
+  .model-ready-badge.is-limited { border-color: #81653f; background: #3b3022; color: #f0cd98; }
+  .forecast-prior-note { border-color: #81653f; background: #3b3022; color: #f0cd98; }
+  .forecast-cold-start { color: #f0cd98; }
+  .skip-link { background: var(--surface-hover); color: var(--ink); }
+}

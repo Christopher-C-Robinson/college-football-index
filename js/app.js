@@ -6,14 +6,15 @@ import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-s
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545b336420';
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
-import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=09b2c1abd40c';
+import { buildSeasonProjections } from './season-projections.js?v=81c1b8a7cc1c';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=90a3d31aee53';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
 import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
+import { applyDeviceTheme } from './device-theme.js?v=9b445012f2e3';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -151,6 +152,7 @@ function applyTeamTheme(team) {
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.content = team ? primary : NEUTRAL_THEME.primary;
   document.body.classList.toggle('has-team-theme', Boolean(team));
+  applyDeviceTheme(primary, secondary);
 }
 function teamGames(name) {
   return state.model.games.filter(function (game) {
