@@ -64,41 +64,89 @@ function currentForecast(model, game, teamName, opponentName, status, cache) {
     : { forecast: null, unavailableReason: result.unavailableReason };
 }
 
-function seasonRecord(model, team, cache) {
-  const teamKey = key(team.name);
-  if (cache.records.has(teamKey)) return cache.records.get(teamKey);
-  let currentWins = 0, currentLosses = 0, currentTies = 0;
-  let totalRemainingGames = 0, remainingProjectedGames = 0, expectedAdditionalWins = 0;
-  for (const game of team.games) {
-    const status = gameStatus(model, game, cache);
-    if (status === 'canceled') continue;
-    const home = key(game.homeTeam) === teamKey;
-    if (status === 'final') {
-      const margin = home ? game.homePoints - game.awayPoints : game.awayPoints - game.homePoints;
-      if (margin > 0) currentWins += 1;
-      else if (margin < 0) currentLosses += 1;
-      else currentTies += 1;
-      continue;
-    }
-    totalRemainingGames += 1;
-    const opponentName = home ? game.awayTeam : game.homeTeam;
-    const { forecast } = currentForecast(model, game, team.name, opponentName, status, cache);
-    if (forecast) {
-      remainingProjectedGames += 1;
-      expectedAdditionalWins += forecast.winProbability;
-    }
+function emptySeasonRecord() {
+  return { currentWins: 0, currentLosses: 0, currentTies: 0,
+    totalRemainingGames: 0, remainingProjectedGames: 0, expectedAdditionalWins: 0 };
+}
+
+function includeSeasonGame(record, model, team, game, cache) {
+  const status = gameStatus(model, game, cache);
+  if (status === 'canceled') return;
+  const home = key(game.homeTeam) === key(team.name);
+  if (status === 'final') {
+    const margin = home ? game.homePoints - game.awayPoints : game.awayPoints - game.homePoints;
+    if (margin > 0) record.currentWins += 1;
+    else if (margin < 0) record.currentLosses += 1;
+    else record.currentTies += 1;
+    return;
   }
+  record.totalRemainingGames += 1;
+  const opponentName = home ? game.awayTeam : game.homeTeam;
+  const { forecast } = currentForecast(model, game, team.name, opponentName, status, cache);
+  if (forecast) {
+    record.remainingProjectedGames += 1;
+    record.expectedAdditionalWins += forecast.winProbability;
+  }
+}
+
+function finishSeasonRecord(record) {
+  const { currentWins, currentLosses, totalRemainingGames, remainingProjectedGames, expectedAdditionalWins } = record;
   const fullRemainingCoverage = remainingProjectedGames === totalRemainingGames;
-  const record = {
-    currentWins, currentLosses, currentTies, totalRemainingGames, remainingProjectedGames,
-    remainingUnmodeledGames: totalRemainingGames - remainingProjectedGames,
+  return {
+    ...record, remainingUnmodeledGames: totalRemainingGames - remainingProjectedGames,
     expectedAdditionalWins: remainingProjectedGames || !totalRemainingGames ? expectedAdditionalWins : null,
     projectedWins: fullRemainingCoverage ? currentWins + expectedAdditionalWins : null,
     projectedLosses: fullRemainingCoverage ? currentLosses + totalRemainingGames - expectedAdditionalWins : null,
     fullRemainingCoverage
   };
-  cache.records.set(teamKey, record);
-  return record;
+}
+
+function seasonRecord(model, team, cache) {
+  const teamKey = key(team.name);
+  if (cache.records.has(teamKey)) return cache.records.get(teamKey);
+  const record = emptySeasonRecord();
+  for (const game of team.games) includeSeasonGame(record, model, team, game, cache);
+  const complete = finishSeasonRecord(record);
+  cache.records.set(teamKey, complete);
+  return complete;
+}
+
+// Opponent seasons can require many new simulations. Yield between games so
+// their records fill in without blocking the selected schedule or phone input.
+export async function completeOpponentSeasonRecords(model, analysis, {
+  isCanceled = () => false, onRecord = () => {},
+  yieldTask = () => new Promise(resolve => setTimeout(resolve, 16))
+} = {}) {
+  const cache = projectionCache(model);
+  const opponents = new Map();
+  for (const row of analysis.rows) {
+    const team = model.teams.get(key(row.opponentName));
+    if (divisionOne(team?.classification)) opponents.set(key(team.name), team);
+  }
+  for (const [teamKey, team] of opponents) {
+    if (isCanceled()) return false;
+    let record = cache.records.get(teamKey);
+    if (!record) {
+      const draft = emptySeasonRecord();
+      for (const game of team.games) {
+        await yieldTask();
+        if (isCanceled()) return false;
+        includeSeasonGame(draft, model, team, game, cache);
+      }
+      if (isCanceled()) return false;
+      record = finishSeasonRecord(draft);
+      cache.records.set(teamKey, record);
+    }
+    if (isCanceled()) return false;
+    for (const row of analysis.rows) {
+      if (key(row.opponentName) !== teamKey) continue;
+      row.matchup.opponent.seasonOutlook = record;
+      row.matchup.opponent.seasonOutlookPending = false;
+    }
+    if (isCanceled()) return false;
+    onRecord(team.name, record);
+  }
+  return true;
 }
 
 function orientForecast(prediction, home, generatedAt) {
@@ -135,7 +183,7 @@ function orientForecast(prediction, home, generatedAt) {
   };
 }
 
-function matchupTeam(team, name, effectivePower, seasonOutlook) {
+function matchupTeam(team, name, effectivePower, seasonOutlook, pending = false) {
   const modeled = divisionOne(team?.classification);
   const power = finite(effectivePower) ? effectivePower : team?.power;
   return {
@@ -146,6 +194,7 @@ function matchupTeam(team, name, effectivePower, seasonOutlook) {
     logos: Array.isArray(team?.logos) ? team.logos.slice() : [],
     record: modeled ? team.wins + '–' + team.losses + (team.ties ? '–' + team.ties : '') : null,
     seasonOutlook: modeled ? seasonOutlook || null : null,
+    seasonOutlookPending: modeled && pending,
     ratedGames: modeled ? team.coverage?.results ?? null : null,
     power: modeled && finite(power) ? power : null,
     offenseYpp: modeled ? team.metrics?.offenseYpp ?? null : null,
@@ -161,6 +210,7 @@ export function buildSeasonProjections(model, teamName) {
   const season = model.meta.season;
   const snapshotAt = model.meta.generatedAt || null;
   const cache = projectionCache(model);
+  const selectedRecord = seasonRecord(model, team, cache);
   // Full-field ranks use the same ordering and current weights as the board.
   // Board filters select rows; they do not change an opponent's actual rank.
   const rankedTeams = model.broadCoverage ? rankBoardTeams(model.allTeams
@@ -205,8 +255,9 @@ export function buildSeasonProjections(model, teamName) {
         site: game.neutralSite ? 'Neutral site' : home ? 'Home' : 'Away', venue: game.venue || '',
         status, actual, forecast, error, yardage, unavailableReason, timeTBD: game.startTimeTBD === true,
         matchup: {
-          team: matchupTeam(team, team.name, forecast?.teamPower, seasonRecord(model, team, cache)),
-          opponent: matchupTeam(opponent, opponentName, forecast?.opponentPower, divisionOne(opponent?.classification) ? seasonRecord(model, opponent, cache) : null)
+          team: matchupTeam(team, team.name, forecast?.teamPower, selectedRecord),
+          opponent: matchupTeam(opponent, opponentName, forecast?.opponentPower,
+            cache.records.get(key(opponentName)), divisionOne(opponent?.classification) && !cache.records.has(key(opponentName)))
         },
         opponentRank: overallRanks.get(key(opponentName)) || null,
         opponentSubdivisionRank: subdivisionRanks.get(key(opponentName)) || null,
@@ -226,7 +277,7 @@ export function buildSeasonProjections(model, teamName) {
     rows,
     unitProfiles: model.unitProfiles || null,
     summary: {
-      ...seasonRecord(model, team, cache),
+      ...selectedRecord,
       gradedGames: compared.length,
       marginMae: compared.length ? compared.reduce((sum, row) => sum + Math.abs(row.error.margin), 0) / compared.length : null,
       scoreMae: compared.length ? compared.reduce((sum, row) => sum + Math.abs(row.error.teamScore) + Math.abs(row.error.opponentScore), 0) / (2 * compared.length) : null,

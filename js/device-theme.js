@@ -46,6 +46,16 @@ function refreshPalette() {
   root.style.setProperty('--blue-mid', readableColor(teamPrimary, textSurface, contrastTarget));
   root.style.setProperty('--blue-light', blend(teamPrimary, dark ? surface : '#f3f2ee', dark ? 0.82 : 0.9));
   root.style.setProperty('--accent', readableColor(teamSecondary, textSurface, contrastTarget));
+  // Legacy hero/analysis panels remain dark even when the device is in light
+  // mode, so their text cannot share the page's light-surface accent palette.
+  const permanentDarkSurface = '#1d3041';
+  root.style.setProperty('--primary-on-dark', readableColor(teamPrimary, permanentDarkSurface, '#ffffff'));
+  root.style.setProperty('--accent-on-dark', readableColor(teamSecondary, permanentDarkSurface, '#ffffff'));
+  root.style.setProperty('--tint-on-dark', blend(teamPrimary, permanentDarkSurface, 0.82));
+  // A bright primary can be darkened for link text, but its button/brand fills
+  // retain the original color and need their own readable foreground.
+  root.style.setProperty('--team-ink', contrast(teamPrimary, '#ffffff') >= 4.5 ? '#ffffff'
+    : contrast(teamPrimary, '#172333') >= 4.5 ? '#172333' : '#000000');
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.content = surface;
 }

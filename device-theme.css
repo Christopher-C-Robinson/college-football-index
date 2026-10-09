@@ -1,6 +1,104 @@
 /* The device chooses appearance; team colors continue to identify the team. */
-:root { color-scheme: light dark; }
+:root {
+  color-scheme: light dark;
+  --surface-dark: #172333;
+  --surface-dark-raised: #1d3041;
+  --ink-on-dark: #edf2f7;
+  --ink-soft-on-dark: #b3c1cf;
+  --line-on-dark: #50657a;
+  --primary-on-dark: #8ab8d2;
+  --accent-on-dark: #edb088;
+  --tint-on-dark: #203949;
+}
 .button-outline { color: var(--ink); border-color: var(--line); }
+
+/* These surfaces stay dark in either device appearance. Their palette is
+   independent of the surrounding page's foreground and accent colors. */
+.hero-file, .analysis-section { background: var(--surface-dark); }
+.panel-dark { background: var(--surface-dark-raised); }
+.hero-file, .analysis-section, .panel-dark {
+  color: var(--ink-on-dark);
+  color-scheme: dark;
+  --ink: var(--ink-on-dark);
+  --ink-soft: var(--ink-soft-on-dark);
+  --cream: var(--surface-dark);
+  --paper: var(--surface-dark-raised);
+  --surface-muted: var(--surface-dark-raised);
+  --surface-hover: #25394b;
+  --line: var(--line-on-dark);
+  --blue-mid: var(--primary-on-dark);
+  --blue-light: var(--tint-on-dark);
+  --accent: var(--accent-on-dark);
+  --rust: #e6a18b;
+}
+
+/* Text must use the contrast-adjusted hue; the primary token is reserved for
+   actual team identity fills, with separately calculated text on those fills. */
+.text-link, .text-button, .text-button:hover, .footer-top,
+.model-stamp strong, .rank-team.is-focus,
+.weight-control output, .weight-step, .weight-step:hover,
+.weight-note-mark, .weight-panel .button-full,
+.simulation-probability strong,
+.simulation-breakdown dl > div:last-child dd,
+.compare-value.is-strong, .data-recipe > summary,
+.data-steps b, .data-steps a, .data-box-icon,
+.snapshot-icon, .snapshot-value, .opponent-initial, .schedule-result,
+.mini-insight strong, .button-quiet:hover, .button-outline:hover { color: var(--blue-mid); }
+.rank-index { color: var(--blue-mid) !important; }
+.main-nav a[aria-current="page"] { color: var(--blue-mid); border-bottom-color: var(--blue-mid); }
+.model-stamp:hover, .weight-step:hover, .weight-note-mark { border-color: var(--blue-mid); }
+.opponent-initial { background: var(--blue-light); }
+.unit-matchup-container { --unit-highlight: var(--blue-mid); }
+.button-primary:hover { background: var(--blue); color: var(--team-ink); box-shadow: 0 0 0 2px var(--blue-mid); }
+.weight-control input::-webkit-slider-thumb { background: var(--blue-mid); box-shadow: 0 0 0 1px var(--blue-mid); }
+.weight-control input::-moz-range-thumb { background: var(--blue-mid); box-shadow: 0 0 0 1px var(--blue-mid); }
+.team-logo-fallback { color: #172333; background: #e0e9ee; }
+.skip-link { background: var(--surface-dark-raised); color: var(--ink-on-dark); }
+.ranking-map-tooltip.is-html { background: var(--surface-dark-raised); color: var(--ink-on-dark); }
+.ranking-map-tooltip rect { fill: var(--surface-dark-raised); }
+.ranking-map-tooltip text { fill: var(--ink-on-dark); }
+
+/* Light-only fills also need replacing when a component sits on one of the
+   permanent dark surfaces, even with the device set to light appearance. */
+:is(.hero-file, .analysis-section, .panel-dark)
+:is(.rank-table thead, .season-projection-metric,
+    .simulation-probability, .simulation-score, .simulation-range,
+    .data-box, .ranking-map-selected, .forecast-game.is-canceled,
+    .forecast-game-heading, .forecast-analytics-panel, .forecast-yardage,
+    .forecast-details-grid, .forecast-supporting-details > summary,
+    .forecast-details-grid .unit-edge-card, .forecast-matchup-team .forecast-rank) {
+  background: var(--surface-dark-raised);
+}
+:is(.hero-file, .analysis-section, .panel-dark) .unit-matchup-container { --unit-fill: var(--surface-dark-raised); }
+:is(.hero-file, .analysis-section, .panel-dark) .ranking-map-field { fill: var(--surface-dark-raised); }
+:is(.hero-file, .analysis-section, .panel-dark) .ranking-map-label.is-team { stroke: var(--surface-dark-raised); }
+:is(.hero-file, .analysis-section, .panel-dark) .rank-table tbody tr:hover { background: var(--blue-light); }
+:is(.hero-file, .analysis-section, .panel-dark) .forecast-matchup-team .forecast-rank { color: var(--ink-soft); }
+:is(.hero-file, .analysis-section, .panel-dark)
+:is(.weight-step, .weight-panel .button-full) {
+  background: var(--surface-dark-raised);
+  border-color: var(--line-on-dark);
+  color: var(--primary-on-dark);
+}
+:is(.hero-file, .analysis-section, .panel-dark)
+:is(.weight-step:hover, .weight-panel .button-full:hover) {
+  background: var(--surface-dark);
+  border-color: var(--primary-on-dark);
+  color: var(--primary-on-dark);
+}
+:is(.hero-file, .analysis-section, .panel-dark) .ranking-map-key .ranking-map-toggle {
+  background: var(--surface-dark-raised);
+  border-color: var(--line-on-dark);
+  color: var(--ink-soft-on-dark);
+}
+:is(.hero-file, .analysis-section, .panel-dark) .ranking-map-toggle:has(input:checked) {
+  background: #203949;
+  border-color: #7da8c6;
+}
+:is(.hero-file, .analysis-section, .panel-dark) .ranking-map-toggle.is-fcs:has(input:checked) {
+  background: #3c2e29;
+  border-color: #d2a181;
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -58,7 +156,7 @@
   .simulation-breakdown dl > div:last-child dd,
   .compare-value.is-strong, .data-recipe > summary,
   .data-steps b, .data-steps a, .data-box-icon,
-  .snapshot-icon, .mini-insight strong,
+  .snapshot-icon, .snapshot-value, .opponent-initial, .schedule-result, .mini-insight strong,
   .button-quiet:hover, .button-outline:hover { color: var(--blue-mid); }
   .rank-index { color: var(--blue-mid) !important; }
   .model-stamp:hover { border-color: var(--blue-mid); }

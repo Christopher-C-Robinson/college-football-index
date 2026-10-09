@@ -22,22 +22,51 @@ function recordText(record, projected = false) {
       : Math.max(0, Math.round(record.projectedWins + record.projectedLosses) - wins - losses);
     // Round the remaining wins once; derive losses so the record preserves
     // completed results and the number of listed games.
-    const addedWins = Math.max(0, Math.min(remaining, Math.round(record.projectedWins - wins)));
+    const expected = finite(record.expectedAdditionalWins) ? record.expectedAdditionalWins : record.projectedWins - wins;
+    const addedWins = Math.max(0, Math.min(remaining, Math.round(expected)));
     wins += addedWins;
     losses += remaining - addedWins;
   }
   return wins + '–' + losses + (record.currentTies ? '–' + Math.round(record.currentTies) : '');
 }
 
-function teamRecords(team) {
+const recordTeamKey = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+function recordPresentation(team) {
   const outlook = team.seasonOutlook;
   const current = outlook ? recordText(outlook) : team.record || '—';
-  const projected = recordText(outlook, true);
-  const detail = !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
+  const pending = Boolean(team.seasonOutlookPending && !outlook);
+  const projected = pending ? '…' : recordText(outlook, true);
+  const detail = pending ? 'Calculating this team’s projected final record from the current snapshot.' : !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
     ? 'Rounded final record from the current snapshot for the listed schedule; completed results are preserved.'
     : plural(outlook.remainingUnmodeledGames, 'remaining game') + ' without a forecast; final record unavailable.';
-  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records"><div><dt>Current</dt><dd>' + escapeHtml(current) + '</dd></div>' +
-    '<div title="' + escapeHtml(detail) + '"><dt>Projected</dt><dd>' + escapeHtml(projected) + '</dd></div></dl>';
+  return { current, projected, detail, pending };
+}
+
+function recordValue(team, kind, tag = 'span') {
+  const value = recordPresentation(team);
+  return '<' + tag + ' data-season-record-team="' + escapeHtml(recordTeamKey(team.name)) + '" data-season-record-kind="' + kind + '"' +
+    (kind === 'projected' ? ' title="' + escapeHtml(value.detail) + '" aria-busy="' + value.pending + '"' : '') + '>' + escapeHtml(value[kind]) + '</' + tag + '>';
+}
+
+function teamRecords(team) {
+  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records"><div><dt>Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
+    '<div><dt>Projected</dt>' + recordValue(team, 'projected', 'dd') + '</div></dl>';
+}
+
+// Replace only record text, preserving open game details, focus, and scrolling.
+export function updateSeasonRecordElements(container, team) {
+  const value = recordPresentation(team);
+  const name = recordTeamKey(team.name);
+  for (const element of container.querySelectorAll('[data-season-record-team]')) {
+    if (element.dataset.seasonRecordTeam !== name) continue;
+    const kind = element.dataset.seasonRecordKind;
+    element.textContent = value[kind];
+    if (kind === 'projected') {
+      element.title = value.detail;
+      element.setAttribute('aria-busy', String(value.pending));
+    }
+  }
 }
 
 function dateText(value, timestamp = false) {
@@ -223,8 +252,8 @@ function pointBreakdown(row, teamName, forecast) {
 }
 
 function matchupContext(row, teamName, forecast) {
-  const team = row.matchup?.team || {};
-  const opponent = row.matchup?.opponent || {};
+  const team = { ...row.matchup?.team, name: teamName };
+  const opponent = { ...row.matchup?.opponent, name: row.opponentName };
   const yardsPerPlay = (value, coverage) => {
     if (!finite(value)) return '—';
     if (!coverage) return number(value, 2);
@@ -237,8 +266,8 @@ function matchupContext(row, teamName, forecast) {
   const power = (entry, value, priorSeason) => signed(finite(value) ? value : entry.power) +
     (priorSeason ? '<small>' + escapeHtml(priorSeason) + ' data</small>' : '<small>current season</small>');
   const rows = [
-    ['Record · current season', escapeHtml(team.seasonOutlook ? recordText(team.seasonOutlook) : team.record || '—'), escapeHtml(opponent.seasonOutlook ? recordText(opponent.seasonOutlook) : opponent.record || '—')],
-    ['Projected final record', recordText(team.seasonOutlook, true), recordText(opponent.seasonOutlook, true)],
+    ['Record · current season', recordValue(team, 'current'), recordValue(opponent, 'current')],
+    ['Projected final record', recordValue(team, 'projected'), recordValue(opponent, 'projected')],
     ['FBS/FCS results · current', number(finite(forecast?.teamCurrentGames) ? forecast.teamCurrentGames : team.ratedGames, 0), number(finite(forecast?.opponentCurrentGames) ? forecast.opponentCurrentGames : opponent.ratedGames, 0)],
     ['Forecast strength · points', power(team, forecast?.teamPower, forecast?.teamPriorSeason), power(opponent, forecast?.opponentPower, forecast?.opponentPriorSeason)],
     ['Offense · yards/play', yardsPerPlay(team.offenseYpp, team.offenseYppCoverage), yardsPerPlay(opponent.offenseYpp, opponent.offenseYppCoverage)],
@@ -319,8 +348,8 @@ export function renderProjectionSummary(analysis) {
   const currentRecord = recordText(summary);
   return '<div class="season-projection-team-rank"><span>CURRENT TEAM RANK</span><div class="forecast-ranks" aria-label="Selected team current rankings">' +
     rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification || analysis.teamClassification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady) + '</div></div>' +
-    '<div class="season-projection-metrics"><div class="season-projection-metric"><span>EXPECTED REMAINING WINS</span><strong>' +
-    (expectedWinsAvailable ? number(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>' + escapeHtml(coverage) + '</p></div>' +
+    '<div class="season-projection-metrics"><div class="season-projection-metric"><span>PROJECTED REMAINING WINS</span><strong>' +
+    (expectedWinsAvailable ? Math.round(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>Rounded expected wins; full game probabilities drive this projection. ' + escapeHtml(coverage) + '</p></div>' +
     '<div class="season-projection-metric"><span>PROJECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
     (finalRecordAvailable ? 'Rounded to whole games for the listed schedule.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
     renderSeasonChart(analysis) +
