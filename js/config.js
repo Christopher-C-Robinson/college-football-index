@@ -1,11 +1,21 @@
 export const MODEL_VERSION = '2.0.0';
 export const SCHEMA_VERSION = 2;
 
-// Rating/data definitions remain v2.0.0. Forecast v2.1.0 activates the frozen
-// residual-margin fit; uncertainty calibration remains an independent warning.
-export const FORECAST_VERSION = '2.1.0';
+// Rating/data definitions remain v2.0.0. Forecast 2.2 adds the evaluated joint
+// conference/team power fit to the frozen pass/rush correction.
+export const FORECAST_VERSION = '2.2.0';
 // Explicit comparator for the frozen, pre-conference matchup forecast.
 export const MATCHUP_FORECAST_VERSION = '2.1.0';
+export const ACTIVE_CONFERENCE_MODEL = Object.freeze({
+  enabled: true,
+  id: 'conference-pooling-v1',
+  definitionVersion: 'conference-power-1',
+  baselineModelVersion: '2.0.0',
+  forecastVersion: '2.2.0',
+  conferencePriorTeams: 1,
+  teamPriorGames: 2,
+  reportFingerprint: '24c3bb5312f8718f3a43e788375d260063aa349467869b3a573097c528ffe614'
+});
 export const ACTIVE_MATCHUP_MODEL = Object.freeze({
   enabled: true,
   id: 'box-units-v1',

@@ -216,6 +216,10 @@ export function buildSeasonForecastArchive(dataset, { previous = null, baseline 
       matchupAdjustment: result.matchupAdjustment, matchupModel: result.matchupModel,
       matchupEligible: result.matchupEligible, matchupFallbackReason: result.matchupFallbackReason,
       matchupReportFingerprint: result.matchupReportFingerprint,
+      conferenceAdjustment: result.conferenceAdjustment, conferenceModel: result.conferenceModel,
+      conferenceReportFingerprint: result.conferenceReportFingerprint,
+      conferenceFallbackReason: result.conferenceFallbackReason,
+      unpooledHomePower: result.unpooledHomePower, unpooledAwayPower: result.unpooledAwayPower,
       runs: result.runs, origin: 'snapshot', sourceFingerprint,
       homeColdStart: result.homeColdStart, awayColdStart: result.awayColdStart,
       ...preseasonMetadata(result)

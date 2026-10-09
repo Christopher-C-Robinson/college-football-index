@@ -1,10 +1,10 @@
-# Accuracy foundation: core model 2.0.0, forecast 2.1.0
+# Accuracy foundation: core model 2.0.0, forecast 2.2.0
 
 The original foundation release established a reproducible evaluation baseline. It fixed objectively incorrect inputs and made future model changes measurable. It did not tune the 28-point cap, prior, venue pooling, probability scale, composite weights, or simulator error distribution.
 
 The [first saved baseline](../data/backtests/README.md) covers 6,307 games in completed 2022–2025 seasons and 647 games in incomplete 2026. Completed-season margin MAE is 14.91 points; the simulator's middle 80% range contained 67.6% of outcomes. Those measurements establish the original reference and calibration work to do. Exact compressed inputs are committed for replay without API calls.
 
-The later forecast `2.1.0` release activates the separately evaluated box-unit matchup correction. On the 1,625-game 2025 comparison, it lowered margin MAE from 14.97 to 14.66 points and improved aggregate Brier/log loss. The user requested activation based on the accuracy improvement. Interval coverage remains below its target, and FBS–FCS probability scores worsened slightly. Core rating `MODEL_VERSION = '2.0.0'` is unchanged; `FORECAST_VERSION = '2.1.0'` identifies the active inference release. See [unit definitions and the activation decision](opponent-adjusted-units.md).
+The later forecast `2.1.0` release activates the separately evaluated box-unit matchup correction. On the 1,625-game 2025 comparison, it lowered margin MAE from 14.97 to 14.66 points and improved aggregate Brier/log loss. The user requested activation based on the accuracy improvement. Forecast `2.2.0` adds jointly estimated conference/team strength, further lowering average margin error to 14.01 and cross-conference error from 17.82 to 16.13. This is reused validation; prediction ranges remain uncalibrated. Core rating `MODEL_VERSION = '2.0.0'` is unchanged; `FORECAST_VERSION = '2.2.0'` identifies the active inference release. See [unit definitions and activation](opponent-adjusted-units.md) and [conference results](conference-results.md).
 
 ## Shared implementation
 
@@ -41,7 +41,7 @@ These comparisons include completed results already used to fit power and scorin
 
 ## Frozen baseline temporal evaluation contract
 
-These rules describe the preserved `2.0.0` baseline. Replay explicitly requests `forecastModel: 'baseline'`; activation of `2.1.0` does not alter saved prediction rows, evaluation reports, or their configuration identities. Newly generated active forecast archives record `2.1.0` and correction provenance. Rows from different forecast versions must remain distinguishable rather than being treated as one unchanged model.
+These rules describe the preserved `2.0.0` baseline. Replay explicitly requests `forecastModel: 'baseline'`; later activation does not alter saved prediction rows, evaluation reports, or their configuration identities. Newly generated active forecast archives record `2.2.0` with conference and passing/rushing correction provenance. Rows from different forecast versions must remain distinguishable rather than being treated as one unchanged model.
 
 1. Load season-specific raw archives. For an evaluation season, require all four earlier venue seasons; do not silently shorten the warmup.
 2. Order target games by actual kickoff timestamp. Postseason week 1 is not confused with regular-season week 1. Exclude unresolved/TBD kickoffs from targets and training; record excluded target counts.

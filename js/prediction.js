@@ -1,5 +1,5 @@
 import { isRatedGame } from './model.js';
-import { MODEL_VERSION, MODEL_PARAMETERS, FORECAST_VERSION, MATCHUP_FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
+import { MODEL_VERSION, MODEL_PARAMETERS, FORECAST_VERSION, MATCHUP_FORECAST_VERSION, ACTIVE_MATCHUP_MODEL, ACTIVE_CONFERENCE_MODEL } from './config.js';
 import { matchupAdjustmentFor } from './matchup-model.js';
 
 function teamKey(value) {
@@ -43,6 +43,7 @@ function preseasonFor(model) {
 export function predictMatchup(model, matchup, { allowColdStart = false, forecastModel = 'active' } = {}) {
   if (!['active', 'matchup', 'baseline'].includes(forecastModel)) throw new Error('Forecast model must be active, matchup or baseline.');
   const active = forecastModel !== 'baseline' && ACTIVE_MATCHUP_MODEL.enabled;
+  const conferenceActive = forecastModel === 'active' && ACTIVE_CONFERENCE_MODEL.enabled;
   const home = model.teams.get(teamKey(matchup.homeTeam));
   const away = model.teams.get(teamKey(matchup.awayTeam));
   if (!home || !away) throw new Error('Choose two teams in the loaded dataset.');
@@ -59,8 +60,18 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
   if (!allowColdStart && ((homeColdStart && !homePrior) || (awayColdStart && !awayPrior))) {
     throw new Error('Both teams need a completed FBS or FCS game, or previous-season data, in the loaded snapshot.');
   }
-  const homePower = homeColdStart ? homePrior?.power ?? 0 : home.power;
-  const awayPower = awayColdStart ? awayPrior?.power ?? 0 : away.power;
+  const unpooledHomePower = homeColdStart ? homePrior?.power ?? 0 : home.power;
+  const unpooledAwayPower = awayColdStart ? awayPrior?.power ?? 0 : away.power;
+  const conference = model.conferencePower;
+  const conferenceEligible = conferenceActive && ACTIVE_CONFERENCE_MODEL.baselineModelVersion === MODEL_VERSION
+    && conference?.definitionVersion === ACTIVE_CONFERENCE_MODEL.definitionVersion
+    && conference?.parameters.conferencePriorTeams === ACTIVE_CONFERENCE_MODEL.conferencePriorTeams
+    && conference?.parameters.teamPriorGames === ACTIVE_CONFERENCE_MODEL.teamPriorGames
+    && (homeColdStart || Number.isFinite(conference.ratings.get(teamKey(home.name))))
+    && (awayColdStart || Number.isFinite(conference.ratings.get(teamKey(away.name))));
+  const homePower = conferenceEligible && !homeColdStart ? conference.ratings.get(teamKey(home.name)) : unpooledHomePower;
+  const awayPower = conferenceEligible && !awayColdStart ? conference.ratings.get(teamKey(away.name)) : unpooledAwayPower;
+  const conferenceAdjustment = homePower - awayPower - unpooledHomePower + unpooledAwayPower;
   const homeScoring = homePrior || homeStats;
   const awayScoring = awayPrior || awayStats;
   const venuePoints = matchup.neutralSite ? 0 : model.homeEdge(home.name, away.name);
@@ -82,7 +93,11 @@ export function predictMatchup(model, matchup, { allowColdStart = false, forecas
   const variance = totals.length
     ? totals.reduce((sum, total) => sum + (total - leagueTotal) ** 2, 0) / totals.length : 0;
   return {
-    modelVersion: active ? forecastModel === 'matchup' ? MATCHUP_FORECAST_VERSION : FORECAST_VERSION : MODEL_VERSION,
+    modelVersion: conferenceActive ? FORECAST_VERSION : active ? MATCHUP_FORECAST_VERSION : MODEL_VERSION,
+    ...(conferenceActive ? { unpooledHomePower, unpooledAwayPower, conferenceAdjustment,
+      conferenceEligible: Boolean(conferenceEligible), conferenceModel: ACTIVE_CONFERENCE_MODEL.id,
+      conferenceReportFingerprint: ACTIVE_CONFERENCE_MODEL.reportFingerprint,
+      conferenceFallbackReason: conferenceEligible ? null : model.conferenceFallbackReason || 'Compatible conference strength estimates are unavailable; using the original team strengths.' } : {}),
     ...(active ? { baselineModelVersion: MODEL_VERSION, baselineMargin,
       matchupAdjustment: adjustment.points, matchupModel: adjustment.modelId,
       matchupEligible: adjustment.eligible, matchupFallbackReason: adjustment.reason,
@@ -171,7 +186,9 @@ export function simulateMatchup(model, matchup, options = {}) {
     simulatedHomeWinProbability: homeWins / runs,
     marginLow80: margins[Math.floor((runs - 1) * 0.1)] + correction,
     marginHigh80: margins[Math.floor((runs - 1) * 0.9)] + correction,
-    distribution: prediction.matchupModel
+    distribution: prediction.conferenceEligible
+      ? 'conference-pooled power score-margin distribution translated by fitted pass/rush correction; uncalibrated'
+      : prediction.matchupModel
       ? 'baseline score-margin distribution translated by fitted pass/rush correction; uncalibrated'
       : 'baseline logistic game error plus normal rating uncertainty; uncalibrated'
   };

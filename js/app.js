@@ -10,6 +10,7 @@ import { buildModelFit } from './model-fit.js';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
 import { loadChallengerStatus } from './challenger-status.js';
+import { loadConferenceStatus } from './conference-status.js';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -587,7 +588,10 @@ function runMatchupSimulation() {
     : state.model.broadCoverage ? 'Broad FBS + FCS coverage is available.'
       : 'Early sample: ' + state.model.ratedGameCount + ' completed games across ' + state.model.ratedTeamCount + ' teams. Treat this as exploratory.';
   const orientation = reversed ? -1 : 1;
-  const neutralMargin = orientation * (prediction.homePower - prediction.awayPower);
+  const neutralMargin = orientation * (
+    (prediction.unpooledHomePower ?? prediction.homePower) - (prediction.unpooledAwayPower ?? prediction.awayPower)
+  );
+  const conferencePoints = orientation * (prediction.conferenceAdjustment ?? 0);
   const venuePoints = orientation * prediction.venuePoints;
   const matchupPoints = orientation * (prediction.matchupAdjustment || 0);
   const signedPoints = value => (value > 0 ? '+' : '') + formatNumber(value, 1);
@@ -597,10 +601,11 @@ function runMatchupSimulation() {
     '<div class="simulation-score"><span>PROJECTED SCORE · ' + SIMULATION_RUNS.toLocaleString() + ' RUNS</span><strong>' + escapeHtml(teamA.name) + ' ' + formatNumber(projectedScoreA, 0) + ' <i>—</i> ' + formatNumber(projectedScoreB, 0) + ' ' + escapeHtml(teamB.name) + '</strong><small>Model margin: ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' points</small></div>' +
     '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Exploratory range from the current model; historical coverage has not been calibrated.</small></div>' +
     '</div><div class="simulation-breakdown"><p>How the margin adds up <span>Positive points favor ' + escapeHtml(teamA.name) + '</span></p><dl>' +
-    '<div><dt>Neutral team strength</dt><dd>' + signedPoints(neutralMargin) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signedPoints(venuePoints) + '</dd></div>' +
+    '<div><dt>Team strength</dt><dd>' + signedPoints(neutralMargin) + '</dd></div><div><dt>Conference evidence</dt><dd>' + signedPoints(conferencePoints) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signedPoints(venuePoints) + '</dd></div>' +
     '<div><dt>Passing + rushing matchup</dt><dd>' + signedPoints(matchupPoints) + '</dd></div><div><dt>Projected margin</dt><dd>' + signedPoints(predictedMargin) + '</dd></div></dl>' +
-    (prediction.matchupEligible === false ? '<p class="simulation-fallback">Unit data is incomplete for this pairing; the matchup adjustment is 0 and the forecast uses power + venue.</p>' : '') +
-    '</div><details class="simulation-method"><summary>How this forecast works</summary><p>' + escapeHtml(sampleLabel) + ' The margin combines opponent-adjusted power, the selected venue, and historically fitted passing/rushing matchup effects. The total uses team scoring and points allowed with the full-field average. The matchup adjustment changes the scoring split; it does not change the total. Injuries and weather are not modeled.</p></details>';
+    (prediction.conferenceFallbackReason ? '<p class="simulation-fallback">Conference evidence unavailable: ' + escapeHtml(prediction.conferenceFallbackReason) + '</p>' : '') +
+    (prediction.matchupEligible === false ? '<p class="simulation-fallback">Unit data is incomplete for this pairing; the passing/rushing adjustment is 0.</p>' : '') +
+    '</div><details class="simulation-method"><summary>How this forecast works</summary><p>' + escapeHtml(sampleLabel) + ' Team strength starts with opponent-adjusted results. Conference evidence shows how that strength changes when conference members share evidence from their results, with each team still judged on its own games. The selected venue and historically fitted passing/rushing matchup effects complete the margin. The total uses team scoring and points allowed with the full-field average. These adjustments change the scoring split; they do not change the total. Injuries and weather are not modeled.</p></details>';
 }
 
 function updateWeightsDisplay() {
@@ -785,6 +790,7 @@ document.addEventListener('click', async function (event) {
 
 enhanceSearchableSelects();
 loadChallengerStatus();
+loadConferenceStatus();
 initialize().catch(function (error) {
   const message = ids('import-message');
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }

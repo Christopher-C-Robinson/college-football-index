@@ -1,6 +1,6 @@
 # Opponent-adjusted passing and rushing: box-units-1
 
-Forecast `2.1.0` uses the evaluated box-unit matchup correction by default. The four profiles are passing offense, passing defense, rushing offense, and rushing defense. FBS and FCS use the same connected schedule, equations, and priors. Subdivision and conference labels do not enter the fit.
+Forecast `2.1.0` introduced the evaluated box-unit matchup correction, retained in current forecast `2.2.0`. The four profiles are passing offense, passing defense, rushing offense, and rushing defense. FBS and FCS use the same connected schedule, equations, and priors. Subdivision and conference labels do not enter the unit fit. Forecast `2.2.0` separately adds [jointly estimated conference/team power](conference-results.md); it does not change these unit profiles or fitted correction coefficients.
 
 The correction improved historical margin predictions, so it is active under the user's accuracy-first release decision. Its uncertainty ranges remain too narrow. Activation does not claim that calibration is solved or that every subdivision's probability scores improved.
 
@@ -45,9 +45,9 @@ The correction changes the margin, scores, win probability, and margin range. De
 
 ### Versions and frozen archives
 
-`FORECAST_VERSION = '2.1.0'` identifies the active forecast. The core rating `MODEL_VERSION = '2.0.0'` and dataset schema `2` remain unchanged: power, venue, CFI weights, and the underlying baseline simulator parameters have not been retuned. The unit definition remains `box-units-1`.
+`FORECAST_VERSION = '2.2.0'` identifies the active forecast, and `MATCHUP_FORECAST_VERSION = '2.1.0'` identifies the explicit pre-conference comparator. The core rating `MODEL_VERSION = '2.0.0'` and dataset schema `2` remain unchanged: ranking power, venue, CFI weights, and the underlying baseline simulator parameters have not been retuned. Forecast power now uses the separate conference fit. The unit definition remains `box-units-1`.
 
-Explicit `forecastModel: 'baseline'` selects the original predictor for historical replay. Saved baseline rows and the original challenger report remain unchanged. Newly generated forecasts record the active forecast version and matchup-model provenance, including when unavailable unit data causes a baseline fallback. Past forecasts are never relabeled as forecasts from `2.1.0`.
+Explicit `forecastModel: 'baseline'` selects the original predictor for historical replay; `forecastModel: 'matchup'` selects the frozen 2.1.0 comparison without conference pooling. Saved baseline rows and the original challenger report remain unchanged. Newly generated forecasts record the active forecast version and model provenance, including fallback reasons. Past forecasts retain their original versions.
 
 ### Frozen chronological design
 
@@ -100,7 +100,7 @@ The historical experiment is independent of ranking sliders, team selection, boa
 
 On the 1,625-game 2025 candidate holdout, margin MAE improved from 14.9726 to 14.6573 points. The paired week-block 95% interval for the mean change was −0.4599 to −0.1701 points. Brier improved from 0.19531 to 0.19167; log loss improved from 0.57292 to 0.56526. All three subdivision groups improved margin MAE, but the FBS–FCS group's probability scores worsened slightly. The selected ridge lambda was 1,000.
 
-The candidate had complete required features for 1,455 games; 170 games used the exact baseline fallback. Middle-80% coverage improved from 67.32% to 68.25%, failing the predeclared 77–83% requirement. **Original experiment decision: retain the baseline forecast. Current release decision: activate the evaluated correction as forecast 2.1.0, with the coverage shortfall visible.**
+The candidate had complete required features for 1,455 games; 170 games used the exact baseline fallback. Middle-80% coverage improved from 67.32% to 68.25%, failing the predeclared 77–83% requirement. **Original experiment decision: retain the baseline forecast. Subsequent release decision: activate the evaluated correction in forecast 2.1.0, retaining it in 2.2.0 with the coverage shortfall visible.**
 
 Incomplete 2026 monitoring is separate: margin MAE improved from 17.9930 to 17.8076, while log loss worsened slightly. These observations are not additional tuning data for this frozen experiment. The 2025 baseline results had already been inspected before this candidate; “holdout” here means excluded from the candidate's coefficient fitting and lambda selection, not outcomes that nobody had previously viewed.
 

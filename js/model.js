@@ -1,5 +1,7 @@
 import { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
 import { buildUnitProfiles } from './unit-model.js';
+import { fitConferencePower } from './conference-model.js';
+import { ACTIVE_CONFERENCE_MODEL } from './config.js';
 
 export { MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS } from './config.js';
 const DEFAULTS = { power: 55, efficiency: 30, resume: 15 };
@@ -634,6 +636,12 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
     modelVersion: MODEL_VERSION, schemaVersion: SCHEMA_VERSION, parameters: parameters
   };
   model.unitProfiles = buildUnitProfiles(model);
+  // Forecast-only pooled strength; the ranking board retains its rating core.
+  // An incompatible import must still load and can use the original forecast.
+  if (ACTIVE_CONFERENCE_MODEL.enabled) {
+    try { model.conferencePower = fitConferencePower(model, ACTIVE_CONFERENCE_MODEL); }
+    catch (error) { model.conferencePower = null; model.conferenceFallbackReason = error.message; }
+  }
   return model;
 }
 

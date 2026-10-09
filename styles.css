@@ -402,7 +402,7 @@ h1, h2, h3, p { margin-top: 0; }
 .simulation-breakdown { margin-top: 18px; padding: 16px; border: 1px solid #3b5163; }
 .simulation-breakdown > p:first-child { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 15px; margin: 0 0 14px; color: #e1e8eb; font-size: 12px; font-weight: 500; line-height: 1.5; }
 .simulation-breakdown > p:first-child span { color: #a6b5b9; font-size: 11px; font-weight: 400; }
-.simulation-breakdown dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.simulation-breakdown dl { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin: 0; }
 .simulation-breakdown dt { color: #a6b5b9; font-size: 11px; line-height: 1.5; }
 .simulation-breakdown dd { margin: 7px 0 0; color: #e1e8eb; font: 500 20px/1.4 var(--mono); }
 .simulation-breakdown dl > div:last-child { border-left: 1px solid #3b5163; padding-left: 14px; }
@@ -425,7 +425,7 @@ h1, h2, h3, p { margin-top: 0; }
   .unit-edge-card { padding: 15px; }
   .unit-edge-card h5 { font-size: 19px; }
   .simulation-breakdown dl { grid-template-columns: 1fr 1fr; }
-  .simulation-breakdown dl > div:last-child { border-left: 0; padding-left: 0; }
+  .simulation-breakdown dl > div:last-child { grid-column: 1 / -1; border-left: 0; border-top: 1px solid #3b5163; padding-left: 0; padding-top: 10px; }
 }
 
 .panel-intro { margin: 14px 0 3px; color: #7c857d; font-size: 10px; line-height: 1.6; }

@@ -1,4 +1,4 @@
-import { MODEL_VERSION, FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
+import { MODEL_VERSION, MATCHUP_FORECAST_VERSION, ACTIVE_MATCHUP_MODEL } from './config.js';
 
 const REPORT_URL = './data/experiments/box-units-v1/summary.json';
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -20,7 +20,7 @@ export function renderChallengerStatus(report) {
     && ACTIVE_MATCHUP_MODEL.reportFingerprint === report.meta.summaryFingerprint
     && JSON.stringify(ACTIVE_MATCHUP_MODEL.featureNames) === JSON.stringify(report.fit?.featureNames)
     && JSON.stringify(ACTIVE_MATCHUP_MODEL.coefficientsRaw) === JSON.stringify(report.fit?.coefficientsRaw);
-  const decision = active ? 'Matchup model active · v' + FORECAST_VERSION : report.gate.promoted ? 'Candidate passed evaluation gates' : 'Baseline retained';
+  const decision = active ? 'Pass/rush component active · introduced v' + MATCHUP_FORECAST_VERSION : report.gate.promoted ? 'Candidate passed evaluation gates' : 'Baseline retained';
   const groups = Object.entries(holdout.groups?.subdivision || {});
   const explanations = {
     'paired-mae-improvement': 'The margin-error improvement did not meet the paired uncertainty requirement.',

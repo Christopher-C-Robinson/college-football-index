@@ -112,10 +112,10 @@ function matchupOutlook(row, teamName, forecast, actual) {
     '<div class="forecast-win-heading"><span>' + escapeHtml(teamName) + '<small>win chance</small></span><strong>' + number(probability) + '%</strong></div>' +
     '<div class="forecast-win-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span style="width:' + probability.toFixed(3) + '%"></span></div>' +
     '<div class="forecast-win-labels"><span>' + escapeHtml(teamName) + '</span><span>' + escapeHtml(row.opponentName) + '</span></div>' +
-    '<dl class="forecast-margin-factors" title="Neutral strength + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
-    '<div><dt>Neutral team strength</dt><dd>' + signed(forecast.neutralMargin) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
+    '<dl class="forecast-margin-factors" title="Team strength + conference evidence + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
+    '<div><dt>Team strength</dt><dd>' + signed(forecast.unpooledNeutralMargin ?? forecast.neutralMargin) + '</dd></div><div><dt>Conference evidence</dt><dd>' + signed(forecast.conferenceAdjustment ?? 0) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
     '<div class="forecast-unit-factor"><dt>Passing + rushing matchup</dt><dd>' + signed(forecast.matchupAdjustment ?? 0) + '</dd></div></dl>' +
-    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 matchup adjustment; using power + venue.' : '') + '</p>' +
+    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.conferenceFallbackReason ? ' Conference evidence unavailable: ' + escapeHtml(forecast.conferenceFallbackReason) : '') + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 passing/rushing adjustment.' : '') + '</p>' +
     marginGraphic(forecast, actual) + '</section>';
 }
 
@@ -136,14 +136,14 @@ function matchupContext(row, teamName, forecast) {
   const rows = [
     ['Record · current season', escapeHtml(team.record || '—'), escapeHtml(opponent.record || '—')],
     ['FBS/FCS results · current', number(finite(forecast?.teamCurrentGames) ? forecast.teamCurrentGames : team.ratedGames, 0), number(finite(forecast?.opponentCurrentGames) ? forecast.opponentCurrentGames : opponent.ratedGames, 0)],
-    ['Power · points above field', power(team, forecast?.teamPower, forecast?.teamPriorSeason), power(opponent, forecast?.opponentPower, forecast?.opponentPriorSeason)],
+    ['Forecast strength · points', power(team, forecast?.teamPower, forecast?.teamPriorSeason), power(opponent, forecast?.opponentPower, forecast?.opponentPriorSeason)],
     ['Offense · yards/play', yardsPerPlay(team.offenseYpp, team.offenseYppCoverage), yardsPerPlay(opponent.offenseYpp, opponent.offenseYppCoverage)],
     ['Defense · yards allowed/play', yardsPerPlay(team.defenseYpp, team.defenseYppCoverage), yardsPerPlay(opponent.defenseYpp, opponent.defenseYppCoverage)]
   ];
   return '<section class="forecast-matchup-context"><h5 class="forecast-section-title">Team context · current season</h5>' +
     '<table class="forecast-context-table"><caption class="sr-only">Current matchup data for ' + escapeHtml(teamName + ' and ' + row.opponentName) + '</caption><thead><tr><th scope="col">Metric</th><th scope="col">' + escapeHtml(teamName) + '</th><th scope="col">' + escapeHtml(row.opponentName) + '</th></tr></thead><tbody>' +
     rows.map(([label, first, second]) => '<tr><th scope="row">' + label + '</th><td>' + first + '</td><td>' + second + '</td></tr>').join('') + '</tbody></table>' +
-    '<p class="forecast-table-note">Power sources are labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
+    '<p class="forecast-table-note">Forecast strength includes conference evidence when available; its data source is labeled. Yards/play provides raw context, not opponent adjusted; lower defense values are better. Coverage can vary by statistic. — means unavailable.</p></section>';
 }
 
 function renderRow(row, teamName, rankingsReady, unitProfiles) {
@@ -200,5 +200,5 @@ export function renderProjectionSummary(analysis) {
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
   return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Scores show ' + escapeHtml(analysis.teamName) + ' first.</p>' +
-    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines neutral team strength, home/away effects, and the fitted passing/rushing matchup adjustment. Missing unit data gives a labeled zero adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, conference evidence, home/away effects, and the fitted passing/rushing matchup adjustment. Conference evidence shows how a team\'s estimated strength changes when conference members share evidence from their results, with each team still judged on its own games. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }
