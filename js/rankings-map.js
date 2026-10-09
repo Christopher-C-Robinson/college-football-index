@@ -1,4 +1,4 @@
-import { renderTeamLogo, renderSvgTeamLogo } from './team-logo.js?v=23545b336420';
+import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -42,13 +42,15 @@ export function renderRankingsMap(orderedTeams, focusedTeam, ready = true, { dom
   const focusIndex = selectedIndex < 0 ? 0 : selectedIndex;
   const marks = teams.map((team, index) => {
     const selected = index === selectedIndex;
-    const logoSize = selected ? 24 : 18;
+    const logoSize = selected ? 32 : 24;
     const label = team.name + ' · Power ' + signed(team.power) + ' pts · Opponent power ' + signed(team.opponentPower) + ' pts';
-    return '<g class="ranking-map-team' + (team.classification === 'fcs' ? ' is-fcs' : '') + (selected ? ' is-selected' : '') + '" role="button" tabindex="' + (index === focusIndex ? '0' : '-1') + '" data-map-order="' + index + '" data-map-team="' + escapeHtml(team.name) + '" data-select-team="' + escapeHtml(team.name) + '" aria-label="Explore ' + escapeHtml(label) + '" transform="translate(' + x(team.opponentPower).toFixed(2) + ' ' + y(team.power).toFixed(2) + ')"><title>' + escapeHtml(label) + '</title><g class="ranking-map-mark">' + renderSvgTeamLogo(team, { size: logoSize }) + '<rect class="ranking-map-hit" x="' + (-logoSize / 2 - 2) + '" y="' + (-logoSize / 2 - 2) + '" width="' + (logoSize + 4) + '" height="' + (logoSize + 4) + '" aria-hidden="true"/></g></g>';
+    // Ordinary HTML images use the same rendering/fallback path as team cards.
+    // Percentage positions share the SVG's aspect ratio without SVG image/group painting.
+    return '<button type="button" class="ranking-map-team' + (team.classification === 'fcs' ? ' is-fcs' : '') + (selected ? ' is-selected' : '') + '" tabindex="' + (index === focusIndex ? '0' : '-1') + '" data-map-order="' + index + '" data-map-team="' + escapeHtml(team.name) + '" data-select-team="' + escapeHtml(team.name) + '" aria-label="Explore ' + escapeHtml(label) + '" title="' + escapeHtml(label) + '" style="left:' + (x(team.opponentPower) / width * 100).toFixed(4) + '%;top:' + (y(team.power) / height * 100).toFixed(4) + '%">' + renderTeamLogo(team, { size: logoSize }) + '</button>';
   });
   const paintOrder = teams.map((team, index) => index).reverse().filter(index => index !== selectedIndex);
   if (selectedIndex >= 0) paintOrder.push(selectedIndex);
-  const dots = paintOrder.map(index => marks[index]).join('');
+  const markers = paintOrder.map(index => marks[index]).join('');
   // A few labels identify the front of the board without covering all the dots.
   const labeled = teams.slice(0, 3);
   if (selectedIndex > 2) labeled.push(teams[selectedIndex]);
@@ -58,7 +60,8 @@ export function renderRankingsMap(orderedTeams, focusedTeam, ready = true, { dom
     const text = team.abbreviation || team.name;
     const labelWidth = Math.min(150, text.length * 7 + 8);
     const anchor = px > width - right - labelWidth ? 'end' : 'start';
-    const lx = px + (anchor === 'end' ? -16 : 16);
+    const labelOffset = team === selectedTeam ? 22 : 18;
+    const lx = px + (anchor === 'end' ? -labelOffset : labelOffset);
     let ly = Math.max(top + 12, py - 10);
     while (positions.some(position => Math.abs(position.y - ly) < 16 && Math.abs(position.x - lx) < labelWidth + 12)) ly += 17;
     positions.push({ x: lx, y: ly });
@@ -66,9 +69,9 @@ export function renderRankingsMap(orderedTeams, focusedTeam, ready = true, { dom
   }).join('');
   const emptyMessage = divisions.fbs === false && divisions.fcs === false ? 'FBS and FCS are both hidden. Turn on either checkbox to show teams.' : 'No teams are visible. Turn on another subdivision or change the board filters.';
   const emptyLabel = !teams.length ? '<text class="ranking-map-label" x="' + (width / 2) + '" y="' + ((top + height - bottom) / 2) + '" text-anchor="middle">No teams shown · turn on FBS or FCS below</text>' : '';
-  return '<p class="ranking-map-swipe-hint">Swipe across the map to see the full field.</p><div class="ranking-map-scroll"><svg class="rankings-map-chart" viewBox="0 0 ' + width + ' ' + height + '" role="group" aria-label="Team strength versus opponent strength"><desc>Each logo is a team. Higher points mean a stronger team. Farther right means stronger opponents. Zero is the combined FBS and FCS power baseline. Use arrow keys to browse teams, then Enter to open a team.</desc>' +
+  return '<p class="ranking-map-swipe-hint">Swipe across the map to see the full field.</p><div class="ranking-map-scroll"><div class="ranking-map-stage" role="group" aria-label="Team strength versus opponent strength"><span class="sr-only">Each logo is a team. Higher points mean a stronger team. Farther right means stronger opponents. Zero is the combined FBS and FCS power baseline. Use arrow keys to browse teams, then Enter to open a team.</span><svg class="rankings-map-chart" viewBox="0 0 ' + width + ' ' + height + '" aria-hidden="true" focusable="false">' +
     '<rect class="ranking-map-field" x="' + left + '" y="' + top + '" width="' + (width - left - right) + '" height="' + (height - top - bottom) + '" rx="6"/>' + gridX + gridY +
     '<line class="ranking-map-zero" x1="' + x(0) + '" x2="' + x(0) + '" y1="' + top + '" y2="' + (height - bottom) + '"/><line class="ranking-map-zero" x1="' + left + '" x2="' + (width - right) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>' +
-    '<text class="ranking-map-axis-title" x="' + (width / 2) + '" y="' + (height - 7) + '" text-anchor="middle">Opponent strength · points →</text><text class="ranking-map-axis-title" transform="translate(16 ' + (height / 2 - 15) + ') rotate(-90)" text-anchor="middle">Team strength · points →</text>' + dots + labels + emptyLabel + '</svg></div>' +
+    '<text class="ranking-map-axis-title" x="' + (width / 2) + '" y="' + (height - 7) + '" text-anchor="middle">Opponent strength · points →</text><text class="ranking-map-axis-title" transform="translate(16 ' + (height / 2 - 15) + ') rotate(-90)" text-anchor="middle">Team strength · points →</text>' + labels + emptyLabel + '</svg>' + markers + '</div></div>' +
     selectedSummary + legend + '<p id="rankings-map-readout" class="ranking-map-note" role="status">' + teams.length + ' teams shown. ' + (!teams.length ? emptyMessage : selectedIndex >= 0 ? escapeHtml(teams[selectedIndex].name + ' highlighted · Power ' + signed(teams[selectedIndex].power) + ' pts · Opponent power ' + signed(teams[selectedIndex].opponentPower) + ' pts. Select its logo to open the explorer.') : 'Axes stay fixed while you toggle subdivisions. Search for a visible team or hover a logo. Arrow keys browse teams; Enter opens the explorer.') + '</p>';
 }

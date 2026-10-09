@@ -4,7 +4,7 @@ import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
 import { enhanceSearchableSelects, closeSearchableSelects } from './searchable-select.js?v=961cf4566c10';
 import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545b336420';
-import { renderRankingsMap } from './rankings-map.js?v=880d463d051c';
+import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js';
 import { buildSeasonProjections } from './season-projections.js?v=6c6f7217b61f';
 import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel } from './season-projections-view.js?v=09b2c1abd40c';
