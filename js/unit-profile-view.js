@@ -116,12 +116,12 @@ function matchupCards(pairs) {
 function matchupEffect(unitModel, firstName, secondName) {
   if (!ACTIVE_MATCHUP_MODEL.enabled) return '';
   const adjustment = matchupAdjustmentFor(unitModel, firstName, secondName);
-  if (!adjustment.eligible) return '<p class="unit-forecast-effect"><strong>Forecast uses power + venue only.</strong><span>Some passing, rushing, or attempt-mix data is missing for this pairing.</span></p>';
+  if (!adjustment.eligible) return '<p class="unit-forecast-effect"><strong>No passing/rushing adjustment.</strong><span>Some passing, rushing, or attempt-mix data is missing for this pairing.</span></p>';
   const favored = adjustment.points >= 0 ? firstName : secondName;
-  return '<p class="unit-forecast-effect"><strong>Matchup effect: ' + number(Math.abs(adjustment.points), 1) + ' points ' + (adjustment.points === 0 ? '· no change' : 'toward ' + escapeHtml(favored)) + '</strong><span>Passing, rushing, and how often each team uses them shift the power + venue forecast by this amount.</span></p>';
+  return '<p class="unit-forecast-effect"><strong>Matchup effect: ' + number(Math.abs(adjustment.points), 1) + ' points ' + (adjustment.points === 0 ? '· no change' : 'toward ' + escapeHtml(favored)) + '</strong><span>Passing, rushing, and how often each team uses them shift the forecast by this amount, alongside team strength, conference evidence, and venue.</span></p>';
 }
 
-export function renderUnitMatchup(unitModel, firstName, secondName, { compact = false } = {}) {
+export function renderUnitMatchup(unitModel, firstName, secondName, { compact = false, embedded = false } = {}) {
   if (!firstName || !secondName) return compact ? '' : '<p class="unit-empty">Choose two teams to compare passing and rushing matchups.</p>';
   if (key(firstName) === key(secondName)) return compact ? '' : '<p class="unit-empty">Choose two different teams for a unit matchup.</p>';
   const first = profileFor(unitModel, firstName);
@@ -129,7 +129,10 @@ export function renderUnitMatchup(unitModel, firstName, secondName, { compact = 
   const pairs = crossUnits(unitModel, first, second, firstName, secondName);
   const missingNames = [[firstName, first], [secondName, second]].filter(([, profile]) => !profile).map(([name]) => name);
   const missing = missingNames.length ? '<p class="unit-empty">No current-season unit profile for ' + escapeHtml(missingNames.join(' and ')) + '. Missing rates remain unavailable.</p>' : '';
-  const body = missing + matchupEffect(unitModel, firstName, secondName) + matchupCards(pairs) + '<p class="unit-coverage-note">Ranks cover FBS + FCS. Edges compare each offense’s expected yards per attempt against the defense it will face; they are not point spreads.</p>' +
+  const matchupContent = missing + matchupEffect(unitModel, firstName, secondName) + matchupCards(pairs) + '<p class="unit-coverage-note">Ranks cover FBS + FCS. Edges compare each offense’s expected yards per attempt against the defense it will face; they are not point spreads.</p>';
+  if (embedded) return '<section class="unit-matchup unit-matchup-embedded"><h5 class="forecast-section-title">Opponent-adjusted passing and rushing</h5>' + matchupContent + crossTable(pairs, firstName, secondName) +
+    '<p class="unit-coverage-note">Matchup rate = field mean + offense effect − defense effect. Definition: ' + escapeHtml(unitModel?.definitionVersion || 'Not recorded') + '. Full unit definitions are available in the team strengths profile.</p></section>';
+  const body = matchupContent +
     '<details class="unit-data-details"><summary>See matchup numbers and data coverage</summary>' + crossTable(pairs, firstName, secondName) +
     '<p class="unit-coverage-note">Matchup rate = field mean + offense effect − defense effect. Definition: ' + escapeHtml(unitModel?.definitionVersion || 'Not recorded') + '.</p>' + definitions() + '</details>';
   if (compact) return '<details class="unit-matchup unit-matchup-compact"><summary>Passing and rushing advantages <span>See how the teams match up</span></summary><div class="unit-matchup-body">' + body + '</div></details>';

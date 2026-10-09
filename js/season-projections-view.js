@@ -63,62 +63,89 @@ function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisio
     (Number.isInteger(subdivisionRank) && subdivisionRank > 0 ? '<span class="forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + subdivisionRank + '</span>' : '');
 }
 
-function forecastSource(forecast, teamName, opponentName) {
+function forecastPriorSources(forecast, teamName, opponentName) {
+  if (!forecast) return '';
   const priorSources = [[teamName, forecast.teamPriorSeason, forecast.teamPriorGames], [opponentName, forecast.opponentPriorSeason, forecast.opponentPriorGames]]
     .filter(([, season]) => Number.isInteger(season) && season > 0);
   const priorLabel = priorSources.length ? '<span class="forecast-cold-start">Prior-season fallback</span>' +
     priorSources.map(([name, season, games]) => '<span class="forecast-cold-start">' + escapeHtml(name) + ' uses ' + season + ' season data' +
-      (finite(games) ? ' (' + plural(games, 'FBS/FCS result') + ')' : '') + ' · no current-season FBS/FCS results</span>').join('')
+    (finite(games) ? ' (' + plural(games, 'FBS/FCS result') + ')' : '') + ' · no current-season FBS/FCS results</span>').join('')
     : forecast.coldStart ? '<span class="forecast-cold-start">Cold start · limited results</span>' : '';
-  return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(forecast.generatedAt, true) +
-    (forecast.modelVersion ? ' · v' + escapeHtml(forecast.modelVersion) : '') +
-    priorLabel + '</p>';
+  return priorLabel ? '<p class="forecast-prior-note">' + priorLabel + '</p>' : '';
+}
+
+function forecastSource(forecast, analysis) {
+  const generatedAt = forecast?.generatedAt || analysis?.snapshotAt;
+  const modelVersion = forecast?.modelVersion || analysis?.modelVersion;
+  return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(generatedAt, true) +
+    (modelVersion ? ' · v' + escapeHtml(modelVersion) : '') +
+    (analysis?.resultsThrough ? ' · Results through ' + escapeHtml(analysis.resultsThrough) : '') +
+    '</p><p class="forecast-analytics-note">Completed games are reprojected with the current snapshot, including their actual results. These comparisons show current model fit, not pregame accuracy.</p>';
 }
 
 function scoreComparison(row, teamName, forecast, actual) {
-  const actualMargin = actual ? actual.for - actual.against : null;
-  const values = [
-    [teamName, forecast?.for, actual?.for, actual && forecast ? actual.for - forecast.for : null, false],
-    [row.opponentName, forecast?.against, actual?.against, actual && forecast ? actual.against - forecast.against : null, false],
-    [teamName + ' margin', forecast?.margin, actualMargin, actual && forecast ? actualMargin - forecast.margin : null, true]
+  const teams = [
+    { name: teamName, model: forecast?.for, actual: actual?.for, color: primaryColor(row.matchup?.team?.color) || '52, 92, 134' },
+    { name: row.opponentName, model: forecast?.against, actual: actual?.against, color: primaryColor(row.matchup?.opponent?.color) || '126, 140, 155' }
   ];
-  return '<section class="forecast-score-comparison"><h5 class="forecast-section-title">Score comparison</h5>' +
-    '<table class="forecast-score-table"><caption class="sr-only">Current projected and actual scores for ' + escapeHtml(teamName + ' versus ' + row.opponentName) + '</caption>' +
-    '<thead><tr><th scope="col">Team</th><th scope="col">Model<small>current</small></th><th scope="col">Actual</th><th scope="col">Difference<small>actual − model</small></th></tr></thead><tbody>' +
-    values.map(([name, model, result, difference, margin]) => '<tr' + (margin ? ' class="is-margin"' : '') + '><th scope="row">' + escapeHtml(name) + '</th><td class="is-model">' +
-      (margin ? signed(model) : number(model)) + '</td><td>' + (margin ? signed(result) : number(result, 0)) + '</td><td class="is-difference">' + signed(difference) + '</td></tr>').join('') + '</tbody></table>' +
-    '<p class="forecast-table-note">' + (actual ? 'Positive margin difference means ' + escapeHtml(teamName) + ' performed better than the current projection.' : row.status === 'canceled' ? 'Canceled game; no result to compare.' : row.status === 'unplayed' ? 'Final result not available.' : 'Actual scores will appear after the game is final.') + '</p></section>';
+  const maximum = Math.max(1, ...teams.flatMap(team => [team.model, team.actual]).filter(finite));
+  const bar = (value, label, color, type) => '<div class="forecast-score-bar-row"><span class="forecast-score-bar-label">' + label + '</span>' +
+    (finite(value) ? '<span class="forecast-score-track" aria-hidden="true"><span class="forecast-score-fill ' + type + '" style="width:' + Math.max(0, Math.min(100, value / maximum * 100)).toFixed(3) + '%;--score-team-rgb:' + color + '"></span></span><strong class="forecast-score-value" title="' + label + ' points: ' + value + '">' + number(value, type === 'is-actual' ? 0 : 1) + '</strong>' :
+      '<span class="forecast-score-missing">' + (label === 'Actual' ? row.status === 'canceled' ? 'Canceled' : row.status === 'final' ? 'Unavailable' : 'Not final' : 'Unavailable') + '</span>') + '</div>';
+  return '<section class="forecast-analytics-panel forecast-score-comparison" aria-label="' + escapeHtml(teamName + ' first: current projected and actual points') + '"><h5 class="forecast-section-title">Points · model vs. actual</h5>' +
+    '<div class="forecast-score-key">' + escapeHtml(teamName) + ' listed first</div>' +
+    teams.map(team => '<div class="forecast-score-team"><div class="forecast-score-team-heading"><strong>' + escapeHtml(team.name) + '</strong>' +
+      (finite(team.model) && finite(team.actual) ? '<span class="forecast-score-delta" title="Actual points minus current projected points: ' + (team.actual - team.model) + '">' + signed(team.actual - team.model) + ' pts</span>' : '') + '</div>' +
+      bar(team.model, 'Model', team.color, 'is-model') + bar(team.actual, 'Actual', team.color, 'is-actual') + '</div>').join('') +
+    '<p class="forecast-analytics-note">' + (actual && forecast ? 'Difference = actual − model.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Actual scores appear when final.') + '</p></section>';
 }
 
-function marginGraphic(forecast, actual) {
+function marginGraphic(forecast, actual, teamName) {
   if (!finite(forecast.marginLow80) || !finite(forecast.marginHigh80) || forecast.marginLow80 > forecast.marginHigh80) return '';
   const actualMargin = actual ? actual.for - actual.against : null;
   const domain = Math.ceil(Math.max(Math.abs(forecast.marginLow80), Math.abs(forecast.marginHigh80), Math.abs(forecast.margin), finite(actualMargin) ? Math.abs(actualMargin) : 0, 1) * 1.12);
   const x = value => (150 + value / domain * 134).toFixed(2);
-  const label = 'Middle 80% of simulated scoring margins: ' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + ' points. Current projection ' + signed(forecast.margin) + (actual ? '. Actual margin ' + signed(actualMargin) : '') + '. Exploratory, uncalibrated range.';
-  return '<div class="forecast-margin-range"><div class="forecast-range-heading"><span>Middle 80% of simulated margins</span><strong>' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + '</strong></div>' +
+  const label = teamName + ' scoring margin; positive favors ' + teamName + '. Middle 80% of simulated margins: ' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + ' points. Current projection ' + signed(forecast.margin) + (actual ? '. Actual margin ' + signed(actualMargin) : '') + '. Exploratory, uncalibrated range.';
+  return '<div class="forecast-margin-range"><div class="forecast-range-heading"><span>Middle 80% range</span><strong>' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + '</strong></div>' +
     '<svg class="forecast-range-chart" viewBox="0 0 300 52" role="img" aria-label="' + escapeHtml(label) + '">' +
     '<line class="forecast-range-axis" x1="16" x2="284" y1="20" y2="20"/><line class="forecast-range-zero" x1="150" x2="150" y1="7" y2="30"/>' +
     '<line class="forecast-range-band" x1="' + x(forecast.marginLow80) + '" x2="' + x(forecast.marginHigh80) + '" y1="20" y2="20"/>' +
     '<circle class="forecast-range-model" cx="' + x(forecast.margin) + '" cy="20" r="5"/>' +
     (actual ? '<path class="forecast-range-actual" d="M ' + x(actualMargin) + ' 12 l 6 8 l -6 8 l -6 -8 Z"/>' : '') +
     '<text class="forecast-range-label" x="16" y="47" text-anchor="start">−' + domain + '</text><text class="forecast-range-label" x="150" y="47" text-anchor="middle">0</text><text class="forecast-range-label" x="284" y="47" text-anchor="end">+' + domain + '</text></svg>' +
-    '<div class="forecast-range-legend"><span><i class="is-model" aria-hidden="true"></i>Projection</span>' + (actual ? '<span><i class="is-actual" aria-hidden="true"></i>Actual</span>' : '') + '<span>Exploratory · uncalibrated</span></div></div>';
+    '<div class="forecast-range-legend"><span><i class="is-model" aria-hidden="true"></i>Model ' + signed(forecast.margin) + '</span>' + (actual ? '<span><i class="is-actual" aria-hidden="true"></i>Actual ' + signed(actualMargin) + '</span>' : '') + '</div></div>';
 }
 
 function matchupOutlook(row, teamName, forecast, actual) {
-  if (!forecast) return '<section class="forecast-matchup-outlook"><h5 class="forecast-section-title">Model outlook</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'The current snapshot cannot project this game.') + '</p></section>';
+  if (!forecast) return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'Prediction unavailable.') + '</p></section>';
   const probability = forecast.winProbability * 100;
   const probabilityLabel = teamName + ' win probability ' + number(probability) + ' percent; ' + row.opponentName + ' ' + number(100 - probability) + ' percent.';
-  return '<section class="forecast-matchup-outlook"><h5 class="forecast-section-title">Model outlook · current</h5>' +
-    '<div class="forecast-win-heading"><span>' + escapeHtml(teamName) + '<small>win chance</small></span><strong>' + number(probability) + '%</strong></div>' +
-    '<div class="forecast-win-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span style="width:' + probability.toFixed(3) + '%"></span></div>' +
-    '<div class="forecast-win-labels"><span>' + escapeHtml(teamName) + '</span><span>' + escapeHtml(row.opponentName) + '</span></div>' +
+  const selectedColor = primaryColor(row.matchup?.team?.color) || '52, 92, 134';
+  const opponentColor = primaryColor(row.matchup?.opponent?.color) || '126, 140, 155';
+  return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5>' +
+    '<div class="forecast-probability-headline"><strong>' + number(probability) + '%</strong><span>' + escapeHtml(teamName) + '</span></div>' +
+    '<div class="forecast-probability-bar" role="img" aria-label="' + escapeHtml(probabilityLabel) + '"><span class="is-selected" style="width:' + probability.toFixed(3) + '%;--probability-team-rgb:' + selectedColor + '"></span><span class="is-opponent" style="width:' + (100 - probability).toFixed(3) + '%;--probability-team-rgb:' + opponentColor + '"></span></div>' +
+    '<div class="forecast-probability-labels"><span>' + escapeHtml(row.matchup?.team?.abbreviation || teamName) + '<strong>' + number(probability) + '%</strong></span><span>' + escapeHtml(row.matchup?.opponent?.abbreviation || row.opponentName) + '<strong>' + number(100 - probability) + '%</strong></span></div>' +
+    '<p class="forecast-analytics-note">' + (actual ? 'Reprojected with current data, including this result.' : 'From the loaded snapshot.') + '</p></section>';
+}
+
+function marginPanel(row, teamName, forecast, actual) {
+  if (!forecast) return '<section class="forecast-analytics-panel forecast-margin-panel"><h5 class="forecast-section-title">Scoring margin</h5><p class="forecast-unavailable">No margin forecast.</p></section>';
+  const difference = actual ? actual.for - actual.against - forecast.margin : null;
+  return '<section class="forecast-analytics-panel forecast-margin-panel"><h5 class="forecast-section-title">' + escapeHtml(teamName) + ' margin</h5>' +
+    '<div class="forecast-margin-headline"><strong title="Current projected margin: ' + forecast.margin + '">' + signed(forecast.margin) + '<small> pts</small></strong><span>Positive favors ' + escapeHtml(teamName) + '</span></div>' +
+    (marginGraphic(forecast, actual, teamName) || '<p class="forecast-unavailable">Outcome range unavailable.</p>') +
+    (finite(difference) ? '<p class="forecast-margin-miss" title="Actual margin minus current projected margin">' + (difference === 0 ? 'Actual margin matched the model.' : number(Math.abs(difference)) + ' pts ' + (difference > 0 ? 'above' : 'below') + ' model') + '</p>' : '') +
+    '<p class="forecast-analytics-note">Exploratory range · uncalibrated.</p></section>';
+}
+
+function pointBreakdown(row, teamName, forecast) {
+  if (!forecast) return '<section class="forecast-point-breakdown"><h5 class="forecast-section-title">Model breakdown</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'No forecast available.') + '</p></section>';
+  return '<section class="forecast-point-breakdown"><h5 class="forecast-section-title">How the margin adds up</h5>' +
     '<dl class="forecast-margin-factors" title="Team strength + conference adjustment + home/away effect + passing/rushing matchup = projected margin, before rounding. Positive points favor ' + escapeHtml(teamName) + '."><div><dt>Projected margin</dt><dd>' + signed(forecast.margin) + '<small> pts</small></dd></div>' +
     '<div><dt>Team strength</dt><dd>' + signed(forecast.unpooledNeutralMargin ?? forecast.neutralMargin) + '</dd></div><div><dt>Conference adjustment</dt><dd>' + signed(forecast.conferenceAdjustment ?? 0) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signed(forecast.venueAdjustment) + '</dd></div>' +
     '<div class="forecast-unit-factor"><dt>Passing + rushing matchup</dt><dd>' + signed(forecast.matchupAdjustment ?? 0) + '</dd></div></dl>' +
-    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.conferenceFallbackReason ? ' Conference adjustment unavailable: ' + escapeHtml(forecast.conferenceFallbackReason) : '') + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 passing/rushing adjustment.' : '') + '</p>' +
-    marginGraphic(forecast, actual) + '</section>';
+    '<p class="forecast-factor-note">Positive points favor ' + escapeHtml(teamName) + '.' + (forecast.conferenceFallbackReason ? ' Conference adjustment unavailable: ' + escapeHtml(forecast.conferenceFallbackReason) : '') + (forecast.matchupEligible === false ? ' Unit data is incomplete: 0 passing/rushing adjustment.' : '') + '</p></section>';
 }
 
 function matchupContext(row, teamName, forecast) {
@@ -157,8 +184,8 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
   const opponentRanks = rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? analysis?.rankingsReady);
   const teamBlock = (team, left, selectedTeam) => '<div class="forecast-matchup-team ' + (left ? 'is-left' : 'is-right') + '">' +
     (!neutral ? '<span class="forecast-team-location">' + (left ? 'Away' : 'Home') + '</span>' : '') +
-    '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 60 }) + '<h4>' + escapeHtml(team.name) + '</h4></div>' +
-    '<div class="forecast-ranks" aria-label="' + escapeHtml(team.name) + ' current rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div>';
+    '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 48 }) + '<div class="forecast-team-copy"><h4>' + escapeHtml(team.name) + '</h4>' +
+    '<div class="forecast-ranks" aria-label="' + escapeHtml(team.name) + ' current rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
   const scores = actual || forecast;
   const leftScore = scores ? selectedOnLeft ? scores.for : scores.against : null;
   const rightScore = scores ? selectedOnLeft ? scores.against : scores.for : null;
@@ -182,14 +209,16 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis) {
   const winner = winnerPresentation(row, teamName, forecast, actual);
   const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
-  return '<article class="forecast-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem">' +
+  const cardLabel = teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label;
+  return '<article class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" aria-label="' + escapeHtml(cardLabel) + '">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
     '<span class="forecast-venue-meta">' + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
-    '<div class="forecast-game-body">' + scoreComparison(row, teamName, forecast, actual) + matchupOutlook(row, teamName, forecast, actual) + '</div>' +
-    renderUnitMatchup(unitProfiles, teamName, row.opponentName, { compact: true }) +
-    '<details class="forecast-supporting-details"><summary>Team records and supporting numbers</summary>' + matchupContext(row, teamName, forecast) + '</details>' +
-    (forecast ? forecastSource(forecast, teamName, row.opponentName) : '') + '</article>';
+    '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + scoreComparison(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
+    forecastPriorSources(forecast, teamName, row.opponentName) +
+    '<details class="forecast-supporting-details"><summary>Matchup details &amp; model breakdown</summary><div class="forecast-details-grid">' + pointBreakdown(row, teamName, forecast) +
+    renderUnitMatchup(unitProfiles, teamName, row.opponentName, { embedded: true }) + matchupContext(row, teamName, forecast) +
+    forecastSource(forecast, analysis) + '</div></details></article>';
 }
 
 export function renderSeasonProjections(analysis) {
@@ -229,6 +258,6 @@ export function renderProjectionSummary(analysis) {
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every game, including Week 1, is projected from the same loaded snapshot: ' + time(analysis.snapshotAt) + ', with results through ' + escapeHtml(analysis.resultsThrough || 'the recorded results date') + '. Matchup headers show away on the left and home on the right; neutral games show ' + escapeHtml(analysis.teamName) + ' on the left. Comparison tables list ' + escapeHtml(analysis.teamName) + ' first.</p>' +
+  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Scoreboards show away left and home right; neutral games show ' + escapeHtml(analysis.teamName) + ' left. Charts list ' + escapeHtml(analysis.teamName) + ' first; positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results.</p>' +
     '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Current CFI ranks cover the full FBS and FCS field under the selected lens weights; subdivision ranks cover FBS or FCS. Board filters do not change these ranks. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }
