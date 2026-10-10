@@ -2,6 +2,7 @@ import { renderUnitMatchup } from './unit-profile-view.js';
 import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
+import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -190,22 +191,6 @@ function scoreComparison(row, teamName, forecast, actual) {
     '<p class="forecast-analytics-note">' + (actual && forecast ? 'Projection uses current data, including this result.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Projection uses the current snapshot.') + '</p></section>';
 }
 
-function marginGraphic(forecast, actual, teamName) {
-  if (!finite(forecast.marginLow80) || !finite(forecast.marginHigh80) || forecast.marginLow80 > forecast.marginHigh80) return '';
-  const actualMargin = actual ? actual.for - actual.against : null;
-  const domain = Math.ceil(Math.max(Math.abs(forecast.marginLow80), Math.abs(forecast.marginHigh80), Math.abs(forecast.margin), finite(actualMargin) ? Math.abs(actualMargin) : 0, 1) * 1.12);
-  const x = value => (150 + value / domain * 134).toFixed(2);
-  const label = teamName + ' scoring margin; positive favors ' + teamName + '. Middle 80% of simulated margins: ' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + ' points. Current projection ' + signed(forecast.margin) + (actual ? '. Actual margin ' + signed(actualMargin) : '') + '. Exploratory, uncalibrated range.';
-  return '<div class="forecast-margin-range"><div class="forecast-range-heading"><span>Middle 80% range</span><strong>' + signed(forecast.marginLow80) + ' to ' + signed(forecast.marginHigh80) + '</strong></div>' +
-    '<svg class="forecast-range-chart" viewBox="0 0 300 52" role="img" aria-label="' + escapeHtml(label) + '">' +
-    '<line class="forecast-range-axis" x1="16" x2="284" y1="20" y2="20"/><line class="forecast-range-zero" x1="150" x2="150" y1="7" y2="30"/>' +
-    '<line class="forecast-range-band" x1="' + x(forecast.marginLow80) + '" x2="' + x(forecast.marginHigh80) + '" y1="20" y2="20"/>' +
-    '<circle class="forecast-range-model" cx="' + x(forecast.margin) + '" cy="20" r="5"/>' +
-    (actual ? '<path class="forecast-range-actual" d="M ' + x(actualMargin) + ' 12 l 6 8 l -6 8 l -6 -8 Z"/>' : '') +
-    '<text class="forecast-range-label" x="16" y="47" text-anchor="start">−' + domain + '</text><text class="forecast-range-label" x="150" y="47" text-anchor="middle">0</text><text class="forecast-range-label" x="284" y="47" text-anchor="end">+' + domain + '</text></svg>' +
-    '<div class="forecast-range-legend"><span><i class="is-model" aria-hidden="true"></i>Model ' + signed(forecast.margin) + '</span>' + (actual ? '<span><i class="is-actual" aria-hidden="true"></i>Actual ' + signed(actualMargin) + '</span>' : '') + '</div></div>';
-}
-
 function matchupOutlook(row, teamName, forecast, actual) {
   if (!forecast) return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5><p class="forecast-unavailable">' + escapeHtml(row.unavailableReason || 'Prediction unavailable.') + '</p></section>';
   const probability = forecast.winProbability * 100;
@@ -260,7 +245,8 @@ function marginPanel(row, teamName, forecast, actual) {
   const difference = actual ? actual.for - actual.against - forecast.margin : null;
   return '<section class="forecast-analytics-panel forecast-margin-panel"><h5 class="forecast-section-title">' + escapeHtml(teamName) + ' margin</h5>' +
     '<div class="forecast-margin-headline"><strong title="Current projected margin: ' + forecast.margin + '">' + signed(forecast.margin) + '<small> pts</small></strong><span>Positive favors ' + escapeHtml(teamName) + '</span></div>' +
-    (marginGraphic(forecast, actual, teamName) || '<p class="forecast-unavailable">Outcome range unavailable.</p>') +
+    (renderMarginGraphic({ margin: forecast.margin, low80: forecast.marginLow80, high80: forecast.marginHigh80,
+      actualMargin: actual ? actual.for - actual.against : null, teamName }) || '<p class="forecast-unavailable">Outcome range unavailable.</p>') +
     (finite(difference) ? '<p class="forecast-margin-miss" title="Actual margin minus current projected margin">' + (difference === 0 ? 'Actual margin matched the model.' : number(Math.abs(difference)) + ' pts ' + (difference > 0 ? 'above' : 'below') + ' model') + '</p>' : '') +
     '<p class="forecast-analytics-note">Exploratory range · uncalibrated.</p></section>';
 }

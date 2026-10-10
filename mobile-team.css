@@ -330,11 +330,13 @@
 }
 
 @media (max-width: 480px) {
+  /* One scoreboard row: keep scores in the space between the two teams.
+     Separate grid tracks let long names grow vertically without covering it. */
   .forecast-matchup-header {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) clamp(84px, 26vw, 108px) minmax(0, 1fr);
     align-items: start;
-    gap: 14px;
-    padding: 14px;
+    gap: 7px;
+    padding: 12px;
   }
 
   .forecast-matchup-team.is-left {
@@ -343,30 +345,54 @@
   }
 
   .forecast-matchup-team.is-right {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1;
   }
 
   .forecast-matchup-center {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .forecast-matchup-score {
+    gap: 6px;
+    font-size: clamp(25px, 7.2vw, 31px);
+    white-space: nowrap;
+  }
+
+  .forecast-matchup-score i {
+    font-size: 20px;
   }
 
   .forecast-team-copy h4 {
-    font-size: 15px;
+    font-size: 14px;
+  }
+
+  .forecast-team-copy .forecast-ranks {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .forecast-matchup-team.is-right .forecast-ranks {
+    align-items: flex-end;
   }
 
   .forecast-matchup-team .forecast-rank {
-    font-size: 11px;
+    font-size: 10px;
     white-space: normal;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   .forecast-matchup-favorite,
   .forecast-matchup-probability,
   .forecast-neutral-label {
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
   .forecast-margin-factors {
@@ -397,5 +423,24 @@
 
   .season-projection-error-metrics > div > small {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 350px) {
+  .forecast-matchup-header {
+    grid-template-columns: minmax(0, 1fr) 80px minmax(0, 1fr);
+    gap: 5px;
+    padding: 10px;
+  }
+
+  .forecast-team-copy h4 {
+    font-size: 13px;
+  }
+
+  .forecast-matchup-status,
+  .forecast-matchup-favorite,
+  .forecast-matchup-probability,
+  .forecast-neutral-label {
+    font-size: 10px;
   }
 }
