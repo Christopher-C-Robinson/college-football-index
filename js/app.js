@@ -8,7 +8,8 @@ import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=471d6fa90b4d';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements } from './season-projections-view.js?v=b42d78654c85';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements } from './season-projections-view.js?v=249d76342fc2';
+import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
@@ -676,12 +677,6 @@ function renderCompare() {
   ids('compare-content').innerHTML = '<div class="compare-team-headings"><div>' + renderTeamLogo(a, { size: 40 }) + '<strong>' + escapeHtml(a.name) + '</strong></div><div>' + renderTeamLogo(b, { size: 40 }) + '<strong>' + escapeHtml(b.name) + '</strong></div></div>' + rows + '<div class="compare-empty">' + escapeHtml(a.name) + ' · ' + escapeHtml(formatRecord(a)) + ' overall · ' + escapeHtml(fbsRecord(a)) + ' vs FBS · ' + escapeHtml(fcsRecord(a)) + ' vs FCS<br>' + escapeHtml(b.name) + ' · ' + escapeHtml(formatRecord(b)) + ' overall · ' + escapeHtml(fbsRecord(b)) + ' vs FBS · ' + escapeHtml(fcsRecord(b)) + ' vs FCS<br>' + escapeHtml(footnote) + '</div>';
 }
 
-function marginRangeLabel(teamA, teamB, low, high) {
-  if (low >= 0) return teamA.name + ' by ' + formatNumber(low, 0) + ' to ' + formatNumber(high, 0);
-  if (high <= 0) return teamB.name + ' by ' + formatNumber(Math.abs(high), 0) + ' to ' + formatNumber(Math.abs(low), 0);
-  return teamB.name + ' by ' + formatNumber(Math.abs(low), 0) + ' to ' + teamA.name + ' by ' + formatNumber(high, 0);
-}
-
 function runMatchupSimulation() {
   const output = ids('simulation-result');
   if (!state.model) {
@@ -749,7 +744,10 @@ function runMatchupSimulation() {
     '<div class="simulation-probability"><div class="simulation-team-heading">' + renderTeamLogo(teamA, { size: 40 }) + '<span>' + escapeHtml(teamA.name) + '</span></div><strong>' + chanceA.toFixed(1) + '%</strong><small>Win chance</small></div>' +
     '<div class="simulation-probability"><div class="simulation-team-heading">' + renderTeamLogo(teamB, { size: 40 }) + '<span>' + escapeHtml(teamB.name) + '</span></div><strong>' + chanceB.toFixed(1) + '%</strong><small>Win chance</small></div>' +
     '<div class="simulation-score"><span>Projected score</span><div class="simulation-scoreline"><div class="simulation-score-team">' + renderTeamLogo(teamA, { size: 40 }) + '<span>' + escapeHtml(teamA.abbreviation || teamA.name) + '</span><strong>' + formatNumber(projectedScoreA, 0) + '</strong></div><i aria-hidden="true">—</i><div class="simulation-score-team">' + renderTeamLogo(teamB, { size: 40 }) + '<span>' + escapeHtml(teamB.abbreviation || teamB.name) + '</span><strong>' + formatNumber(projectedScoreB, 0) + '</strong></div></div><small>' + escapeHtml(venueLabel) + ' · Margin ' + (predictedMargin >= 0 ? '+' : '') + formatNumber(predictedMargin, 1) + ' pts</small></div>' +
-    '<div class="simulation-range"><span>MIDDLE 80% OF SIMULATED MARGINS</span><strong>' + escapeHtml(marginRangeLabel(teamA, teamB, lowMargin, highMargin)) + '</strong><small>Exploratory range from the current model; historical coverage has not been calibrated.</small></div>' +
+    '<section class="simulation-range" aria-label="' + escapeHtml(teamA.name) + ' margin"><h5 class="forecast-section-title">' + escapeHtml(teamA.name) + ' margin</h5>' +
+    '<div class="simulation-margin-headline"><strong>' + signedPoints(predictedMargin) + '<small> pts</small></strong><span>Positive favors ' + escapeHtml(teamA.name) + '</span></div>' +
+    (renderMarginGraphic({ margin: predictedMargin, low80: lowMargin, high80: highMargin, teamName: teamA.name }) || '<p class="forecast-unavailable">Outcome range unavailable.</p>') +
+    '<p class="forecast-analytics-note">Exploratory range · uncalibrated.</p></section>' +
     '</div><div class="simulation-breakdown"><p>How the margin adds up <span>Positive points favor ' + escapeHtml(teamA.name) + '</span></p><dl>' +
     '<div><dt>Team strength</dt><dd>' + signedPoints(neutralMargin) + '</dd></div><div><dt>Conference adjustment</dt><dd>' + signedPoints(conferencePoints) + '</dd></div><div><dt>Home / away effect</dt><dd>' + signedPoints(venuePoints) + '</dd></div>' +
     '<div><dt>Passing + rushing matchup</dt><dd>' + signedPoints(matchupPoints) + '</dd></div><div><dt>Projected margin</dt><dd>' + signedPoints(predictedMargin) + '</dd></div></dl>' +
