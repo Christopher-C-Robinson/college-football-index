@@ -17,7 +17,8 @@ import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js
 import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
-import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=97eab8e0a46d';
+import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
+import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=f7a16d1037f1';
 import { renderGameDayRows } from './game-day-view.js?v=c94245230b01';
 
 const STARTER_URL = './data/current-season.json';
@@ -83,9 +84,15 @@ function gameDayLabel(date, options = { weekday: 'long', month: 'long', day: 'nu
 }
 
 function populateGameDayControls() {
+  if (!state.model) return;
+  const division = ids('games-division').value;
+  const tier = ids('games-tier');
+  tier.disabled = division === 'fcs';
+  if (tier.disabled) tier.value = 'all';
+  tier.dispatchEvent(new Event('searchable-select:refresh'));
   const select = ids('games-conference');
   const previous = select.value;
-  const conferences = [...new Set(state.model.allTeams.filter(team => ['fbs', 'fcs'].includes(team.classification))
+  const conferences = [...new Set(state.model.allTeams.filter(team => matchesTeamFilters(team, { division, tier: tier.value }))
     .map(team => team.conference).filter(Boolean))].sort();
   select.innerHTML = '<option value="all">All conferences</option>' + conferences.map(name =>
     '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>').join('');
@@ -132,7 +139,7 @@ function renderGameDay() {
   ids('games-snapshot').textContent = snapshot;
   if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) return;
   const rows = sortGameDay(filterGameDay(gameDayReport, {
-    division: ids('games-division').value, conference: ids('games-conference').value,
+    division: ids('games-division').value, tier: ids('games-tier').value, conference: ids('games-conference').value,
     status: ids('games-status').value, search: ids('games-search').value
   }), sort);
   const forecasts = rows.filter(row => row.hasForecast).length;
@@ -332,11 +339,6 @@ function renderFitSummary(report) {
     '<small>Uses completed results. <a href="#model">See historical accuracy ↗</a></small>';
 }
 
-function isPowerFour(team) {
-  const conference = teamKey(team.conference);
-  return ['acc', 'atlantic coast conference', 'big ten', 'big ten conference', 'big 12', 'big 12 conference', 'sec', 'southeastern', 'southeastern conference'].includes(conference);
-}
-
 function selectedBoardFilters() {
   return {
     division: ids('division-filter').value,
@@ -347,14 +349,7 @@ function selectedBoardFilters() {
 
 function filteredBoardTeams() {
   const filters = selectedBoardFilters();
-  return state.model.allTeams.filter(function (team) {
-    if (!['fbs', 'fcs'].includes(String(team.classification).toLowerCase())) return false;
-    if (filters.division !== 'all' && String(team.classification).toLowerCase() !== filters.division) return false;
-    if (filters.tier === 'power' && !(team.classification === 'fbs' && isPowerFour(team))) return false;
-    if (filters.tier === 'other' && !(team.classification === 'fbs' && !isPowerFour(team))) return false;
-    if (filters.conference !== 'all' && teamKey(team.conference) !== teamKey(filters.conference)) return false;
-    return true;
-  });
+  return state.model.allTeams.filter(team => matchesTeamFilters(team, filters));
 }
 
 function updateConferenceOptions() {
@@ -370,11 +365,7 @@ function updateConferenceOptions() {
   const conferenceSelect = ids('conference-filter');
   const prior = conferenceSelect.value;
   const conferences = Array.from(new Set(state.model.allTeams.filter(function (team) {
-    if (!['fbs', 'fcs'].includes(String(team.classification).toLowerCase())) return false;
-    if (divisionSelect.value !== 'all' && team.classification !== divisionSelect.value) return false;
-    if (tierSelect.value === 'power' && !(team.classification === 'fbs' && isPowerFour(team))) return false;
-    if (tierSelect.value === 'other' && !(team.classification === 'fbs' && !isPowerFour(team))) return false;
-    return Boolean(team.conference);
+    return matchesTeamFilters(team, { division: divisionSelect.value, tier: tierSelect.value }) && Boolean(team.conference);
   }).map(function (team) { return team.conference; }))).sort(function (a, b) { return a.localeCompare(b); });
   conferenceSelect.innerHTML = '<option value="all">All conferences</option>' + conferences.map(function (conference) {
     return '<option value="' + escapeHtml(conference) + '">' + escapeHtml(conference) + '</option>';
@@ -1041,7 +1032,10 @@ async function initialize() {
 document.addEventListener('change', async function (event) {
   if (event.target.id === 'games-date') {
     selectGameDay(event.target.value);
-  } else if (['games-sort', 'games-division', 'games-conference', 'games-status'].includes(event.target.id)) {
+  } else if (['games-division', 'games-tier'].includes(event.target.id)) {
+    populateGameDayControls();
+    renderGameDay();
+  } else if (['games-sort', 'games-conference', 'games-status'].includes(event.target.id)) {
     renderGameDay();
   } else if (['fbs', 'fcs'].includes(event.target.dataset.mapDivision)) {
     const division = event.target.dataset.mapDivision;

@@ -1,6 +1,7 @@
 import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
+import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
 
 const snapshotCaches = new WeakMap();
 const dateFormatters = new Map();
@@ -233,12 +234,13 @@ export async function buildGameDay(model, {
   return refreshGameDayRanks(model, report);
 }
 
-export function filterGameDay(report, { division = 'all', conference = 'all', status = 'all', search = '' } = {}) {
+export function filterGameDay(report, { division = 'all', tier = 'all', conference = 'all', status = 'all', search = '' } = {}) {
   const query = key(search);
   return report.rows.filter(row => {
     const teams = [row.home, row.away];
-    if (division !== 'all' && !teams.some(team => team.classification === division)) return false;
-    if (conference !== 'all' && !teams.some(team => team.conference === conference)) return false;
+    // A cross-conference game qualifies when one team satisfies the whole
+    // selection, rather than letting different opponents satisfy each filter.
+    if (!teams.some(team => matchesTeamFilters(team, { division, tier, conference }))) return false;
     if (status === 'upcoming' && !['upcoming', 'unplayed'].includes(row.status)) return false;
     if (status !== 'all' && status !== 'upcoming' && row.status !== status) return false;
     return !query || teams.some(team => key(team.name + ' ' + team.abbreviation + ' ' + team.conference).includes(query));
