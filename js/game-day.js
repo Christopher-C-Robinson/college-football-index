@@ -234,13 +234,14 @@ export async function buildGameDay(model, {
   return refreshGameDayRanks(model, report);
 }
 
-export function filterGameDay(report, { division = 'all', tier = 'all', conference = 'all', status = 'all', search = '' } = {}) {
+export function filterGameDay(report, { division = 'all', tier = 'all', conference = 'all', bothTeams = false, status = 'all', search = '' } = {}) {
   const query = key(search);
   return report.rows.filter(row => {
     const teams = [row.home, row.away];
-    // A cross-conference game qualifies when one team satisfies the whole
-    // selection, rather than letting different opponents satisfy each filter.
-    if (!teams.some(team => matchesTeamFilters(team, { division, tier, conference }))) return false;
+    // Mixed matchups stay visible by default. Strict mode requires each team
+    // to satisfy the same full selection, as on the Rankings team filter.
+    const matches = team => matchesTeamFilters(team, { division, tier, conference });
+    if (!(bothTeams ? teams.every(matches) : teams.some(matches))) return false;
     if (status === 'upcoming' && !['upcoming', 'unplayed'].includes(row.status)) return false;
     if (status !== 'all' && status !== 'upcoming' && row.status !== status) return false;
     return !query || teams.some(team => key(team.name + ' ' + team.abbreviation + ' ' + team.conference).includes(query));

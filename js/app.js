@@ -18,7 +18,7 @@ import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
-import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=f7a16d1037f1';
+import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=d1543aa7f8d7';
 import { renderGameDayRows } from './game-day-view.js?v=c94245230b01';
 
 const STARTER_URL = './data/current-season.json';
@@ -137,9 +137,13 @@ function renderGameDay() {
     snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' snapshot · Updated ' + timestamp + '. Finals reflect that refresh; this is not a live score feed. All projections use the loaded snapshot.';
   }
   ids('games-snapshot').textContent = snapshot;
+  ids('games-filter-mode-note').textContent = ids('games-both-teams').checked
+    ? 'Only games where both teams match the selected subdivision, group, and conference.'
+    : 'Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.';
   if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) return;
   const rows = sortGameDay(filterGameDay(gameDayReport, {
     division: ids('games-division').value, tier: ids('games-tier').value, conference: ids('games-conference').value,
+    bothTeams: ids('games-both-teams').checked,
     status: ids('games-status').value, search: ids('games-search').value
   }), sort);
   const forecasts = rows.filter(row => row.hasForecast).length;
@@ -735,7 +739,7 @@ function renderBoard(resetMatchups = false) {
     }).join('');
     const filters = selectedBoardFilters();
     const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
-    const groupLabel = filters.tier === 'power' ? ' · Power Four' : filters.tier === 'other' ? ' · Other FBS' : '';
+    const groupLabel = filters.tier === 'power' ? ' · Power Four' : filters.tier === 'other' ? ' · Other FBS' : filters.tier === 'nonpower' ? ' · Non-Power Four' : '';
     const conferenceLabel = filters.conference === 'all' ? '' : ' · ' + filters.conference;
     const header = '<div class="board-result-count">' + preview.length + ' teams in preview' + escapeHtml(' · ' + divisionLabel + groupLabel + conferenceLabel) + '</div>';
     const note = '<div class="board-lock board-lock-compact"><span class="lock-icon" aria-hidden="true">⌁</span><strong>Ratings are waiting for the full game graph.</strong><p>Showing records only. This file has ' + state.model.ratedGameCount + ' completed FBS/FCS games across ' + state.model.ratedTeamCount + ' teams; rankings open at 180 games and 100 teams. <a href="#data">Load full-season data.</a> Need ' + gamesNeeded + ' more games and ' + teamsNeeded + ' more teams.</p></div>';
@@ -757,7 +761,7 @@ function renderBoard(resetMatchups = false) {
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
-  const groupLabel = filters.tier === 'power' ? ' · Power Four' : filters.tier === 'other' ? ' · Other FBS' : '';
+  const groupLabel = filters.tier === 'power' ? ' · Power Four' : filters.tier === 'other' ? ' · Other FBS' : filters.tier === 'nonpower' ? ' · Non-Power Four' : '';
   const conferenceLabel = filters.conference === 'all' ? '' : ' · ' + filters.conference;
   const count = '<div class="board-result-count">' + filtered.length + ' teams shown · ' + rankedCount + ' rated' + escapeHtml(' · ' + divisionLabel + groupLabel + conferenceLabel) + '</div>';
   if (!rows) {
@@ -1035,7 +1039,7 @@ document.addEventListener('change', async function (event) {
   } else if (['games-division', 'games-tier'].includes(event.target.id)) {
     populateGameDayControls();
     renderGameDay();
-  } else if (['games-sort', 'games-conference', 'games-status'].includes(event.target.id)) {
+  } else if (['games-sort', 'games-conference', 'games-status', 'games-both-teams'].includes(event.target.id)) {
     renderGameDay();
   } else if (['fbs', 'fcs'].includes(event.target.dataset.mapDivision)) {
     const division = event.target.dataset.mapDivision;

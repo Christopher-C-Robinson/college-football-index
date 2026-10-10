@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="./mobile.css?v=cc935a614492">
     <link rel="stylesheet" href="./mobile-team.css?v=5dd0f906cf0b">
     <link rel="stylesheet" href="./device-theme.css?v=ba58071ec2c1">
-    <link rel="stylesheet" href="./game-day.css?v=d3413fba6006">
-    <script type="module" src="./js/app.js?v=cb3e48dc204c"></script>
+    <link rel="stylesheet" href="./game-day.css?v=2ce5a9b1cc91">
+    <script type="module" src="./js/app.js?v=191bdc3cdbb3"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -36,7 +36,7 @@
               <div class="panel-heading"><div><h2>Overall rankings</h2><p class="panel-subtitle">Every team faces the full FBS/FCS field on neutral ground. Higher average win chance means a higher rank.</p></div><span class="model-ready-badge" id="model-readiness">CHECKING DATA</span></div>
               <div class="board-filters" aria-label="Filter team comparison board">
                 <label><span>Subdivision</span><select id="division-filter" class="select-control filter-control"><option value="all">FBS + FCS</option><option value="fbs">FBS</option><option value="fcs">FCS</option></select></label>
-                <label><span>Conference group</span><select id="tier-filter" class="select-control filter-control"><option value="all">All tiers</option><option value="power">Power Four</option><option value="other">Other FBS</option></select></label>
+                <label><span>Conference group</span><select id="tier-filter" class="select-control filter-control"><option value="all">All groups</option><option value="power">Power Four</option><option value="nonpower">Non-Power Four</option><option value="other">Other FBS</option></select></label>
                 <label><span>Conference</span><select id="conference-filter" class="select-control filter-control"><option value="all">All conferences</option></select></label>
               </div>
               <p class="filter-note">Filters change the teams shown. Overall ranks always use the full FBS/FCS field.</p>
@@ -70,13 +70,14 @@
           <p id="games-timezone" class="game-day-note"></p>
           <div class="game-day-filters" aria-label="Filter and sort games">
             <label><span>Sort games</span><select id="games-sort" class="select-control" aria-label="Sort games"><option value="combined-rank">Best combined ranking</option><option value="best-team">Highest-ranked team</option><option value="closest">Closest predicted game</option><option value="total">Highest projected total</option><option value="kickoff">Kickoff time</option></select></label>
-            <label><span>Subdivision</span><select id="games-division" class="select-control" aria-label="Game subdivision"><option value="all">FBS + FCS</option><option value="fbs">Games involving FBS</option><option value="fcs">Games involving FCS</option></select></label>
-            <label><span>Conference group</span><select id="games-tier" class="select-control" aria-label="Game conference group"><option value="all">All groups</option><option value="power">Power Four</option><option value="nonpower">Non-Power Four</option></select></label>
+            <label><span>Subdivision</span><select id="games-division" class="select-control" aria-label="Game subdivision"><option value="all">FBS + FCS</option><option value="fbs">FBS</option><option value="fcs">FCS</option></select></label>
+            <label><span>Conference group</span><select id="games-tier" class="select-control" aria-label="Game conference group"><option value="all">All groups</option><option value="power">Power Four</option><option value="nonpower">Non-Power Four</option><option value="other">Other FBS</option></select></label>
             <label><span>Conference</span><select id="games-conference" class="select-control" aria-label="Game conference"><option value="all">All conferences</option></select></label>
             <label><span>Results</span><select id="games-status" class="select-control" aria-label="Game result status"><option value="all">All games</option><option value="upcoming">Not final in snapshot</option><option value="final">Final in snapshot</option><option value="canceled">Canceled</option></select></label>
             <label><span>Find a team</span><input id="games-search" class="select-control" type="search" placeholder="Team name or abbreviation" aria-label="Find games by team"></label>
           </div>
-          <p class="game-day-note">Non-Power Four includes other FBS teams, independents, and FCS. Games against Power Four opponents stay included. At least one team must match all selected team filters.</p>
+          <p class="game-day-note">Non-Power Four includes other FBS teams, independents, and FCS. Other FBS excludes FCS.</p>
+          <div class="game-day-match-mode"><label for="games-both-teams" class="game-day-match-rule"><input id="games-both-teams" type="checkbox" aria-describedby="games-filter-mode-note"><span>Both teams must match</span></label><p id="games-filter-mode-note" class="game-day-note">Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.</p></div>
           <div class="game-day-toolbar"><p id="games-sort-note" class="game-day-note"></p><p id="games-count" role="status" aria-live="polite">Loading the game day…</p></div>
         </div>
         <p id="games-snapshot" class="game-day-note"></p>

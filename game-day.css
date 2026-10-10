@@ -8,6 +8,11 @@
 .game-day-date-controls input { display: block; min-width: 0; min-inline-size: 0; max-width: 100%; max-inline-size: 100%; min-height: 44px; box-sizing: border-box; }
 .game-day-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .game-day-filters > label { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; color: var(--ink-soft); font-size: 13px; font-weight: 600; }
+.game-day-match-mode { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.game-day-match-rule { display: inline-flex; align-items: center; justify-self: start; gap: 10px; min-height: 44px; max-width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-size: 13px; line-height: 1.5; cursor: pointer; }
+#games-both-teams { flex: none; width: 22px; height: 22px; min-width: 22px; min-height: 22px; margin: 0; accent-color: var(--blue-mid); cursor: pointer; }
+.game-day-match-rule:has(#games-both-teams:checked) { background: color-mix(in srgb, var(--blue-mid) 7%, var(--paper)); }
+.game-day-match-rule:has(#games-both-teams:focus-visible) { outline: 3px solid var(--blue-mid); outline-offset: 2px; }
 .game-day-controls .searchable-select, .game-day-filters .searchable-select { min-width: 0; width: 100%; }
 #games-date, #games-search { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-size: 16px; }
 #games-search { min-width: 0; min-inline-size: 0; }
@@ -93,6 +98,7 @@
   .main-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; gap: 0; }
   .main-nav a { min-width: 0; padding: 0 4px; font-size: 11px; white-space: normal; text-align: center; line-height: 1.25; }
   .game-day-list { gap: 12px; }
+  .game-day-match-rule { justify-self: stretch; width: 100%; }
   .game-day-card-heading { padding: 9px 12px; gap: 5px 10px; }
   .game-day-matchup { grid-template-columns: minmax(0, 1fr) minmax(80px, 100px) minmax(0, 1fr); gap: 8px; padding: 13px 12px 10px; }
   .game-day-team-link, .game-day-team.is-home .game-day-team-link { flex-direction: column; align-items: start; gap: 6px; }
