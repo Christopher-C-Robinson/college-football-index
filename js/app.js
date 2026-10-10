@@ -17,6 +17,8 @@ import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js
 import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
+import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=97eab8e0a46d';
+import { renderGameDayRows } from './game-day-view.js?v=c94245230b01';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -32,9 +34,16 @@ const modelFitCache = new WeakMap();
 let modelFitRequest = 0;
 const ids = function (id) { return document.getElementById(id); };
 let activeView = 'rankings';
+const gameDayTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+let gameDayDate = localDateKey(new Date(), gameDayTimeZone);
+let gameDayReport = null;
+let gameDayModel = null;
+let gameDayController = null;
+let gameDayFollowToday = true;
 
 function viewForHash(hash) {
   const target = String(hash || '').replace(/^#/, '');
+  if (target === 'games') return 'games';
   if (['dossier'].includes(target)) return 'dossier';
   if (['matchups', 'compare', 'simulator'].includes(target)) return 'matchups';
   if (['model', 'method', 'data'].includes(target)) return 'model';
@@ -51,6 +60,8 @@ function showView({ focus = false } = {}) {
     else link.removeAttribute('aria-current');
   }
   if (activeView === 'rankings') centerMobileMap();
+  if (activeView === 'games') startGameDay();
+  else { gameDayController?.abort(); gameDayController = null; ids('games-content').setAttribute('aria-busy', 'false'); }
   if (activeView === 'dossier') updateOpponentRecords();
   else opponentRecordRequest += 1;
   if (focus) {
@@ -65,6 +76,132 @@ function showView({ focus = false } = {}) {
 function navigateView(view) {
   if (location.hash !== '#' + view) history.pushState(null, '', '#' + view);
   showView({ focus: true });
+}
+
+function gameDayLabel(date, options = { weekday: 'long', month: 'long', day: 'numeric' }) {
+  return new Intl.DateTimeFormat(undefined, { ...options, timeZone: 'UTC' }).format(new Date(date + 'T12:00:00Z'));
+}
+
+function populateGameDayControls() {
+  const select = ids('games-conference');
+  const previous = select.value;
+  const conferences = [...new Set(state.model.allTeams.filter(team => ['fbs', 'fcs'].includes(team.classification))
+    .map(team => team.conference).filter(Boolean))].sort();
+  select.innerHTML = '<option value="all">All conferences</option>' + conferences.map(name =>
+    '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>').join('');
+  select.value = conferences.includes(previous) ? previous : 'all';
+  select.dispatchEvent(new Event('searchable-select:refresh'));
+}
+
+function refreshGameDayRankingStatus() {
+  if (!gameDayReport || gameDayModel !== state.model) return;
+  refreshGameDayRanks(state.model, gameDayReport);
+  if (neutralRankingError) {
+    gameDayReport.rankingsStatus = 'unavailable';
+    for (const row of gameDayReport.rows) row.rankingsStatus = 'unavailable';
+  }
+}
+
+function renderGameDay() {
+  const today = localDateKey(new Date(), gameDayTimeZone);
+  ids('games-date').value = gameDayDate;
+  ids('games-page-title').textContent = gameDayDate === today ? 'Today’s games' : gameDayLabel(gameDayDate);
+  ids('games-timezone').textContent = 'Kickoffs shown in your device timezone: ' + gameDayTimeZone.replaceAll('_', ' ') + '. TBD games keep their scheduled calendar date.';
+  const sort = ids('games-sort').value;
+  const explanations = {
+    'combined-rank': 'Lowest sum of both teams’ overall neutral ranks first. Both teams must be ranked.',
+    'best-team': 'Games featuring the highest-ranked team first, using overall neutral ranks.',
+    closest: 'Smallest projected point margin first, including the actual venue.',
+    total: 'Highest projected combined score first.',
+    kickoff: 'Earliest kickoff first; times still to be announced appear last.'
+  };
+  const rankStatus = gameDayReport?.rankingsStatus || (neutralRankingError || !state.model?.broadCoverage ? 'unavailable' : getNeutralRankings(state.model)?.status || 'pending');
+  const rankingNote = ['combined-rank', 'best-team'].includes(sort) && state.model && rankStatus !== 'ready'
+    ? rankStatus === 'pending' ? ' Neutral ranks are still calculating; games are shown by kickoff for now.'
+      : ' Neutral rank sorting is unavailable; games are shown by kickoff.' : '';
+  ids('games-sort-note').textContent = explanations[sort] + rankingNote + ' Filters keep the same global ranks.';
+  const meta = state.model?.meta;
+  let snapshot = 'Load a season dataset to see its schedule. This is a snapshot, not a live score feed.';
+  if (meta) {
+    const generated = new Date(meta.generatedAt || '');
+    const timestamp = Number.isFinite(generated.getTime()) ? new Intl.DateTimeFormat(undefined, {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: gameDayTimeZone
+    }).format(generated) : 'time unavailable';
+    snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' snapshot · Updated ' + timestamp + '. Finals reflect that refresh; this is not a live score feed. All projections use the loaded snapshot.';
+  }
+  ids('games-snapshot').textContent = snapshot;
+  if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) return;
+  const rows = sortGameDay(filterGameDay(gameDayReport, {
+    division: ids('games-division').value, conference: ids('games-conference').value,
+    status: ids('games-status').value, search: ids('games-search').value
+  }), sort);
+  const forecasts = rows.filter(row => row.hasForecast).length;
+  ids('games-count').textContent = rows.length + ' of ' + gameDayReport.rows.length + ' games · ' + forecasts + (forecasts === 1 ? ' forecast' : ' forecasts');
+  ids('games-content').innerHTML = renderGameDayRows(rows, { timeZone: gameDayTimeZone, rankingsStatus: gameDayReport.rankingsStatus });
+  if (!gameDayReport.rows.length) {
+    const dates = gameDayReport.availableDates;
+    const previous = dates.filter(date => date < gameDayDate).at(-1);
+    const next = dates.find(date => date > gameDayDate);
+    ids('games-content').innerHTML = '<div class="game-day-empty"><h2>No games scheduled for ' + escapeHtml(gameDayLabel(gameDayDate)) + '</h2><p>The loaded snapshot has no FBS/FCS games on this date.</p>' +
+      [previous, next].filter(Boolean).map(date => '<button class="button button-outline" type="button" data-games-date="' + date + '">' + escapeHtml(gameDayLabel(date, { month: 'short', day: 'numeric' })) + ' games</button>').join(' ') + '</div>';
+  }
+}
+
+async function startGameDay() {
+  renderGameDay();
+  if (activeView !== 'games' || !state.model) return;
+  if (gameDayReport && gameDayModel === state.model && gameDayReport.date === gameDayDate) {
+    refreshGameDayRankingStatus();
+    renderGameDay();
+    ids('games-progress').textContent = '';
+    return;
+  }
+  if (gameDayController) return;
+  const controller = new AbortController();
+  gameDayController = controller;
+  const model = state.model;
+  const date = gameDayDate;
+  const current = () => !controller.signal.aborted && gameDayController === controller && state.model === model && gameDayDate === date && activeView === 'games';
+  const content = ids('games-content');
+  content.setAttribute('aria-busy', 'true');
+  content.innerHTML = '<div class="game-day-empty">Preparing the schedule and matchup forecasts…</div>';
+  ids('games-count').textContent = 'Preparing games…';
+  try {
+    const report = await buildGameDay(model, { date, timeZone: gameDayTimeZone, signal: controller.signal,
+      onProgress: progress => {
+        if (current()) ids('games-progress').textContent = progress.totalGames ? 'Preparing forecasts: ' + progress.completedGames + ' / ' + progress.totalGames + ' games…' : '';
+      }
+    });
+    if (!current()) return;
+    gameDayReport = report;
+    gameDayModel = model;
+    refreshGameDayRankingStatus();
+    renderGameDay();
+    ids('games-progress').textContent = '';
+  } catch (error) {
+    if (!current()) return;
+    content.innerHTML = '<div class="game-day-empty">Could not prepare these games. ' + escapeHtml(error.message || 'Reload the dataset and try again.') + '</div>';
+    ids('games-count').textContent = 'Games unavailable';
+    ids('games-progress').textContent = '';
+  } finally {
+    if (gameDayController === controller) {
+      gameDayController = null;
+      content.setAttribute('aria-busy', 'false');
+    }
+  }
+}
+
+function selectGameDay(date) {
+  try { if (shiftedDateKey(date, 0) !== date) return; } catch { ids('games-date').value = gameDayDate; return; }
+  gameDayFollowToday = date === localDateKey(new Date(), gameDayTimeZone);
+  if (date !== gameDayDate) {
+    gameDayController?.abort();
+    gameDayController = null;
+    gameDayReport = null;
+    gameDayModel = null;
+    gameDayDate = date;
+  }
+  startGameDay();
 }
 
 function escapeHtml(value) {
@@ -784,6 +921,8 @@ async function updateNeutralRankings() {
     for (const analysis of seasonAnalysisCache.values()) refreshSeasonProjectionRanks(model, analysis);
     const selected = seasonAnalysisCache.get(teamKey(state.focusTeam));
     if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
+    refreshGameDayRankingStatus();
+    if (activeView === 'games') renderGameDay();
     renderBoard(true);
   } catch (error) {
     if (!current()) return;
@@ -795,6 +934,8 @@ async function updateNeutralRankings() {
     }
     const selected = seasonAnalysisCache.get(teamKey(state.focusTeam));
     if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
+    refreshGameDayRankingStatus();
+    if (activeView === 'games') renderGameDay();
     renderBoard(true);
   }
 }
@@ -819,6 +960,10 @@ function setDataset(raw, message, persist, source = 'imported') {
   validateDataset(raw);
   const previousFocus = state.focusTeam;
   neutralRankingController?.abort();
+  gameDayController?.abort();
+  gameDayController = null;
+  gameDayReport = null;
+  gameDayModel = null;
   neutralRankingError = '';
   let storageWarning = '';
   const model = buildModel(raw);
@@ -834,12 +979,14 @@ function setDataset(raw, message, persist, source = 'imported') {
   }
   populateSelectors();
   updateConferenceOptions();
+  populateGameDayControls();
   setStatus();
   renderHero();
   renderDossier();
   renderBoard(true);
   renderDatasetStatus();
   updateNeutralRankings();
+  if (activeView === 'games') startGameDay();
   // Recompute whole-field fit
   // only for dataset changes, keeping any old async result off a new snapshot.
   updateModelFit();
@@ -892,7 +1039,11 @@ async function initialize() {
 }
 
 document.addEventListener('change', async function (event) {
-  if (['fbs', 'fcs'].includes(event.target.dataset.mapDivision)) {
+  if (event.target.id === 'games-date') {
+    selectGameDay(event.target.value);
+  } else if (['games-sort', 'games-division', 'games-conference', 'games-status'].includes(event.target.id)) {
+    renderGameDay();
+  } else if (['fbs', 'fcs'].includes(event.target.dataset.mapDivision)) {
     const division = event.target.dataset.mapDivision;
     state.mapDivisions[division] = event.target.checked;
     // Map-only filters must not rebuild the board or reset matchup selections.
@@ -923,6 +1074,10 @@ document.addEventListener('change', async function (event) {
     }
     event.target.value = '';
   }
+});
+
+document.addEventListener('input', event => {
+  if (event.target.id === 'games-search') renderGameDay();
 });
 
 function describeMapTeam(event) {
@@ -959,6 +1114,13 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  const gameDayButton = event.target.closest('#games-previous, #games-next, #games-today, [data-games-date]');
+  if (gameDayButton) {
+    const date = gameDayButton.dataset.gamesDate || (gameDayButton.id === 'games-today'
+      ? localDateKey(new Date(), gameDayTimeZone) : shiftedDateKey(gameDayDate, gameDayButton.id === 'games-previous' ? -1 : 1));
+    selectGameDay(date);
+    return;
+  }
   const seasonGameLink = event.target.closest('[data-season-game-target]');
   if (seasonGameLink) {
     // Keep #dossier: the app router reserves fragments for top-level views.
@@ -971,7 +1133,7 @@ document.addEventListener('click', async function (event) {
     return;
   }
   const navigation = event.target.closest('a[href^="#"]');
-  if (navigation && ['#rankings', '#top', '#dossier', '#matchups', '#compare', '#simulator', '#model', '#method', '#data'].includes(navigation.getAttribute('href'))) {
+  if (navigation && ['#rankings', '#top', '#games', '#dossier', '#matchups', '#compare', '#simulator', '#model', '#method', '#data'].includes(navigation.getAttribute('href'))) {
     event.preventDefault();
     navigateView(navigation.getAttribute('href').slice(1));
     return;
@@ -1010,6 +1172,11 @@ document.addEventListener('click', async function (event) {
 
 try { state.focusTeam = sessionStorage.getItem(FOCUS_STORAGE_KEY) || null; } catch (error) { /* Optional UI preference. */ }
 window.addEventListener('hashchange', () => showView({ focus: true }));
+window.addEventListener('popstate', () => showView({ focus: true }));
+setInterval(() => {
+  const today = localDateKey(new Date(), gameDayTimeZone);
+  if (gameDayFollowToday && today !== gameDayDate) selectGameDay(today);
+}, 60000);
 showView();
 installTeamLogoFallbacks();
 enhanceSearchableSelects();
@@ -1024,4 +1191,6 @@ initialize().catch(function (error) {
   if (provenance) { provenance.className = 'dataset-provenance section-shell is-warning'; provenance.textContent = 'Public snapshot unavailable. ' + error.message; }
   const fit = ids('model-fit');
   if (fit) { fit.innerHTML = renderModelFitError('Load a season dataset to compare model projections with completed games.'); fit.setAttribute('aria-busy', 'false'); }
+  ids('games-count').textContent = 'Schedule unavailable';
+  ids('games-content').innerHTML = '<div class="game-day-empty">Load a season dataset in Model & data to see games.</div>';
 });
