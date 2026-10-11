@@ -981,11 +981,13 @@ html { scroll-padding-top: 104px; }
 .team-brand-context { gap: 7px; }
 .team-brand-context .team-logo { width: 22px; height: 22px; border: 0; border-radius: 3px; }
 .team-brand-context .team-logo-fallback { font-size: 8px; }
-.simulation-team-heading { display: flex; align-items: center; gap: 9px; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.4; }
+.simulation-probability { align-items: center; text-align: center; }
+.simulation-team-heading { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 100%; min-width: 0; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center; }
+.simulation-team-heading > span:not(.team-logo) { display: grid; place-items: center; min-height: 2.8em; max-width: 100%; overflow-wrap: anywhere; }
 .simulation-team-heading .team-logo { width: 32px; height: 32px; }
 .simulation-scoreline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
-.simulation-score-team { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 6px 9px; align-items: center; flex: 1; color: var(--ink); font-size: 12px; line-height: 1.4; }
-.simulation-score-team .team-logo { width: 32px; height: 32px; grid-row: 1/3; }
+.simulation-score-team { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px 9px; align-items: center; justify-items: center; min-width: 0; flex: 1; color: var(--ink); font-size: 12px; line-height: 1.4; text-align: center; }
+.simulation-score-team .team-logo { width: 32px; height: 32px; }
 .simulation-score-team strong { font: 700 27px/1 var(--sans); margin: 0; }
 .simulation-scoreline > span { color: var(--ink-soft); font-size: 16px; }
 .compare-team-headings { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
@@ -994,7 +996,7 @@ html { scroll-padding-top: 104px; }
 @media (max-width: 600px) {
   .clear-team-button { min-width: 0; align-self: flex-end; min-height: 36px; }
   .rankings-fit-summary { margin-top: -6px; }
-  .simulation-team-heading { font-size: 13px; flex-direction: column; align-items: flex-start; gap: 7px; }
+  .simulation-team-heading { font-size: 13px; gap: 7px; }
   .simulation-score-team strong { font-size: 25px; }
   .compare-team-headings { gap: 14px; }
   .compare-team-headings > div { font-size: 13px; }
