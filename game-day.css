@@ -46,18 +46,6 @@
 .game-day-card.is-final .game-day-status { font-weight: 600; color: var(--ink); }
 .game-day-card.is-canceled .game-day-status { font-weight: 600; }
 .game-day-matchup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 160px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 16px 20px 12px; }
-.game-day-team { min-width: 0; }
-.game-day-team.is-home { text-align: right; }
-.game-day-side { display: block; margin: 0 0 6px; color: var(--ink-soft); font-size: 11px; }
-.game-day-team-link { display: flex; align-items: center; gap: 10px; max-width: 100%; margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
-.game-day-team-link > strong { min-width: 0; overflow-wrap: anywhere; font-size: 16px; line-height: 1.3; }
-.game-day-team.is-home .game-day-team-link { margin-left: auto; flex-direction: row-reverse; text-align: right; }
-.game-day-team-meta { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-.game-day-team.is-home .game-day-team-meta { justify-content: end; }
-.game-day-rank { padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--blue-mid); background: color-mix(in srgb, var(--blue-mid) 7%, var(--paper)); font: 500 11px/1.45 var(--mono); }
-.game-day-rank.is-unavailable { color: var(--ink-soft); font: 11px/1.45 var(--sans); }
-.game-day-record { color: var(--ink); font: 500 12px/1.5 var(--mono); white-space: nowrap; }
-.game-day-team-conference { display: block; margin-top: 4px; color: var(--ink-soft); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
 .game-day-scoreboard { min-width: 0; text-align: center; }
 .game-day-score-line { min-width: 0; }
 .game-day-score-line > .game-day-score-label { white-space: nowrap; }
@@ -138,14 +126,6 @@
   .game-day-match-rule { justify-self: stretch; width: 100%; }
   .game-day-card-heading { padding: 9px 12px; gap: 5px 10px; }
   .game-day-matchup { grid-template-columns: minmax(0, 1fr) minmax(80px, 100px) minmax(0, 1fr); gap: 8px; padding: 13px 12px 10px; }
-  .game-day-team-link, .game-day-team.is-home .game-day-team-link { flex-direction: column; align-items: start; gap: 6px; }
-  .game-day-team.is-home .game-day-team-link { align-items: end; }
-  .game-day-team-link > strong { font-size: 13px; }
-  .game-day-team .team-logo { width: 38px; height: 38px; }
-  .game-day-team-meta { gap: 5px; margin-top: 6px; }
-  .game-day-rank { padding: 1px 4px; font-size: 10px; }
-  .game-day-record { font-size: 11px; }
-  .game-day-team-conference { font-size: 10px; }
   .game-day-score { gap: 5px; font-size: 27px; }
   .game-day-score-line.is-observed .game-day-score { font-size: 25px; }
   .game-day-score > i { font-size: 18px; }
@@ -170,7 +150,6 @@
   .game-day-date-controls > button { padding: 8px 10px; }
   .game-day-controls, .game-day-filters { gap: 10px; }
   .game-day-matchup { grid-template-columns: minmax(0, 1fr) 78px minmax(0, 1fr); gap: 6px; padding-left: 10px; padding-right: 10px; }
-  .game-day-team-link > strong { font-size: 12px; }
   .game-day-score { font-size: 24px; gap: 4px; }
   .game-day-score-line.is-observed .game-day-score { font-size: 23px; }
   .game-day-details > summary { font-size: 11px; }

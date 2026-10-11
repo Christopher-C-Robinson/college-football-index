@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { inferSeason } from './season.mjs';
 import { isCompletedGame } from '../../js/model.js';
 import { assertValidDataset, datasetMetadata, deduplicateGames, deduplicateTeamStats, readJson, writeJsonAtomic, RATED_SEASON_TYPES } from './dataset.mjs';
+import { requiredBoxStatsReady } from './game-day-refresh.mjs';
 
 const isD1 = value => ['fbs', 'fcs'].includes(String(value || '').toLowerCase());
 const batchKey = game => game.seasonType + ':' + game.week;
@@ -103,12 +104,35 @@ export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = 
     return result;
   }
 
-  async function fetchSeasonDataset(season, { includeStats = true, seed = null } = {}) {
+  async function fetchSeasonDataset(season, { includeStats = true, seed = null, schedules = null, statsRefresh = null, preserveMetadata = false } = {}) {
+    if (schedules !== null && (!Array.isArray(schedules.fbsGames) || !Array.isArray(schedules.fcsGames))) {
+      throw new Error('Pre-fetched schedules require complete FBS and FCS game arrays.');
+    }
+    if (statsRefresh !== null && statsRefresh.mode !== 'targeted') throw new Error('Unsupported statistics refresh mode.');
+    const targeted = statsRefresh?.mode === 'targeted';
+    const targetValues = (name) => {
+      const value = statsRefresh?.[name] ?? [];
+      if (!Array.isArray(value) && !(value instanceof Set)) throw new Error('Targeted statistics ' + name + ' must be an array or set.');
+      return [...value];
+    };
+    const targetIds = targeted ? new Set(targetValues('gameIds').map(id => {
+      if (id === null || id === undefined || !String(id).trim()) throw new Error('Targeted statistics require a game ID.');
+      return String(id);
+    })) : new Set();
+    const targetKeys = targeted ? new Set(targetValues('batchKeys').map(value => {
+      const match = String(value).match(/^([a-z_]+):(\d+)$/);
+      if (!match || !RATED_SEASON_TYPES.includes(match[1])) throw new Error('Invalid targeted statistics batch: ' + value);
+      return match[1] + ':' + Number(match[2]);
+    })) : new Set();
     const cachePath = resolve(cacheDirectory, season + '.json');
     const cached = await readJson(cachePath, { optional: true });
-    const previous = cached || (seed?.meta?.season === season ? seed : null);
+    const initial = seed?.meta?.season === season ? seed : null;
+    const initialAt = Date.parse(initial?.meta?.generatedAt);
+    const cachedAt = Date.parse(cached?.meta?.generatedAt);
+    const preferInitial = initial && (!cached || Number.isFinite(initialAt) && (!Number.isFinite(cachedAt) || initialAt >= cachedAt));
+    const previous = preserveMetadata && initial || (preferInitial ? initial : cached || initial);
     const hasBoth = previous?.meta?.seasonTypes?.includes('regular') && previous.meta.seasonTypes.includes('postseason');
-    if (!force && season < inferSeason(now) && cached && hasBoth && (!includeStats || cached.meta.includesStats === true)) {
+    if (!force && !schedules && !targeted && season < inferSeason(now) && cached && hasBoth && (!includeStats || cached.meta.includesStats === true)) {
       assertValidDataset(cached, { now });
       return cached;
     }
@@ -118,12 +142,21 @@ export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = 
     try {
       const rawSchedules = [];
       for (const classification of ['fbs', 'fcs']) {
-        rawSchedules.push(...await request('/games', { year: season, seasonType: 'both', classification }, capturedResponses));
+        const params = { year: season, seasonType: 'both', classification };
+        if (schedules) {
+          const data = schedules[classification + 'Games'];
+          rawSchedules.push(...data);
+          capturedResponses.push({ endpoint: '/games', params, data, prefetched: true });
+        } else rawSchedules.push(...await request('/games', params, capturedResponses));
       }
       const games = deduplicateGames(rawSchedules);
       const gameMap = new Map(games.map(game => [String(game.id), game]));
       const metadataAge = new Date(now).getTime() - Date.parse(previous?.meta?.metadataFetchedAt);
-      const reuseMetadata = !force && Array.isArray(previous?.teamMetadata) && previous.teamMetadata.length > 0 && metadataAge >= 0 && metadataAge < 7 * 86_400_000;
+      if (preserveMetadata && (force || !Array.isArray(previous?.teamMetadata) || !previous.teamMetadata.length)) {
+        throw new Error('Statistics-only collection requires existing team metadata and cannot force a refresh.');
+      }
+      const reuseMetadata = !force && Array.isArray(previous?.teamMetadata) && previous.teamMetadata.length > 0
+        && (preserveMetadata || metadataAge >= 0 && metadataAge < 7 * 86_400_000);
       const teamMetadata = reuseMetadata ? previous.teamMetadata : (await request('/teams', { year: season }, capturedResponses)).filter(team => isD1(team.classification));
       const validCachedStats = !force && includeStats ? (previous?.teamStats || []).filter(entry => {
         const game = gameMap.get(String(entry.id));
@@ -139,6 +172,11 @@ export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = 
         if (isD1(game.homeClassification) && isD1(game.awayClassification) && !statsById.has(String(game.id))) batch.missing = true;
       }
       const orderedBatches = [...batches.values()].sort((a, b) => a.latest.localeCompare(b.latest));
+      for (const id of targetIds) {
+        const game = gameMap.get(id);
+        if (!game) throw new Error('Targeted statistics reference unknown scheduled game ' + id + '.');
+        if (isFinal(game) && RATED_SEASON_TYPES.includes(game.seasonType)) targetKeys.add(batchKey(game));
+      }
       const recentKeys = new Set(orderedBatches.slice(-2).map(batch => batch.seasonType + ':' + batch.week));
       const batchFetchedAt = { ...(previous?.meta?.statsBatchFetchedAt || {}) };
       const isCurrent = season >= inferSeason(now);
@@ -147,27 +185,40 @@ export function createCfbdClient({ apiKey, cacheDirectory, force = false, now = 
         const key = batch.seasonType + ':' + batch.week;
         return batch.missing && !recentKeys.has(key) && (!batchFetchedAt[key] || new Date(now).getTime() - Date.parse(batchFetchedAt[key]) >= 7 * 86_400_000);
       }).slice(0, 2).map(batch => batch.seasonType + ':' + batch.week));
-      const selectedBatches = includeStats ? orderedBatches.filter(batch => force || !previous?.meta?.includesStats || (!isCurrent && batch.missing) || (isCurrent && (recentKeys.has(batch.seasonType + ':' + batch.week) || retryKeys.has(batch.seasonType + ':' + batch.week)))) : [];
+      const selectedBatches = includeStats ? orderedBatches.filter(batch => targeted ? targetKeys.has(batchKey(batch))
+        : force || !previous?.meta?.includesStats || (!isCurrent && batch.missing) || (isCurrent && (recentKeys.has(batchKey(batch)) || retryKeys.has(batchKey(batch))))) : [];
       for (const batch of selectedBatches) {
         const rows = [];
         for (const classification of ['fbs', 'fcs']) {
           rows.push(...await request('/games/teams', { year: season, seasonType: batch.seasonType, week: batch.week, classification }, capturedResponses));
         }
-        for (const [id] of statsById) {
-          const game = gameMap.get(id);
-          if (game && batchKey(game) === batch.seasonType + ':' + batch.week) statsById.delete(id);
+        if (!targeted) {
+          for (const [id] of statsById) {
+            const game = gameMap.get(id);
+            if (game && batchKey(game) === batchKey(batch)) statsById.delete(id);
+          }
         }
         for (const entry of deduplicateTeamStats(rows)) {
           const game = gameMap.get(String(entry.id));
           if (!game) throw new Error('CFBD team statistics reference unknown game ' + entry.id + '.');
           // A refresh during live games may return partial box scores. They never enter the snapshot.
-          if (isFinal(game)) statsById.set(String(entry.id), entry);
+          if (isFinal(game)) {
+            const cachedBox = statsById.get(String(entry.id));
+            const sameFinal = Array.isArray(entry.teams) && entry.teams.length === 2
+              && (entry.season === undefined || Number(entry.season) === game.season)
+              && ['home', 'away'].every(side => entry.teams.some(team => team?.team === game[side + 'Team'] && team.points === game[side + 'Points']));
+            // A targeted retry can return fewer fields than a previously usable
+            // box. Keep that box when both still describe the same final.
+            if (targeted && sameFinal && requiredBoxStatsReady(game, cachedBox) && !requiredBoxStatsReady(game, entry)) continue;
+            statsById.set(String(entry.id), entry);
+          }
         }
         batchFetchedAt[batch.seasonType + ':' + batch.week] = new Date(now).toISOString();
       }
       const dataset = {
         meta: datasetMetadata(season, games, {
           includesStats: includeStats, apiCalls: apiCalls - callsBefore, statsBatchFetchedAt: batchFetchedAt,
+          statsBatchKeysFetched: selectedBatches.map(batchKey), schedulesPrefetched: Boolean(schedules),
           metadataFetchedAt: reuseMetadata ? previous.meta.metadataFetchedAt : new Date(now).toISOString()
         }, now),
         games, teamMetadata, teamStats: includeStats ? deduplicateTeamStats([...statsById.values()]) : []

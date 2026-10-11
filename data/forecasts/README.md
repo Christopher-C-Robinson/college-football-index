@@ -5,7 +5,7 @@ These compact files preserve pregame projections for research and future accurac
 ## Origins
 
 - **Reconstructed pregame:** copied from the preserved, fingerprint-verified `data/backtests/<season>.json` report. Each forecast was rebuilt from a historical cutoff using only eligible results and venue history. It was generated after the season or game, not published at the time. Historical corrections and assumed result availability remain limitations.
-- **Saved pregame:** generated from a dated public snapshot before kickoff. Each daily refresh can revise games that have not started; once kickoff passes, the forecast is retained even while the provider still marks the game unfinished.
+- **Saved pregame:** generated from a dated public snapshot before kickoff. Each game-day refresh can revise games that have not started; once kickoff passes, the forecast is retained even while the provider still marks the game unfinished.
 - **Current snapshot in Team Explorer:** all scheduled matchups, including completed games, are recalculated in the browser with the same hypothetical simulator using the selected dataset. Past-game differences are current-model comparisons rather than pregame accuracy measurements. These recalculations do not replace any archived pregame record.
 
 The initial archive includes the 2022–2025 completed-season baselines and the 2026 baseline through October 7. Scheduled FBS/FCS games with known kickoff times also receive saved pregame forecasts. The browser can project matchups with a time marked TBD, but those do not receive an archived pregame record until kickoff timing is resolved. Lower-division opponents, canceled games, and past games without a valid forecast remain explicit gaps in this evaluation archive.

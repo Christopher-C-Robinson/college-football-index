@@ -363,12 +363,12 @@
     padding: 12px;
   }
 
-  .forecast-matchup-team.is-left {
+  .forecast-matchup-header > .game-team-summary.is-away {
     grid-column: 1;
     grid-row: 1;
   }
 
-  .forecast-matchup-team.is-right {
+  .forecast-matchup-header > .game-team-summary.is-home {
     grid-column: 3;
     grid-row: 1;
   }

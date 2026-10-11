@@ -1,4 +1,4 @@
-import { renderTeamLogo } from './team-logo.js?v=23545b336420';
+import { renderGameTeamSummary, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=bd96278172d7';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
@@ -55,22 +55,7 @@ function kickoffLabel(row, timeZone) {
 }
 
 function teamBlock(team, side, neutral, rankingsStatus) {
-  const name = team?.name || 'Team unavailable';
-  const rank = Number.isInteger(team?.neutralRank) && team.neutralRank > 0
-    ? '<span class="game-day-rank" title="Overall neutral matchup rank across FBS and FCS">#' + team.neutralRank + '</span>'
-    : '<span class="game-day-rank is-unavailable">' + (rankingsStatus === 'pending' ? 'Ranking…' : 'Unranked') + '</span>';
-  // Records arrive as whole-game strings. Do not turn expected wins into a record.
-  const record = currentRecord(team);
-  return '<div class="game-day-team is-' + side + '">' +
-    '<span class="game-day-side">' + (neutral ? 'Neutral site' : side === 'away' ? 'Away' : 'Home') + '</span>' +
-    '<button class="game-day-team-link" type="button" data-select-team="' + escapeHtml(name) + '" aria-label="Open ' + escapeHtml(name) + ' in team explorer">' +
-    renderTeamLogo({ ...team, name }, { size: 44 }) + '<strong>' + escapeHtml(name) + '</strong></button>' +
-    '<div class="game-day-team-meta">' + rank + '<span class="game-day-record" data-game-day-record-side="' + side + '" title="Current record includes matched reported finals" aria-label="' + escapeHtml(name + ' current record ' + record) + '">' + escapeHtml(record) + '</span></div>' +
-    '<small class="game-day-team-conference">' + escapeHtml([String(team?.classification || '').toUpperCase(), team?.conference].filter(Boolean).join(' · ')) + '</small></div>';
-}
-
-function currentRecord(team) {
-  return /^\d+[–-]\d+(?:[–-]\d+)?$/.test(String(team?.record || '')) ? team.record : '—';
+  return renderGameTeamSummary({ ...team, rankingsStatus }, { side, neutral });
 }
 
 function favoriteLabel(row, prediction, actual) {
@@ -194,11 +179,8 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
     // A team's record can change because another game reached final, even
     // when this card's own score and status did not change.
     for (const side of ['away', 'home']) {
-      const record = card.querySelector('[data-game-day-record-side="' + side + '"]');
-      if (!record) continue;
-      const value = currentRecord(row[side]);
-      record.textContent = value;
-      record.setAttribute('aria-label', row[side].name + ' current record ' + value);
+      updateGameTeamRecords(card, row[side]);
+      updateGameTeamRanks(card, { ...row[side], rankingsStatus: row.rankingsStatus || options.rankingsStatus });
     }
     const signature = JSON.stringify([row.status, row.live?.status, row.live?.homeScore, row.live?.awayScore, row.live?.refreshedAt, row.live?.stale]);
     if (card.dataset.liveSignature === signature) continue;

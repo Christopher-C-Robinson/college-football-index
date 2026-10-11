@@ -2,6 +2,7 @@ import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
+import { cachedSeasonRecord, completeOpponentSeasonRecords } from './season-projections.js?v=3f437a6f176e';
 
 const snapshotCaches = new WeakMap();
 const dateFormatters = new Map();
@@ -105,11 +106,14 @@ function teamFor(model, game, side) {
   const record = team && divisionOne(classification)
     ? Math.trunc(team.wins || 0) + '–' + Math.trunc(team.losses || 0)
       + (team.ties ? '–' + Math.trunc(team.ties) : '') : null;
+  const seasonOutlook = divisionOne(classification) ? cachedSeasonRecord(model, name) : null;
   return {
     name, classification, conference: game[side + 'Conference'] || team?.conference || '',
     abbreviation: team?.abbreviation || '', color: team?.color || null,
     alternateColor: team?.alternateColor || null,
-    logos: Array.isArray(team?.logos) ? team.logos.slice() : [], record, neutralRank: null
+    logos: Array.isArray(team?.logos) ? team.logos.slice() : [], record, neutralRank: null,
+    subdivisionRank: null, rankFieldSize: null, subdivisionFieldSize: null,
+    seasonOutlook, seasonOutlookPending: Boolean(team && divisionOne(classification) && !seasonOutlook)
   };
 }
 
@@ -156,12 +160,37 @@ export function refreshGameDayRanks(model, report) {
   const status = rankings?.status === 'ready' ? 'ready'
     : !model.broadCoverage || rankings?.status === 'unavailable' ? 'unavailable' : 'pending';
   report.rankingsStatus = status;
+  const subdivisionRanks = new Map();
+  const subdivisionSizes = new Map();
+  const rankedTeams = status === 'ready' ? rankings.teams : [];
+  for (const team of rankedTeams) {
+    const classification = String(team.classification || '').toLowerCase();
+    const rank = (subdivisionSizes.get(classification) || 0) + 1;
+    subdivisionSizes.set(classification, rank);
+    subdivisionRanks.set(key(team.name), rank);
+  }
   for (const row of report.rows) {
     row.rankingsStatus = status;
-    row.home.neutralRank = status === 'ready' ? rankings.entries.get(key(row.home.name))?.rank ?? null : null;
-    row.away.neutralRank = status === 'ready' ? rankings.entries.get(key(row.away.name))?.rank ?? null : null;
+    for (const side of ['home', 'away']) {
+      const team = row[side];
+      team.neutralRank = status === 'ready' ? rankings.entries.get(key(team.name))?.rank ?? null : null;
+      team.subdivisionRank = subdivisionRanks.get(key(team.name)) ?? null;
+      team.rankFieldSize = rankedTeams.length;
+      team.subdivisionFieldSize = subdivisionSizes.get(team.classification) || 0;
+    }
   }
   return report;
+}
+
+/** Fill both teams' outlooks using the same cached calculation as Explorer. */
+export async function completeGameDaySeasonRecords(model, report, options = {}) {
+  if (!Array.isArray(report?.rows)) return true;
+  // The schedule helper groups teams and yields between simulations. These
+  // references let it fill every card while preserving the snapshot report.
+  const teams = { rows: report.rows.flatMap(row => [row.away, row.home])
+    .filter(team => divisionOne(team.classification))
+    .map(team => ({ opponentName: team.name, matchup: { opponent: team } })) };
+  return completeOpponentSeasonRecords(model, teams, options);
 }
 
 export async function buildGameDay(model, {

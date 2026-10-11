@@ -1,0 +1,111 @@
+name: Refresh model after the last final
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * 1,8-12 *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+# The manual season workflow uses this same writer lock. A checker queued
+# overnight reads main after acquiring it, not an old event-time checkout.
+concurrency:
+  group: football-data-main
+  cancel-in-progress: false
+
+jobs:
+  completion:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Inspect tracked days and the shared score cache
+        id: plan
+        run: node scripts/refresh-after-games.mjs --plan-only
+
+      - name: Restore historical schedules and completed box scores
+        id: history-cache
+        if: steps.plan.outputs.needs_cfbd == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/history
+          key: cfbd-history-main-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            cfbd-history-main-
+
+      - name: Confirm completion or collect delayed statistics
+        id: refresh
+        if: steps.plan.outputs.needs_cfbd == 'true'
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: node scripts/refresh-after-games.mjs
+
+      - name: Check changed model data before publication
+        if: steps.refresh.outputs.updated == 'true'
+        run: |
+          node --test
+          node scripts/validate-data.mjs
+
+      - name: Commit model inputs and durable completion state
+        id: commit
+        if: success() && steps.plan.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/model-refresh-state.json
+          if [[ "${{ steps.refresh.outputs.updated }}" == "true" ]]; then
+            git add data/current-season.json data/forecasts
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Track game-day completion and refresh ready model data"
+            git push origin HEAD:main
+          fi
+
+      - name: Preserve failed-attempt deadlines without publishing rejected inputs
+        if: failure() && steps.plan.outcome == 'success' && steps.commit.outcome != 'success'
+        run: |
+          node scripts/refresh-after-games.mjs --discard-publication
+          git restore data/current-season.json data/forecasts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/model-refresh-state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Preserve game-day collection retry deadlines"
+            git push origin HEAD:main
+          fi
+
+      - name: Preserve reusable historical data
+        if: always() && steps.history-cache.outcome == 'success' && steps.history-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/history
+          key: cfbd-history-main-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Request the existing GitHub Pages release
+        if: steps.refresh.outputs.publication_pending == 'true' || steps.plan.outputs.publication_pending == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
+
+      - name: Verify the deployed snapshot and finalize its game days
+        if: steps.refresh.outputs.publication_pending == 'true' || steps.plan.outputs.publication_pending == 'true'
+        run: node scripts/refresh-after-games.mjs --finalize
+
+      - name: Persist verified publication state
+        if: success() && (steps.refresh.outputs.publication_pending == 'true' || steps.plan.outputs.publication_pending == 'true')
+        run: |
+          git add data/model-refresh-state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Confirm published game-day model snapshot"
+            git push origin HEAD:main
+          fi
