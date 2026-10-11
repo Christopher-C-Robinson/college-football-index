@@ -6,7 +6,20 @@
 .forecast-matchup-score-line.is-observed .forecast-matchup-score { font-size: 30px; }
 .forecast-matchup-score-line.is-observed .forecast-matchup-status { color: var(--ink); }
 
+/* The schedule metadata strip keeps the date/week, status, and venue in
+   separate tracks so a fetched timestamp cannot add an extra banner row. */
+.forecast-game-heading { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 3px 12px; padding: 6px 14px; }
+.forecast-game-heading > .forecast-date { grid-column: 1; grid-row: 1; flex-wrap: nowrap; gap: 6px; white-space: nowrap; font-size: 11px; }
+.forecast-game-heading > .forecast-date > span { padding-left: 6px; }
+.forecast-game-heading > .forecast-status-meta { grid-column: 3; grid-row: 1; min-width: 0; text-align: right; }
+.forecast-game-heading > .forecast-venue-meta { grid-column: 2; grid-row: 1; min-width: 0; font-size: 11px; line-height: 1.4; }
+.forecast-game-heading .forecast-compact-status { padding: 1px 4px; font-size: 10px; line-height: 1.4; white-space: nowrap; }
+
 @media (max-width: 680px) {
+  .forecast-game-heading { grid-template-columns: minmax(0, 1fr) auto; gap: 3px 7px; padding: 6px 12px; }
+  .forecast-game-heading > .forecast-status-meta { grid-column: 2; }
+  .forecast-game-heading > .forecast-venue-meta { grid-column: 1/-1; grid-row: 2; text-align: left; }
+
   #dossier .panel,
   #matchups .panel,
   .season-projection-summary,

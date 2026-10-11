@@ -3,7 +3,7 @@ import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { renderLiveGameStatus } from './live-scores.js?v=62f378bab60f';
+import { liveGameLabel } from './live-scores.js?v=62f378bab60f';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -81,6 +81,29 @@ function dateText(value, timestamp = false) {
 
 function time(value, timestamp = false) {
   return '<time datetime="' + escapeHtml(value || '') + '" title="' + escapeHtml(value || '') + '">' + escapeHtml(dateText(value, timestamp)) + '</time>';
+}
+
+function scheduleDate(value) {
+  const date = new Date(value || '');
+  if (!Number.isFinite(date.getTime())) return '<span>Date unavailable</span>';
+  const label = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+  return '<time datetime="' + escapeHtml(value) + '" title="' + escapeHtml(dateText(value)) + '" aria-label="' + escapeHtml(dateText(value)) + '">' + escapeHtml(label) + '</time>';
+}
+
+function scheduleLiveStatus(live) {
+  if (!live) return '';
+  const label = ({ live: 'Live', final: 'Final', scheduled: 'Scheduled', postponed: 'Postponed',
+    canceled: 'Canceled', suspended: 'Suspended', unknown: 'Unavailable' })[live.status] || 'Unavailable';
+  const fetched = new Date(live.refreshedAt || '');
+  const fetchedTime = Number.isFinite(fetched.getTime())
+    ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(fetched) : null;
+  const fullLabel = liveGameLabel(live);
+  return '<span class="live-score-badge forecast-compact-status' + (live.status === 'live' ? ' is-live' : '') + (live.stale ? ' is-stale' : '') + '" title="' + escapeHtml(fullLabel) + '" aria-label="' + escapeHtml(fullLabel) + '">' +
+    escapeHtml(label) + (fetchedTime ? ' · <time datetime="' + escapeHtml(live.refreshedAt) + '">' + escapeHtml(fetchedTime) + '</time>' : '') + (live.stale ? ' · stale' : '') + '</span>';
+}
+
+function scheduleVenue(row) {
+  return [row.site, row.venue, row.timeTBD ? 'Time TBD' : null].filter(Boolean).join(' · ');
 }
 
 function usableForecast(row) {
@@ -353,8 +376,8 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) 
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
   const cardLabel = teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label;
   return '<article id="' + seasonGameAnchor(index) + '" data-season-game-index="' + index + '" class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
-    '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<span class="forecast-venue-meta">' + renderLiveGameStatus(row.live) + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
+    '<div class="forecast-game-heading"><div class="forecast-date">' + scheduleDate(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span></div>' +
+    '<span class="forecast-status-meta">' + scheduleLiveStatus(row.live) + '</span><span class="forecast-venue-meta">' + escapeHtml(scheduleVenue(row)) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
     '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + scoreComparison(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
     renderYardagePanel(row, teamName, forecast, actual) +
@@ -387,13 +410,15 @@ export function updateSeasonLiveElements(container, analysis) {
     card.classList.toggle('is-canceled', row.status === 'canceled');
     if (winner.color) card.style.setProperty('--game-winner-rgb', winner.color);
     else card.style.removeProperty('--game-winner-rgb');
-    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
+    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
     const template = container.ownerDocument.createElement('template');
     template.innerHTML = renderMatchupHeader(row, analysis.teamName, forecast, actual, winner, analysis);
     const center = card.querySelector('.forecast-matchup-center');
     if (center) center.innerHTML = template.content.querySelector('.forecast-matchup-center')?.innerHTML || '';
     const venue = card.querySelector('.forecast-venue-meta');
-    if (venue) venue.innerHTML = renderLiveGameStatus(row.live) + escapeHtml([row.site, row.venue].filter(Boolean).join(' · '));
+    if (venue) venue.textContent = scheduleVenue(row);
+    const status = card.querySelector('.forecast-status-meta');
+    if (status) status.innerHTML = scheduleLiveStatus(row.live);
     const sections = [
       ['.forecast-matchup-outlook', matchupOutlook(row, analysis.teamName, forecast, actual)],
       ['.forecast-score-comparison', scoreComparison(row, analysis.teamName, forecast, actual)],
