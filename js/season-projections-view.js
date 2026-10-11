@@ -1,6 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, renderGameTeamRanks, renderGameTeamRecord as recordValue,
-  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=bca1dfd5cfda';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, renderGameTeamRanks, updateGameTeamRanks, renderGameTeamRecord as recordValue,
+  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=63229fd832b9';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
@@ -120,11 +120,10 @@ export function updateSeasonRankElements(summaryContainer, scheduleContainer, an
     });
   }
   for (const container of [summaryContainer, scheduleContainer].filter(Boolean)) {
-    for (const element of container.querySelectorAll('[data-season-rank-team]')) {
-      const team = ranks.get(element.dataset.seasonRankTeam);
-      if (!team) continue;
-      element.innerHTML = rankBadges(team.rank, team.subdivisionRank, team.classification, team.fieldSize,
-        team.subdivisionSize, team.ready, team.status);
+    for (const [name, team] of ranks) {
+      updateGameTeamRanks(container, { name, neutralRank: team.rank, subdivisionRank: team.subdivisionRank,
+        classification: team.classification, rankFieldSize: team.fieldSize, subdivisionFieldSize: team.subdivisionSize,
+        rankingsStatus: team.ready ? 'ready' : team.status });
     }
   }
 }

@@ -1,4 +1,4 @@
-import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=bca1dfd5cfda';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=63229fd832b9';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
@@ -156,7 +156,7 @@ function renderRow(row, options, index) {
   return '<article class="game-day-card is-' + escapeHtml(row.status || 'upcoming') + '" data-game-day-id="' + escapeHtml(row.id ?? index) + '" role="listitem" aria-label="' + escapeHtml(description) + '">' +
     '<header class="game-day-card-heading"><div class="game-day-kickoff">' + (kickoff.dateTime ? '<time datetime="' + kickoff.dateTime + '">' + escapeHtml(kickoff.text) + '</time>' : '<span>' + kickoff.text + '</span>') +
     (row.game?.week !== undefined && row.game.week !== null ? '<span class="game-day-week">WK ' + escapeHtml(row.game.week) + '</span>' : '') + '</div><span class="game-day-status' + (row.live?.status === 'live' ? ' is-live' : '') + (row.live?.stale ? ' is-stale' : '') + '">' + escapeHtml(status) + '</span></header>' +
-    '<div class="game-day-matchup">' + renderGameTeamNames(row.away, row.home) + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
+    '<div class="game-day-matchup">' + renderGameTeamNames({ ...row.away, rankingsStatus: row.rankingsStatus || options.rankingsStatus }, { ...row.home, rankingsStatus: row.rankingsStatus || options.rankingsStatus }) + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
     '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
 }
 
