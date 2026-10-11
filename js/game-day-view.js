@@ -1,7 +1,7 @@
 import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { liveGameLabel } from './live-scores.js?v=6af7607cf3c9';
+import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const percent = value => (value * 100).toFixed(1) + '%';

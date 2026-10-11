@@ -42,7 +42,24 @@
       2024,
       2025,
       2026
-    ]
+    ],
+    "gameStatusOverrides": {
+      "appliedCount": 1,
+      "entries": [
+        {
+          "gameId": 401874036,
+          "season": 2026,
+          "homeTeam": "West Florida",
+          "awayTeam": "Northeastern State",
+          "status": "canceled",
+          "sourceURL": "https://goriverhawksgo.com/news/2026/10/7/northeastern-state-west-florida-football-game-canceled.aspx?path=rodeo",
+          "verifiedAt": "2026-10-11T04:45:47Z",
+          "reason": "Canceled due to weather; no makeup game."
+        }
+      ],
+      "supersededCount": 0,
+      "supersededEntries": []
+    }
   },
   "games": [
     {
@@ -36461,7 +36478,14 @@
       "excitementIndex": null,
       "highlights": "",
       "notes": null,
-      "playoff": null
+      "playoff": null,
+      "canceled": true,
+      "status": "canceled",
+      "statusSource": {
+        "sourceURL": "https://goriverhawksgo.com/news/2026/10/7/northeastern-state-west-florida-football-game-canceled.aspx?path=rodeo",
+        "verifiedAt": "2026-10-11T04:45:47Z",
+        "reason": "Canceled due to weather; no makeup game."
+      }
     },
     {
       "id": 401860902,

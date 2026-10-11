@@ -2,7 +2,11 @@
 
 The site’s forecasts continue to use its CFBD snapshot. This optional backend supplies reported game status and actual scores, without replacing the forecast model or pretending a scheduled game is live because its kickoff time passed.
 
+Matching uses both teams’ uniquely owned names/aliases and the scheduled kickoff window. Multiple provider IDs are accepted as one final only when their exact timed kickoff and any reported league agree, all valid finals give the same scores in the snapshot’s home/away order, and any remaining entries are unverified, scoreless scheduled/unknown stubs. A stub never supplies the result. Conflicting numeric scores, active/canceled statuses, differing kickoffs, and date-only candidates remain unmatched. The freshest agreeing final supplies its status and timestamp. Explicit aliases cover supported lower-division opponents whose mascot names are absent from CFBD team metadata; fuzzy name matching is not used.
+
 Displayed team records also incorporate uniquely matched, valid final scores. Each scheduled game contributes at most once, including when CFBD later imports the same result. Current overall/FBS/FCS records and season-record outlooks use those results; live or incomplete scores cannot create a win or loss. Forecast calculations and rankings retain their CFBD model snapshot until the usual data refresh.
+
+When an official school announcement confirms a cancellation missing from CFBD, `data/game-status-overrides.json` records the exact season, game ID, home/away identities, source URL, verification time, and reason. Synchronization applies these corrections before modeling or archiving, reports them in dataset metadata, and retains per-game provenance. Every correction for the active season must match its exact scheduled game or the refresh fails before replacing the public snapshot. A cancellation supplies no score or win/loss and is excluded from season projections. A valid played final takes precedence over a cancellation correction and is reported as superseding it. The October 10 West Florida–Northeastern State game is marked canceled from the schools’ weather announcement; no makeup game was scheduled.
 
 ## Activation status
 
