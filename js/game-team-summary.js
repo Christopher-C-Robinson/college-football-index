@@ -63,37 +63,57 @@ export function updateGameTeamRecords(container, team) {
   }
 }
 
-export function renderGameTeamRanks(team) {
+function overallRankLabel(team) {
+  if (!['FBS', 'FCS'].includes(String(team.classification || '').toUpperCase())) return 'Not ranked';
+  if (Number.isInteger(team.neutralRank) && team.neutralRank > 0) return '#' + team.neutralRank;
+  return ['pending', 'waiting', 'calculating'].includes(team.rankingsStatus) ? 'Rank…'
+    : team.rankingsStatus === 'unavailable' ? 'Rank unavailable' : 'Unranked';
+}
+
+function nameActionLabel(name, team) {
+  return 'Open ' + name + ' in team explorer. Overall rank: ' + overallRankLabel(team);
+}
+
+export function renderGameTeamRanks(team, { overall = true, subdivision = true } = {}) {
   const division = String(team.classification || '').toUpperCase();
-  if (!['FBS', 'FCS'].includes(division)) return '<span class="game-team-rank forecast-rank is-unranked">Not ranked</span>';
+  if (!['FBS', 'FCS'].includes(division)) return overall ? '<span class="game-team-rank forecast-rank is-unranked">Not ranked</span>' : '';
   const rank = team.neutralRank;
   if (!Number.isInteger(rank) || rank < 1) {
-    const pending = ['pending', 'waiting', 'calculating'].includes(team.rankingsStatus);
-    return '<span class="game-team-rank forecast-rank is-unranked">' +
-      (pending ? 'Rank…' : team.rankingsStatus === 'unavailable' ? 'Rank unavailable' : 'Unranked') + '</span>';
+    return overall ? '<span class="game-team-rank forecast-rank is-unranked">' +
+      overallRankLabel(team) + '</span>' : '';
   }
   const overallTitle = 'Overall neutral matchup rank across ' + (finite(team.rankFieldSize) ? team.rankFieldSize + ' model-ready ' : '') +
     'FBS and FCS teams, based on average neutral-field win chance against the full field. Filters do not change this rank.';
   const subdivisionTitle = 'Rank within ' + division + (finite(team.subdivisionFieldSize) ? ' across ' + team.subdivisionFieldSize + ' ranked teams' : '') +
     ', ordered by the same full-field neutral matchup comparison.';
-  return '<span class="game-team-rank forecast-rank" title="' + escapeHtml(overallTitle) + '">#' + rank + '</span>' +
-    (Number.isInteger(team.subdivisionRank) && team.subdivisionRank > 0
+  return (overall ? '<span class="game-team-rank forecast-rank" title="' + escapeHtml(overallTitle) + '">#' + rank + '</span>' : '') +
+    (subdivision && Number.isInteger(team.subdivisionRank) && team.subdivisionRank > 0
       ? '<span class="game-team-rank forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + team.subdivisionRank + '</span>' : '');
 }
 
 export function updateGameTeamRanks(container, team) {
   if (!container?.querySelectorAll || !team?.name) return;
   const name = gameTeamKey(team.name);
-  const markup = renderGameTeamRanks(team);
   for (const element of container.querySelectorAll('[data-season-rank-team]')) {
-    if (element.dataset.seasonRankTeam === name && element.innerHTML !== markup) element.innerHTML = markup;
+    if (element.dataset.seasonRankTeam !== name) continue;
+    const markup = renderGameTeamRanks(team, { overall: !element.classList.contains('game-team-ranks') });
+    if (element.innerHTML !== markup) element.innerHTML = markup;
+  }
+  const nameRank = renderGameTeamRanks(team, { subdivision: false });
+  for (const element of container.querySelectorAll('[data-game-name-rank-team]')) {
+    if (element.dataset.gameNameRankTeam !== name) continue;
+    if (element.innerHTML !== nameRank) element.innerHTML = nameRank;
+    const button = element.closest('.game-matchup-name');
+    if (button) button.setAttribute('aria-label', nameActionLabel(button.dataset.selectTeam, team));
   }
 }
 
 /** Names get the full header width instead of sharing the score's side columns. */
 export function renderGameTeamNames(away, home) {
   const nameButton = team => '<button class="game-matchup-name" type="button" data-select-team="' + escapeHtml(team.name) +
-    '" aria-label="Open ' + escapeHtml(team.name) + ' in team explorer">' + escapeHtml(team.name) + '</button>';
+    '" aria-label="' + escapeHtml(nameActionLabel(team.name, team)) + '"><span class="game-matchup-name-rank" data-game-name-rank-team="' +
+    escapeHtml(gameTeamKey(team.name)) + '" aria-hidden="true">' + renderGameTeamRanks(team, { subdivision: false }) +
+    '</span><span class="game-matchup-name-text">' + escapeHtml(team.name) + '</span></button>';
   return '<div class="game-matchup-names">' + nameButton(away) + nameButton(home) + '</div>';
 }
 
@@ -143,6 +163,6 @@ export function renderGameTeamSummary(team, { side = 'away', neutral = false } =
     renderTeamLogo({ ...team, name }, { size: 44 }) + '</button>' +
     '<dl class="game-team-records" aria-label="' + escapeHtml(name) + ' current and projected season records"><div><dt>Current</dt>' + renderGameTeamRecord(team, 'current', 'dd') + '</div>' +
     '<div><dt>Projected</dt>' + renderGameTeamRecord(team, 'projected', 'dd') + '</div></dl>' +
-    '<div class="game-team-ranks" data-season-rank-team="' + escapeHtml(gameTeamKey(name)) + '" aria-label="' + escapeHtml(name) + ' overall neutral and subdivision rankings">' + renderGameTeamRanks(team) + '</div>' +
+    '<div class="game-team-ranks" data-season-rank-team="' + escapeHtml(gameTeamKey(name)) + '" aria-label="' + escapeHtml(name) + ' subdivision ranking">' + renderGameTeamRanks(team, { overall: false }) + '</div>' +
     '<span class="game-team-conference">' + escapeHtml([division && division !== 'UNKNOWN' ? division : null, conference].filter(Boolean).join(' · ')) + '</span></div>';
 }

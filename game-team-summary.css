@@ -1,7 +1,11 @@
 /* One team panel for daily games and season schedules. */
 .game-matchup-names { grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
-.game-matchup-name { min-width: 0; max-width: 100%; min-height: 32px; margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--ink); text-align: left; font: 700 16px/1.35 var(--sans); overflow-wrap: break-word; cursor: pointer; }
-.game-matchup-name:last-child { text-align: right; }
+.game-matchup-name { display: flex; align-items: baseline; gap: 4px; min-width: 0; max-width: 100%; min-height: 32px; margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--ink); text-align: left; font: 700 16px/1.35 var(--sans); cursor: pointer; }
+.game-matchup-name:last-child { justify-content: flex-end; text-align: right; }
+.game-matchup-name-text { min-width: 0; overflow-wrap: break-word; }
+.game-matchup-name-rank { flex: none; }
+.game-matchup-name-rank .game-team-rank.forecast-rank { padding: 0; border: 0; background: transparent; color: var(--blue-mid); font: 700 .85em/1.35 var(--sans); }
+.game-matchup-name-rank .game-team-rank.is-unranked { font-size: .7em; }
 .game-day-matchup > .game-team-summary.is-away, .forecast-matchup-header > .game-team-summary.is-away { grid-column: 1; grid-row: 2; }
 .game-day-matchup > .game-team-summary.is-home, .forecast-matchup-header > .game-team-summary.is-home { grid-column: 3; grid-row: 2; }
 .game-day-scoreboard, .forecast-matchup-header > .forecast-matchup-center { grid-column: 2; grid-row: 2; }
@@ -45,6 +49,8 @@
 }
 
 @media (max-width: 360px) {
+  .game-matchup-names { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .game-matchup-name { min-height: 24px; font-size: 12px; }
   .game-team-records > div { gap: 3px; }
   .game-team-rank.forecast-rank { padding-inline: 3px; }
 }
