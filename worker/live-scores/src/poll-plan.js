@@ -46,8 +46,14 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
   let overdueLiveGames = 0;
   let pendingGames = 0;
   for (const game of games) {
-    if (['final', 'canceled', 'postponed'].includes(game.status)
-      || ['final', 'canceled', 'postponed'].includes(game.catalogStatus)) continue;
+    const observed = stamp(game.scoreObservedAt);
+    const recentVerifiedLive = game.liveVerified === true
+      && ['live', 'suspended'].includes(game.status)
+      && observed >= now - OVERRUN_MS && observed <= now + MIN_INTERVAL_MS;
+    // A stored cancellation/postponement can be superseded by a genuine recent
+    // live observation. Its catalog label must not turn off an active game's feed.
+    if (!recentVerifiedLive && (['final', 'canceled', 'postponed'].includes(game.status)
+      || ['final', 'canceled', 'postponed'].includes(game.catalogStatus))) continue;
     const kickoff = stamp(game.startDate);
     if (!Number.isFinite(kickoff)) continue;
     let start = kickoff;
@@ -59,9 +65,6 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
       start = nextChicagoMidnight(noon - UTC_DAY_MS);
       end = nextChicagoMidnight(noon) + GAME_MS + FINAL_CHECK_MS;
     }
-    const recentVerifiedLive = game.liveVerified === true
-      && ['live', 'suspended'].includes(game.status)
-      && stamp(game.scoreObservedAt) >= now - OVERRUN_MS;
     if (recentVerifiedLive && now >= kickoff + GAME_MS) {
       // Extra time is a planning estimate, never an invented final result. Only
       // a recent actual live observation extends a game beyond its normal window.

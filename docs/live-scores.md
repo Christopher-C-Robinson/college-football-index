@@ -4,11 +4,11 @@ The site’s forecasts continue to use its CFBD snapshot. This optional backend 
 
 ## Activation status
 
-At the October 10 Chicago / October 11 UTC, 2026 verification checkpoint, the user-approved Big Balls Sports Data (BBS) free account is authenticated. It has the ordinary 250-call/day allowance, requires no payment card, and its key is stored privately as the Cloudflare Worker secret. The corrected cache is operational and the website endpoint is enabled in the local preview. Public GitHub Pages activation awaits the PR release.
+At the October 10 Chicago / October 11 UTC, 2026 verification checkpoint, the user-approved Big Balls Sports Data (BBS) free account is authenticated. It has the ordinary 250-call/day allowance, requires no payment card, and its key is stored privately as the Cloudflare Worker secret. The corrected cache is operational. The website endpoint is configured in `data/live-scores-config.json` for the local preview and the GitHub Pages release.
 
 BBS advertises free current-season FBS and FCS score coverage, but the observed responses do not establish complete live coverage. The catalog’s `league` is a **display name**, not its query slug. The normalizer accepts `NCAAF` and `NCAAF FCS`, including punctuation variations. No provider UUID is treated as a CFBD ID.
 
-The cache service at `https://cfi-live-scores.bingoflow-support.workers.dev/scores` returned HTTP 200 with `scoreFeedVersion: 2`, fresh transport data, and a live retrieval time of **2026-10-11T02:52:28Z**. It includes the previous, current, and next Chicago catalog days, while keeping catalog metadata separate from genuine live observations. Website joins confirmed six genuine score observations. In the local browser, James Madison–Georgia Southern showed the separately reported 20–10 score alongside the explicitly labeled 31–23 CFBD snapshot result. This checkpoint demonstrates the working cached overlay; it does not guarantee full source coverage or continued freshness.
+The cache service at `https://cfi-live-scores.bingoflow-support.workers.dev/scores` returned HTTP 200 with `scoreFeedVersion: 2`, fresh transport data, and a live retrieval time of **2026-10-11T02:52:28Z**. It includes the previous, current, and next Chicago catalog days, while keeping catalog metadata separate from genuine live observations. Website joins confirmed six genuine score observations. In the local browser, James Madison–Georgia Southern showed the separately reported 20–10 score alongside the explicitly labeled 31–23 CFBD snapshot forecast. This checkpoint demonstrates the working cached overlay; it does not guarantee full source coverage or continued freshness.
 
 ### Verified source and join coverage
 
@@ -190,7 +190,7 @@ Coverage fields distinguish metadata from live evidence:
 
 A valid but unavailable league field produces `coverage.byLeague[league].available: false` with reason `provider_live_coverage_unavailable`. It does not discard valid observations from the other league. Transport can be fresh while coverage remains partial; when both live league fields are unavailable, transport is stale.
 
-`POST /refresh` requires the separate bearer admin secret. It returns a small result such as `refreshed`, `idle`, `backoff`, `slot_or_daily_budget_used`, `refresh_in_progress`, `offseason`, `unconfigured`, or `failed`; the actual board is read from `/scores`.
+`POST /refresh` requires the separate bearer admin secret. It returns a small result such as `refreshed`, `catalog_refreshed`, `waiting`, `backoff`, `slot_or_daily_budget_used`, `refresh_in_progress`, `offseason`, `unconfigured`, or `failed`; the actual board is read from `/scores`.
 
 ## Source contracts
 

@@ -431,7 +431,9 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
     const priorGames = new Map((packet?.scoreFeedVersion === 2 ? packet.games : []).map(game => [game.id, game]));
     const games = (catalog?.games || []).map(game => {
       const prior = priorGames.get(game.id);
-      return prior?.liveVerified && !['final', 'canceled', 'postponed'].includes(game.catalogStatus)
+      const recentLive = prior?.liveVerified && ['live', 'suspended'].includes(prior.status)
+        && Date.parse(prior.scoreObservedAt) >= at - 3600000 && Date.parse(prior.scoreObservedAt) <= at + 60000;
+      return prior?.liveVerified && (recentLive || !['final', 'canceled', 'postponed'].includes(game.catalogStatus))
         ? { ...game, status: prior.status, liveVerified: true, scoreObservedAt: prior.scoreObservedAt } : game;
     });
     return buildPollPlan({ now: at, games, callsReserved: quota?.calls_reserved || 0,
