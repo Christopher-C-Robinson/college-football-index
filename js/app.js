@@ -8,7 +8,7 @@ import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=471d6fa90b4d';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements } from './season-projections-view.js?v=249d76342fc2';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=7239741bc88b';
 import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
@@ -18,8 +18,9 @@ import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
-import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=d1543aa7f8d7';
-import { renderGameDayRows } from './game-day-view.js?v=c94245230b01';
+import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=2fde200099f3';
+import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, renderLiveScoreStatus } from './live-scores.js?v=066e6db2990c';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -41,6 +42,44 @@ let gameDayReport = null;
 let gameDayModel = null;
 let gameDayController = null;
 let gameDayFollowToday = true;
+let liveScoreController = null;
+let liveScoreState = { hasData: false, games: [], loading: false };
+
+function syncLiveScorePolling() {
+  if (!liveScoreController) return;
+  if (state.model && (activeView === 'games' || (activeView === 'dossier' && currentFocus()))) liveScoreController.start();
+  else liveScoreController.stop();
+}
+
+function refreshLiveScoreViews() {
+  if (activeView === 'games') renderGameDay({ liveOnly: true });
+  if (activeView === 'dossier') {
+    const analysis = seasonAnalysisCache.get(teamKey(state.focusTeam));
+    const display = overlaySeasonAnalysis(analysis, liveScoreState, state.model);
+    ids('schedule-live-status').innerHTML = renderLiveScoreStatus(liveScoreState, { timeZone: gameDayTimeZone, matched: display?.liveMatched });
+    if (display) updateSeasonLiveElements(ids('schedule-list'), display);
+  }
+}
+
+async function initializeLiveScores() {
+  try {
+    const response = await fetch('./data/live-scores-config.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Live scores configuration unavailable.');
+    const config = await response.json();
+    if (!config.endpoint) { refreshLiveScoreViews(); return; }
+    const endpoint = new URL(config.endpoint);
+    if (endpoint.protocol !== 'https:') throw new Error('Live scores require a secure endpoint.');
+    liveScoreController = createLiveScoreController({ endpoint: endpoint.href,
+      refreshMs: 60000, staleMs: 30 * 60 * 1000,
+      isActive: () => Boolean(state.model && (activeView === 'games' || (activeView === 'dossier' && currentFocus()))),
+      onUpdate: scores => { liveScoreState = scores; refreshLiveScoreViews(); }
+    });
+    syncLiveScorePolling();
+  } catch (error) {
+    liveScoreState = { ...liveScoreState, loading: false, error: error.message };
+    refreshLiveScoreViews();
+  }
+}
 
 function viewForHash(hash) {
   const target = String(hash || '').replace(/^#/, '');
@@ -65,6 +104,7 @@ function showView({ focus = false } = {}) {
   else { gameDayController?.abort(); gameDayController = null; ids('games-content').setAttribute('aria-busy', 'false'); }
   if (activeView === 'dossier') updateOpponentRecords();
   else opponentRecordRequest += 1;
+  syncLiveScorePolling();
   if (focus) {
     const panel = ids(activeView);
     const heading = panel?.querySelector('h1');
@@ -109,9 +149,9 @@ function refreshGameDayRankingStatus() {
   }
 }
 
-function renderGameDay() {
+function renderGameDay({ liveOnly = false } = {}) {
   const today = localDateKey(new Date(), gameDayTimeZone);
-  ids('games-date').value = gameDayDate;
+  if (!liveOnly) ids('games-date').value = gameDayDate;
   ids('games-date-display').textContent = gameDayLabel(gameDayDate, { month: 'short', day: 'numeric', year: 'numeric' });
   ids('games-page-title').textContent = gameDayDate === today ? 'Today’s games' : gameDayLabel(gameDayDate);
   ids('games-timezone').textContent = 'Kickoffs shown in your device timezone: ' + gameDayTimeZone.replaceAll('_', ' ') + '. TBD games keep their scheduled calendar date.';
@@ -129,27 +169,41 @@ function renderGameDay() {
       : ' Neutral rank sorting is unavailable; games are shown by kickoff.' : '';
   ids('games-sort-note').textContent = explanations[sort] + rankingNote + ' Filters keep the same global ranks.';
   const meta = state.model?.meta;
-  let snapshot = 'Load a season dataset to see its schedule. This is a snapshot, not a live score feed.';
+  let snapshot = 'Load a season dataset to see its schedule and forecasts.';
   if (meta) {
     const generated = new Date(meta.generatedAt || '');
     const timestamp = Number.isFinite(generated.getTime()) ? new Intl.DateTimeFormat(undefined, {
       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: gameDayTimeZone
     }).format(generated) : 'time unavailable';
-    snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' snapshot · Updated ' + timestamp + '. Finals reflect that refresh; this is not a live score feed. All projections use the loaded snapshot.';
+    snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' model snapshot · Updated ' + timestamp + '. Predictions, rankings, and team records use this snapshot. Separately fetched scores are labeled with their update time.';
   }
   ids('games-snapshot').textContent = snapshot;
+  const display = overlayGameDayReport(gameDayReport, liveScoreState, state.model);
+  ids('games-live-status').innerHTML = renderLiveScoreStatus(liveScoreState, { timeZone: gameDayTimeZone, matched: display?.liveMatched });
   ids('games-filter-mode-note').textContent = ids('games-both-teams').checked
     ? 'Only games where both teams match the selected subdivision, group, and conference.'
     : 'Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.';
   if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) return;
-  const rows = sortGameDay(filterGameDay(gameDayReport, {
+  const rows = sortGameDay(filterGameDay(display, {
     division: ids('games-division').value, tier: ids('games-tier').value, conference: ids('games-conference').value,
     bothTeams: ids('games-both-teams').checked,
     status: ids('games-status').value, search: ids('games-search').value
   }), sort);
-  const forecasts = rows.filter(row => row.hasForecast).length;
+  const forecasts = rows.filter(row => row.hasForecast && row.status !== 'canceled').length;
   ids('games-count').textContent = rows.length + ' of ' + gameDayReport.rows.length + ' games · ' + forecasts + (forecasts === 1 ? ' forecast' : ' forecasts');
-  ids('games-content').innerHTML = renderGameDayRows(rows, { timeZone: gameDayTimeZone, rankingsStatus: gameDayReport.rankingsStatus });
+  const container = ids('games-content');
+  const options = { timeZone: gameDayTimeZone, rankingsStatus: gameDayReport.rankingsStatus };
+  const cards = [...container.querySelectorAll('[data-game-day-id]')];
+  if (liveOnly && cards.length === rows.length && cards.every((card, index) => card.dataset.gameDayId === String(rows[index].id))) {
+    updateGameDayLiveElements(container, rows, options);
+  } else {
+    const expanded = new Set(cards.filter(card => card.querySelector('details')?.open).map(card => card.dataset.gameDayId));
+    container.innerHTML = renderGameDayRows(rows, options);
+    for (const card of container.querySelectorAll('[data-game-day-id]')) {
+      const details = card.querySelector('details');
+      if (details && expanded.has(card.dataset.gameDayId)) details.open = true;
+    }
+  }
   if (!gameDayReport.rows.length) {
     const dates = gameDayReport.availableDates;
     const previous = dates.filter(date => date < gameDayDate).at(-1);
@@ -535,6 +589,7 @@ function renderDossier() {
     ids('team-home-field').textContent = '—';
     ids('team-home-field-sample').textContent = 'No team selected';
     ids('schedule-count').textContent = 'NO TEAM DATA';
+    ids('schedule-live-status').textContent = '';
     ids('season-projection-summary').hidden = false;
     ids('season-projection-summary').innerHTML = '<p class="panel-intro">Choose a team to simulate its full schedule from the current snapshot and compare completed games with actual results.</p>';
     ids('schedule-forecast-note').hidden = true;
@@ -577,11 +632,13 @@ function renderDossier() {
   ids('season-projection-summary').innerHTML = renderProjectionSummary(analysis);
   ids('schedule-forecast-note').hidden = false;
   ids('schedule-forecast-note').innerHTML = renderProjectionNote(analysis);
+  const display = overlaySeasonAnalysis(analysis, liveScoreState, state.model);
   if (!analysis.rows.length) {
     ids('schedule-list').innerHTML = '<div class="schedule-empty">No games in this season file yet.</div>';
   } else {
-    ids('schedule-list').innerHTML = renderSeasonProjections(analysis);
+    ids('schedule-list').innerHTML = renderSeasonProjections(display);
   }
+  ids('schedule-live-status').innerHTML = renderLiveScoreStatus(liveScoreState, { timeZone: gameDayTimeZone, matched: display?.liveMatched });
   renderTrace(team, played);
   renderInsight(team, played);
   if (activeView === 'dossier') updateOpponentRecords(analysis);
@@ -983,6 +1040,7 @@ function setDataset(raw, message, persist, source = 'imported') {
   renderDatasetStatus();
   updateNeutralRankings();
   if (activeView === 'games') startGameDay();
+  syncLiveScorePolling();
   // Recompute whole-field fit
   // only for dataset changes, keeping any old async result off a new snapshot.
   updateModelFit();
@@ -1005,6 +1063,7 @@ function selectFocusTeam(name, scrollToProfile) {
   renderDossier();
   renderBoard();
   if (team && scrollToProfile) navigateView('dossier');
+  syncLiveScorePolling();
 }
 
 async function loadBundled() {
@@ -1187,6 +1246,7 @@ installTeamLogoFallbacks();
 enhanceSearchableSelects();
 loadChallengerStatus();
 loadConferenceStatus();
+initializeLiveScores();
 initialize().catch(function (error) {
   const message = ids('import-message');
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }

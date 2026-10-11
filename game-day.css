@@ -35,6 +35,14 @@
 .game-day-kickoff { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-weight: 600; }
 .game-day-week { font-size: 11px; font-weight: 400; }
 .game-day-status { font-size: 11px; }
+.game-day-status.is-live, .live-score-badge.is-live { color: var(--blue-mid); font-weight: 600; }
+.game-day-status.is-stale, .live-score-badge.is-stale, .live-scores-status.is-stale { color: var(--ink-soft); font-style: italic; }
+.live-scores-status { display: block; padding: 9px 12px; margin: 8px 0 14px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink-soft); font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+.live-scores-status.is-stale { border-style: dashed; }
+.live-score-badge { display: inline-block; max-width: 100%; padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink-soft); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.forecast-venue-meta:has(.live-score-badge) { display: flex; justify-content: end; align-items: center; flex-wrap: wrap; gap: 5px 8px; }
+.forecast-game.is-winner-live { border-top-color: rgb(var(--game-winner-rgb)); }
+.forecast-game.is-winner-live .forecast-game-heading { background: rgba(var(--game-winner-rgb), .05); }
 .game-day-card.is-final .game-day-status { font-weight: 600; color: var(--ink); }
 .game-day-card.is-canceled .game-day-status { font-weight: 600; }
 .game-day-matchup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 160px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 16px 20px 12px; }

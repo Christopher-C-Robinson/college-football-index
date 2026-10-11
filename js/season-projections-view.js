@@ -3,6 +3,7 @@ import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
+import { renderLiveGameStatus } from './live-scores.js?v=066e6db2990c';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -51,7 +52,7 @@ function recordValue(team, kind, tag = 'span') {
 }
 
 function teamRecords(team) {
-  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records"><div><dt>Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
+  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records from the model snapshot"><div><dt title="Record from the loaded model snapshot">Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
     '<div><dt>Projected</dt>' + recordValue(team, 'projected', 'dd') + '</div></dl>';
 }
 
@@ -83,6 +84,7 @@ function time(value, timestamp = false) {
 }
 
 function usableForecast(row) {
+  if (row.status === 'canceled') return null;
   const forecast = row.forecast;
   if (!forecast || !finite(forecast.for) || !finite(forecast.against) || !finite(forecast.margin) || !finite(forecast.winProbability) || forecast.winProbability < 0 || forecast.winProbability > 1) return null;
   return forecast;
@@ -104,6 +106,12 @@ function winnerPresentation(row, teamName, forecast, actual) {
     const selectedWon = actual.for > actual.against;
     return { kind: 'actual', color: primaryColor(selectedWon ? row.matchup?.team?.color : row.matchup?.opponent?.color),
       label: 'Winner: ' + (selectedWon ? teamName : row.opponentName) };
+  }
+  if (['live', 'suspended'].includes(row.live?.status) && finite(row.live.for) && finite(row.live.against)) {
+    if (row.live.for === row.live.against) return { label: 'Currently tied' };
+    const selectedLeads = row.live.for > row.live.against;
+    return { kind: 'live', color: primaryColor(selectedLeads ? row.matchup?.team?.color : row.matchup?.opponent?.color),
+      label: 'Leading: ' + (selectedLeads ? teamName : row.opponentName) };
   }
   if (!forecast) return { label: 'No model favorite available' };
   if (forecast.winProbability === 0.5) return { label: 'Model toss-up · 50.0% each' };
@@ -156,13 +164,15 @@ function forecastPriorSources(forecast, teamName, opponentName) {
   return priorLabel ? '<p class="forecast-prior-note">' + priorLabel + '</p>' : '';
 }
 
-function forecastSource(forecast, analysis) {
+function forecastSource(forecast, analysis, row = null) {
   const generatedAt = forecast?.generatedAt || analysis?.snapshotAt;
   const modelVersion = forecast?.modelVersion || analysis?.modelVersion;
   return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(generatedAt, true) +
     (modelVersion ? ' · v' + escapeHtml(modelVersion) : '') +
     (analysis?.resultsThrough ? ' · Results through ' + escapeHtml(analysis.resultsThrough) : '') +
-    '</p><p class="forecast-analytics-note">Completed games are reprojected with the current snapshot, including their actual results. These comparisons show current model fit, not pregame accuracy.</p>';
+    '</p><p class="forecast-analytics-note">' + (row?.live && !row.liveResultIncluded
+      ? 'Feed scores are displayed separately. They do not change the loaded snapshot, prediction, ranking, or season record.'
+      : 'Completed games are reprojected with the current snapshot, including their actual results. These comparisons show current model fit, not pregame accuracy.') + '</p>';
 }
 
 function matchupTeams(row, teamName, forecast, actual) {
@@ -188,7 +198,7 @@ function scoreComparison(row, teamName, forecast, actual) {
     '<div class="forecast-score-key">' + (row.site === 'Neutral site' ? escapeHtml(teams[0].name) + ' first · neutral site' : 'Away first · same order as scoreboard') + '</div>' +
     teams.map(team => '<div class="forecast-score-team"><div class="forecast-score-team-heading"><strong>' + escapeHtml(team.name) + '</strong><span class="forecast-score-location">' + team.location + '</span></div>' +
       bar(team.model, 'Projected', team.color, 'is-model') + bar(team.actual, 'Final', team.color, 'is-actual') + '</div>').join('') +
-    '<p class="forecast-analytics-note">' + (actual && forecast ? 'Projection uses current data, including this result.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Projection uses the current snapshot.') + '</p></section>';
+    '<p class="forecast-analytics-note">' + (actual && forecast ? row.live && !row.liveResultIncluded ? 'Feed result compared with the unchanged model snapshot.' : 'Projection uses current data, including this result.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Projection uses the current snapshot.') + '</p></section>';
 }
 
 function matchupOutlook(row, teamName, forecast, actual) {
@@ -198,11 +208,11 @@ function matchupOutlook(row, teamName, forecast, actual) {
   const teams = matchupTeams(row, teamName, forecast, actual).map(team => ({ ...team, probability: team.name === teamName ? probability : 100 - probability }));
   const hasDivider = teams.every(team => Number(team.probability.toFixed(3)) > 0);
   const divider = barDividerColor(teams[0].color, teams[1].color);
-  return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Current win chance</h5>' +
+  return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Snapshot model win chance</h5>' +
     '<div class="forecast-probability-headline"><strong>' + number(probability) + '%</strong><span>' + escapeHtml(teamName) + '</span></div>' +
     '<div class="forecast-probability-bar' + (hasDivider ? ' has-divider' : '') + '" style="--bar-divider-color:' + divider + '" role="img" aria-label="' + escapeHtml(probabilityLabel) + '">' + teams.map(team => '<span class="' + (team.name === teamName ? 'is-selected' : 'is-opponent') + '" style="width:' + team.probability.toFixed(3) + '%;--probability-team-rgb:' + team.color + '"></span>').join('') + '</div>' +
     '<div class="forecast-probability-labels">' + teams.map(team => '<span>' + escapeHtml(team.abbreviation) + '<strong>' + number(team.probability) + '%</strong></span>').join('') + '</div>' +
-    '<p class="forecast-analytics-note">' + (actual ? 'Reprojected with current data, including this result.' : 'From the loaded snapshot.') + '</p></section>';
+    '<p class="forecast-analytics-note">' + (row.live && !row.liveResultIncluded ? 'From the model snapshot; score updates do not change this probability.' : actual ? 'Reprojected with current data, including this result.' : 'From the loaded snapshot.') + '</p></section>';
 }
 
 export function renderYardagePanel(row, teamName, forecast = null, actual = null) {
@@ -300,20 +310,23 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
     '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 48 }) + '<div class="forecast-team-copy"><h4>' + escapeHtml(team.name) + '</h4>' +
     teamRecords(team) +
     '<div class="forecast-ranks" data-season-rank-team="' + escapeHtml(recordTeamKey(team.name)) + '" aria-label="' + escapeHtml(team.name) + ' neutral matchup rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
-  const scores = actual || forecast;
+  const playing = ['live', 'suspended'].includes(row.live?.status);
+  const liveScores = playing && finite(row.live.for) && finite(row.live.against) ? { for: row.live.for, against: row.live.against } : null;
+  const scores = actual || (playing ? liveScores : forecast);
   const leftScore = scores ? selectedOnLeft ? scores.for : scores.against : null;
   const rightScore = scores ? selectedOnLeft ? scores.against : scores.for : null;
-  const status = actual ? 'Final score' : row.status === 'canceled' ? 'Canceled' : forecast ? 'Projected score' : row.status === 'unplayed' ? 'Not final' : 'Scheduled';
+  const status = actual ? 'Final score' : playing ? row.live.stale ? 'Latest fetched score' : 'Live score' : row.status === 'canceled' ? 'Canceled' : forecast ? 'Projected score' : row.status === 'unplayed' ? 'Not final' : 'Scheduled';
   const scoreText = scores ? '<span>' + Math.round(leftScore) + '</span><i aria-hidden="true">–</i><span>' + Math.round(rightScore) + '</span>' : '<span>—</span>';
-  const favorite = actual ? actual.for === actual.against ? 'Game ended tied' : 'Winner: ' + (actual.for > actual.against ? teamName : row.opponentName) :
+  const favorite = playing ? winner.label : actual ? actual.for === actual.against ? 'Game ended tied' : 'Winner: ' + (actual.for > actual.against ? teamName : row.opponentName) :
     forecast ? forecast.winProbability === 0.5 ? 'Projected toss-up' : 'Projected favorite: ' + (forecast.winProbability > 0.5 ? teamName : row.opponentName) : '';
-  const probability = forecast && !actual && forecast.winProbability !== 0.5 ? number(Math.max(forecast.winProbability, 1 - forecast.winProbability) * 100) + '% win chance' : '';
+  const probability = forecast && !actual && !playing && forecast.winProbability !== 0.5 ? number(Math.max(forecast.winProbability, 1 - forecast.winProbability) * 100) + '% win chance' : '';
   return '<div class="forecast-matchup-header">' + teamBlock(selectedOnLeft ? selected : opponent, true, selectedOnLeft) +
     '<div class="forecast-matchup-center"><span class="forecast-matchup-status">' + status + '</span>' +
     '<strong class="forecast-matchup-score" aria-label="' + escapeHtml(status + ': ' + (selectedOnLeft ? teamName : row.opponentName) + ' ' + (scores ? Math.round(leftScore) : 'unavailable') + ', ' + (selectedOnLeft ? row.opponentName : teamName) + ' ' + (scores ? Math.round(rightScore) : 'unavailable')) + '">' + scoreText + '</strong>' +
     (neutral ? '<span class="forecast-neutral-label">Neutral site</span>' : '') +
     (favorite ? '<span class="forecast-matchup-favorite">' + escapeHtml(favorite) + '</span>' : '') +
-    (probability ? '<span class="forecast-matchup-probability">' + probability + '</span>' : '') + '</div>' +
+    (probability ? '<span class="forecast-matchup-probability">' + probability + '</span>' : '') +
+    (playing && forecast ? '<span class="forecast-matchup-probability">Snapshot model: ' + Math.round(selectedOnLeft ? forecast.for : forecast.against) + '–' + Math.round(selectedOnLeft ? forecast.against : forecast.for) + '</span>' : '') + '</div>' +
     teamBlock(selectedOnLeft ? opponent : selected, false, !selectedOnLeft) + '</div>';
 }
 
@@ -324,9 +337,9 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) 
   const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
   const cardLabel = teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label;
-  return '<article id="' + seasonGameAnchor(index) + '" class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
+  return '<article id="' + seasonGameAnchor(index) + '" data-season-game-index="' + index + '" class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + time(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span>' + (row.timeTBD ? '<span>Time TBD</span>' : '') + '</div>' +
-    '<span class="forecast-venue-meta">' + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
+    '<span class="forecast-venue-meta">' + renderLiveGameStatus(row.live) + escapeHtml([row.site, row.venue].filter(Boolean).join(' · ')) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
     '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + scoreComparison(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
     renderYardagePanel(row, teamName, forecast, actual) +
@@ -334,13 +347,62 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) 
     '<details class="forecast-supporting-details"><summary>Matchup details &amp; model breakdown</summary><div class="forecast-details-grid">' + pointBreakdown(row, teamName, forecast) +
     renderUnitMatchup(unitProfiles, teamName, row.opponentName, { embedded: true }) + matchupContext(row, teamName, forecast) +
     scoreAndYardageDetails(row, teamName, forecast, actual) +
-    forecastSource(forecast, analysis) + '</div></details></article>';
+    forecastSource(forecast, analysis, row) + '</div></details></article>';
 }
 
 export function renderSeasonProjections(analysis) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
     analysis.rows.map((row, index) => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis, index)).join('') + '</div>';
+}
+
+/** Patch score displays and comparison graphics; keep cards/details mounted. */
+export function updateSeasonLiveElements(container, analysis) {
+  if (!container?.querySelectorAll || !Array.isArray(analysis?.rows)) return;
+  for (const card of container.querySelectorAll('[data-season-game-index]')) {
+    const row = analysis.rows[Number(card.dataset.seasonGameIndex)];
+    if (!row) continue;
+    const signature = JSON.stringify([row.status, row.actual?.for, row.actual?.against, row.live?.status, row.live?.for, row.live?.against, row.live?.refreshedAt, row.live?.stale]);
+    if (card.dataset.liveSignature === signature) continue;
+    card.dataset.liveSignature = signature;
+    const forecast = usableForecast(row);
+    const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
+    const winner = winnerPresentation(row, analysis.teamName, forecast, actual);
+    for (const kind of ['actual', 'predicted', 'live']) card.classList.toggle('is-winner-' + kind, winner.kind === kind && Boolean(winner.color));
+    card.classList.toggle('is-canceled', row.status === 'canceled');
+    if (winner.color) card.style.setProperty('--game-winner-rgb', winner.color);
+    else card.style.removeProperty('--game-winner-rgb');
+    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
+    const template = container.ownerDocument.createElement('template');
+    template.innerHTML = renderMatchupHeader(row, analysis.teamName, forecast, actual, winner, analysis);
+    const center = card.querySelector('.forecast-matchup-center');
+    if (center) center.innerHTML = template.content.querySelector('.forecast-matchup-center')?.innerHTML || '';
+    const venue = card.querySelector('.forecast-venue-meta');
+    if (venue) venue.innerHTML = renderLiveGameStatus(row.live) + escapeHtml([row.site, row.venue].filter(Boolean).join(' · '));
+    const sections = [
+      ['.forecast-matchup-outlook', matchupOutlook(row, analysis.teamName, forecast, actual)],
+      ['.forecast-score-comparison', scoreComparison(row, analysis.teamName, forecast, actual)],
+      ['.forecast-margin-panel', marginPanel(row, analysis.teamName, forecast, actual)],
+      ['.forecast-yardage', renderYardagePanel(row, analysis.teamName, forecast, actual)],
+      ['.forecast-exact-scores', scoreAndYardageDetails(row, analysis.teamName, forecast, actual)]
+    ];
+    for (const [selector, html] of sections) {
+      const target = card.querySelector(selector);
+      if (!target) continue;
+      template.innerHTML = html;
+      const source = template.content.querySelector(selector);
+      if (source) target.innerHTML = source.innerHTML;
+    }
+    const source = card.querySelector('.forecast-source');
+    if (source?.nextElementSibling?.classList.contains('forecast-analytics-note')) {
+      template.innerHTML = forecastSource(forecast, analysis, row);
+      source.nextElementSibling.textContent = template.content.querySelector('.forecast-analytics-note')?.textContent || '';
+    }
+  }
+}
+
+function liveGameStatusText(live) {
+  return live.status === 'live' ? 'Live score.' : live.status === 'final' ? 'Final score from the feed.' : live.status + '.';
 }
 
 export function renderProjectionSummary(analysis) {
@@ -373,6 +435,6 @@ export function renderProjectionSummary(analysis) {
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every game uses the current snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their current record and rounded projected final record for the listed schedule. These records use today’s snapshot, even on past games. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Past-game projections include those actual results. Yardage estimates are experimental.</p>' +
+  return '<p>Every prediction uses the model snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their snapshot record and rounded projected final record for the listed schedule. Feed scores and statuses can refresh separately; they do not change these records, predictions, or rankings. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Projections include completed results already in the snapshot. Yardage estimates are experimental.</p>' +
     '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Neutral matchup ranks compare every model-ready FBS and FCS team against the full field at a neutral site, ordered by average win chance. Subdivision ranks follow that same full-field ordering. Filters hide teams without changing these ranks. A rank summarizes the full field, so a particular matchup or home/away effect can favor a team farther down the rankings. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }

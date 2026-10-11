@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "cfi-live-scores",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "observability": { "enabled": false },
+  "triggers": { "crons": ["*/12 * * * *"] },
+  "vars": {
+    "SITE_ORIGIN": "https://christopher-c-robinson.github.io"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "LIVE_SCORE_CACHE", "class_name": "LiveScoreCache" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LiveScoreCache"] }]
+}
