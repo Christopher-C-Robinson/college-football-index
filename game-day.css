@@ -12,6 +12,8 @@
 /* The native picker remains accessible and receives taps, but its Safari
    editor cannot paint beyond the clipped field or influence the grid size. */
 #games-date { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; max-width: 100%; margin: 0; padding: 0; border: 0; opacity: 0; font-size: 16px; cursor: pointer; }
+#games-date:focus { opacity: 1; padding: 10px 12px; background: var(--paper); color: var(--ink); }
+.game-day-date-field:focus-within > #games-date-display, .game-day-date-field:focus-within > svg { visibility: hidden; }
 .game-day-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .game-day-filters > label { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; color: var(--ink-soft); font-size: 13px; font-weight: 600; }
 .game-day-match-mode { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
