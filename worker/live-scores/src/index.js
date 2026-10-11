@@ -131,7 +131,7 @@ async function requestDay(env, date, reservedDay) {
     let response;
     try {
       response = await fetch(url.toString(), {
-        headers: { Authorization: 'Bearer ' + env.BBS_API_KEY, Accept: 'application/json' },
+        headers: { Authorization: 'Bearer ' + String(env.BBS_API_KEY).trim(), Accept: 'application/json' },
         signal: controller.signal, redirect: 'manual'
       });
     } catch {
