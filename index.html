@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="./mobile.css?v=cc935a614492">
     <link rel="stylesheet" href="./mobile-team.css?v=c187a80e35e3">
     <link rel="stylesheet" href="./device-theme.css?v=0e58941630c0">
-    <link rel="stylesheet" href="./game-day.css?v=aba294621af2">
-    <script id="site-app" type="module" src="./js/app.js?v=0ec1ef4a8f99"></script>
+    <link rel="stylesheet" href="./game-day.css?v=d3292b1f4551">
+    <script id="site-app" type="module" src="./js/app.js?v=60ef28388618"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -80,6 +80,7 @@
           <div class="game-day-match-mode"><label for="games-both-teams" class="game-day-match-rule"><input id="games-both-teams" type="checkbox" aria-describedby="games-filter-mode-note"><span>Both teams must match</span></label><p id="games-filter-mode-note" class="game-day-note">Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.</p></div>
           <div class="game-day-toolbar"><p id="games-sort-note" class="game-day-note"></p><p id="games-count" role="status" aria-live="polite">Loading the game day…</p></div>
         </div>
+        <section id="games-accuracy" class="panel game-day-accuracy" aria-label="Daily model winner results" hidden></section>
         <p id="games-snapshot" class="game-day-note"></p>
         <p id="games-live-status" class="game-day-note"></p>
         <p id="games-progress" class="game-day-note" role="status" aria-live="polite"></p>
