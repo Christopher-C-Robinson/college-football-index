@@ -5,8 +5,8 @@ const validScore = value => Number.isInteger(value) && value >= 0 && value <= 10
 const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))
   && Number.isFinite(Date.parse(value + 'T12:00:00Z'));
 const statuses = new Set(['scheduled', 'live', 'final', 'postponed', 'canceled', 'suspended', 'unknown']);
-// The free provider refresh runs every 12 minutes. A one-minute browser poll
-// checks that cache; it does not make the upstream feed update every minute.
+// A one-minute browser poll reads the shared cache. The backend separately
+// schedules provider calls around games and the remaining free daily budget.
 const DEFAULT_STALE_MS = 30 * 60 * 1000;
 const aliases = new Map([
   ['uconn', 'connecticut'], ['connecticut huskies', 'connecticut'],
@@ -107,7 +107,8 @@ export function normalizeLiveScores(payload, { now = Date.now(), staleMs = DEFAU
   return { provider: String(payload.provider || 'Score feed'), refreshedAt, games,
     stale: globalStale, hasData: payload.status !== 'unavailable', partial: Boolean(payload.coverage?.partial),
     coverage: payload.coverage || {}, status: payload.status || (globalStale ? 'stale' : 'fresh'), staleAfterMs: staleMs,
-    feedRefreshSeconds: finite(payload.refreshIntervalSeconds) && payload.refreshIntervalSeconds > 0 ? payload.refreshIntervalSeconds : 720, error: null };
+    feedRefreshSeconds: finite(payload.refreshIntervalSeconds) && payload.refreshIntervalSeconds > 0 ? payload.refreshIntervalSeconds : 60,
+    pollSchedule: payload.pollSchedule?.mode === 'adaptive' ? payload.pollSchedule : null, error: null };
 }
 
 function sameNames(name, team, model) {
@@ -229,9 +230,14 @@ export function renderLiveGameStatus(live, options = {}) {
 export function renderLiveScoreStatus(state, { timeZone, matched } = {}) {
   if (!state?.hasData) return '<span class="live-scores-status is-unavailable">' + (state?.loading ? 'Checking live scores…' : 'Live scores unavailable; showing results from the model snapshot.') + '</span>';
   const stale = state.stale || state.error || Date.now() - Date.parse(state.refreshedAt) > (state.staleAfterMs || DEFAULT_STALE_MS);
+  const plan = state.pollSchedule;
+  const cadence = plan ? ' · budget-aware updates'
+    + (validTimestamp(plan.nextPollAt) ? ' · next score check ' + timestampLabel(plan.nextPollAt, timeZone) : ' · awaiting the next game window')
+    + '; this page checks each minute'
+    : ' · this page checks the shared score cache each minute';
   return '<span class="live-scores-status' + (stale ? ' is-stale' : '') + '">' +
     escapeHtml(state.provider || 'Score feed') + ' · refreshed ' + escapeHtml(timestampLabel(state.refreshedAt, timeZone)) +
-    (stale ? ' · updates delayed; showing last fetched scores' : ' · score feed refreshed every ' + Math.round((state.feedRefreshSeconds || 720) / 60) + ' minutes; this page checks each minute') +
+    (stale ? ' · updates delayed; showing last fetched scores' : escapeHtml(cadence)) +
     (finite(matched) ? ' · ' + matched + (matched === 1 ? ' matched game' : ' matched games') : '') +
     (state.partial ? ' · partial coverage' : '') + '. Predictions, rankings, and records use the model snapshot.</span>';
 }

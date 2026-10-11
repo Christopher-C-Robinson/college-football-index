@@ -1,7 +1,7 @@
 import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
-import { liveGameLabel } from './live-scores.js?v=c1700ff6e13d';
+import { liveGameLabel } from './live-scores.js?v=62f378bab60f';
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const percent = value => (value * 100).toFixed(1) + '%';
@@ -90,7 +90,8 @@ function scoreboard(row, prediction, actual) {
 }
 
 function probabilityBar(row, prediction) {
-  if (!prediction) return '';
+  // Keep the wrapper mounted so a corrected canceled status can restore it.
+  if (!prediction) return '<div class="game-day-probability" hidden></div>';
   const homeProbability = prediction.simulatedHomeWinProbability;
   const awayProbability = 1 - homeProbability;
   const awayColor = yardageBarColors(row.away.color, row.away.alternateColor).passing;
@@ -109,7 +110,8 @@ function probabilityBar(row, prediction) {
 }
 
 function forecastDetails(row, prediction, actual) {
-  if (!prediction) return '<p class="game-day-unavailable">' + escapeHtml(row.status === 'canceled' ? 'No forecast for this canceled game.' : row.unavailableReason || 'Forecast unavailable for this matchup.') + '</p>';
+  if (!prediction) return '<details class="game-day-details"><summary>' + (row.status === 'canceled' ? 'Canceled game' : 'Forecast unavailable') + '</summary>' +
+    '<div class="game-day-details-content"><p class="game-day-unavailable">' + escapeHtml(row.status === 'canceled' ? 'No forecast for this canceled game.' : row.unavailableReason || 'Forecast unavailable for this matchup.') + '</p></div></details>';
   const ranges = renderMarginGraphic({ margin: prediction.predictedMargin, low80: prediction.marginLow80,
     high80: prediction.marginHigh80, actualMargin: actual ? actual.home - actual.away : null, teamName: row.home.name });
   const prior = [[row.away.name, prediction.awayPriorSeason], [row.home.name, prediction.homePriorSeason]]
@@ -191,6 +193,13 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       if (summary) summary.textContent = row.status === 'canceled' ? 'Canceled game' : 'Forecast unavailable';
     }
     const probability = card.querySelector('.game-day-probability');
-    if (probability) probability.hidden = !prediction;
+    if (probability) {
+      if (prediction && !probability.firstElementChild) {
+        const template = container.ownerDocument.createElement('template');
+        template.innerHTML = probabilityBar(row, prediction);
+        probability.innerHTML = template.content.querySelector('.game-day-probability')?.innerHTML || '';
+      }
+      probability.hidden = !prediction;
+    }
   }
 }

@@ -1,4 +1,4 @@
 {
-  "endpoint": "",
-  "refreshIntervalSeconds": 720
+  "endpoint": "https://cfi-live-scores.bingoflow-support.workers.dev/scores",
+  "refreshIntervalSeconds": 60
 }

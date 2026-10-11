@@ -1,14 +1,19 @@
 import { DurableObject } from 'cloudflare:workers';
+import { buildPollPlan, DAILY_CALL_LIMIT, LIVE_CALL_COST, CATALOG_CALL_COST,
+  DISCOVERY_MS } from './poll-plan.js';
 
 const PROVIDER = 'Big Balls Sports Data';
 const PROVIDER_URL = 'https://api.bigballsdata.com/v1/matches';
+const LIVE_PROVIDER_URL = 'https://api.bigballsdata.com/v1/scores';
+const LIVE_LEAGUES = ['ncaaf', 'ncaaf-fcs'];
 const TIME_ZONE = 'America/Chicago';
-const INTERVAL_SECONDS = 720;
+const INTERVAL_SECONDS = 60;
 const STALE_SECONDS = 1800;
-const DISCOVERY_SECONDS = 7200;
+const DISCOVERY_SECONDS = DISCOVERY_MS / 1000;
 const SLOT_MS = INTERVAL_SECONDS * 1000;
 const FETCH_TIMEOUT_MS = 20000;
 const PAGE_LIMIT = 200;
+const LIVE_PAGE_LIMIT = 50;
 const KNOWN_STATUSES = new Map([
   ['scheduled', 'scheduled'], ['live', 'live'], ['in_progress', 'live'],
   ['finished', 'final'], ['postponed', 'postponed'], ['cancelled', 'canceled'],
@@ -58,6 +63,15 @@ function providerAsOf(meta) {
   return iso(meta?.as_of) || iso(meta?.asOf) || null;
 }
 
+function sourceIsStale(meta, fetchedAt, upstreamFetchedAt = null) {
+  const asOf = providerAsOf(meta);
+  const cacheAge = Number(meta?.cache_age_ms);
+  return meta?.stale === true
+    || Boolean(asOf && Date.parse(fetchedAt) - Date.parse(asOf) >= STALE_SECONDS * 1000)
+    || Boolean(upstreamFetchedAt && Date.parse(fetchedAt) - Date.parse(upstreamFetchedAt) >= STALE_SECONDS * 1000)
+    || (Number.isFinite(cacheAge) && cacheAge >= STALE_SECONDS * 1000);
+}
+
 function normalizeTeam(team) {
   if (!team || typeof team.id !== 'string' || !team.id.trim()
     || typeof team.name !== 'string' || !team.name.trim()) return null;
@@ -86,10 +100,7 @@ function normalizeMatches(packet, date, fetchedAt) {
     throw sourceError('provider_date_window_mismatch', { partial: true });
   }
   const asOf = providerAsOf(packet.meta);
-  const cacheAge = Number(packet.meta?.cache_age_ms);
-  const stale = packet.meta?.stale === true
-    || Boolean(asOf && Date.parse(fetchedAt) - Date.parse(asOf) >= STALE_SECONDS * 1000)
-    || (Number.isFinite(cacheAge) && cacheAge >= STALE_SECONDS * 1000);
+  const stale = sourceIsStale(packet.meta, fetchedAt);
   const games = [];
   for (const match of packet.data) {
     const league = normalizedLeague(match?.league);
@@ -107,24 +118,29 @@ function normalizeMatches(packet, date, fetchedAt) {
     }
     const gameDate = match.time_precision === 'date' && validDay(match.game_date)
       ? match.game_date : calendarDay(startDate);
+    const catalogStatus = KNOWN_STATUSES.get(match.status) || 'unknown';
+    const unverifiedLive = ['live', 'suspended'].includes(catalogStatus);
+    const observedAt = iso(match.updated_at) || asOf;
     games.push({
       id: match.id.slice(0, 120), providerId: match.id.slice(0, 120),
       date: gameDate, startDate, kickoffTBD: match.time_precision === 'date',
       leagueCode: league.code, leagueClassification: league.classification,
-      home, away, status: KNOWN_STATUSES.get(match.status) || 'unknown',
-      homeScore: score(match.score?.home), awayScore: score(match.score?.away),
-      providerAsOf: iso(match.updated_at) || asOf, fetchedAt, stale
+      home, away, catalogStatus, status: unverifiedLive ? 'unknown' : catalogStatus,
+      homeScore: catalogStatus === 'final' ? score(match.score?.home) : null,
+      awayScore: catalogStatus === 'final' ? score(match.score?.away) : null,
+      scoreSource: 'catalog', liveVerified: false, scoreObservedAt: observedAt,
+      providerAsOf: observedAt, fetchedAt, catalogFetchedAt: fetchedAt,
+      stale: stale || unverifiedLive,
+      unavailableReason: unverifiedLive ? 'live_observation_missing' : null
     });
   }
   return { games, coverage: { date, fetchedAt, providerAsOf: asOf, stale,
     count: games.length, partial: false, source: typeof packet.meta?.source === 'string' ? packet.meta.source.slice(0, 80) : null } };
 }
 
-async function requestDay(env, date, reservedDay) {
+async function requestProvider(env, url, reservedDay, normalize) {
   if (utcDay(Date.now()) !== reservedDay) throw sourceError('quota_day_changed');
-  const url = new URL(PROVIDER_URL);
-  url.search = new URLSearchParams({ sport: 'american_football', date, tz: TIME_ZONE,
-    limit: String(PAGE_LIMIT), offset: '0' }).toString();
+  if (86400000 - Date.now() % 86400000 < FETCH_TIMEOUT_MS + 5000) throw sourceError('quota_day_rollover');
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -164,10 +180,68 @@ async function requestDay(env, date, reservedDay) {
     } catch {
       throw sourceError('provider_payload_invalid');
     }
-    return normalizeMatches(packet, date, new Date().toISOString());
+    return normalize(packet, new Date().toISOString());
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function requestDay(env, date, reservedDay) {
+  const url = new URL(PROVIDER_URL);
+  url.search = new URLSearchParams({ sport: 'american_football', date, tz: TIME_ZONE,
+    limit: String(PAGE_LIMIT), offset: '0' }).toString();
+  return requestProvider(env, url, reservedDay,
+    (packet, fetchedAt) => normalizeMatches(packet, date, fetchedAt));
+}
+
+function normalizeLiveScores(packet, league, fetchedAt) {
+  const field = packet?.data?.scores;
+  if (!packet || packet.error || Array.isArray(packet.data)) {
+    // A stored Match array (returned when date/tz are supplied) is not a live
+    // observation, even if its catalog status says in_progress.
+    throw sourceError('provider_live_coverage_unavailable', { partial: true });
+  }
+  if (packet.meta?.coverage === false || field === null) {
+    // The documented 200/no-adapter response limits this league's coverage;
+    // do not discard another league's genuine successful observations.
+    return { observations: [], coverage: { league, count: 0, fetchedAt,
+      available: false, partial: true, reason: 'provider_live_coverage_unavailable',
+      providerFetchedAt: null, providerAsOf: null, stale: true, source: null } };
+  }
+  if (!Array.isArray(field?.value)) throw sourceError('provider_live_payload_invalid', { partial: true });
+  if (field.value.length >= LIVE_PAGE_LIMIT || Number(packet.meta?.total) > field.value.length) {
+    throw sourceError('provider_live_pagination_required', { partial: true });
+  }
+  const upstreamFetchedAt = iso(field.fetchedAt);
+  const stale = sourceIsStale(packet.meta, fetchedAt, upstreamFetchedAt);
+  const observations = [];
+  for (const row of field.value) {
+    const observedAt = iso(row?.updated_at);
+    if (!row || !observedAt || (row.home != null && score(row.home) == null)
+      || (row.away != null && score(row.away) == null)) {
+      throw sourceError('provider_live_score_invalid', { partial: true });
+    }
+    const status = KNOWN_STATUSES.get(row.status) || 'unknown';
+    observations.push({
+      id: typeof row.match_id === 'string' && row.match_id.trim() ? row.match_id.trim().slice(0, 120) : null,
+      status, homeScore: score(row.home), awayScore: score(row.away),
+      scoreObservedAt: observedAt, providerAsOf: observedAt, fetchedAt, liveLeagueCode: league,
+      stale: stale || Date.parse(fetchedAt) - Date.parse(observedAt) >= STALE_SECONDS * 1000
+        || Date.parse(observedAt) - Date.parse(fetchedAt) > 300000
+    });
+  }
+  return { observations, coverage: { league, count: observations.length, fetchedAt, available: true,
+    providerFetchedAt: upstreamFetchedAt, providerAsOf: providerAsOf(packet.meta), stale,
+    source: typeof field.source === 'string' ? field.source.slice(0, 80) : null } };
+}
+
+async function requestLive(env, league, reservedDay) {
+  const url = new URL(LIVE_PROVIDER_URL);
+  // Both date and tz select stored data on this endpoint. Omit them entirely
+  // to reach the genuine per-adapter live observation field.
+  url.search = new URLSearchParams({ league }).toString();
+  return requestProvider(env, url, reservedDay,
+    (packet, fetchedAt) => normalizeLiveScores(packet, league, fetchedAt));
 }
 
 function readState(cache) {
@@ -180,38 +254,151 @@ function readState(cache) {
   return { ...state, packet };
 }
 
-function pollingNeeded(state, now, dates) {
-  if (!state.packet || !dates.every(date => state.packet.coverage?.byDate?.[date])) return true;
-  if (state.last_error_code) return true;
-  // A provider can add games or change a postponed/TBD kickoff after the first
-  // discovery. Rediscover even an empty covered board, within the same budget.
-  const lastFetch = Date.parse(state.packet.fetchedAt || '');
-  if (!Number.isFinite(lastFetch) || now - lastFetch >= DISCOVERY_SECONDS * 1000) return true;
-  return state.packet.games.some(game => {
-    if (!dates.includes(game.date)) return false;
-    if (['live', 'suspended'].includes(game.status)) return true;
-    if (game.status !== 'scheduled') return false;
-    if (game.kickoffTBD) return true;
-    const kickoff = Date.parse(game.startDate);
-    return Number.isFinite(kickoff) && now >= kickoff - 45 * 60000 && now <= kickoff + 6 * 3600000;
-  });
+function readCatalog(cache) {
+  const row = cache.ctx.storage.sql.exec('SELECT body FROM live_catalog WHERE id = 1').one();
+  if (!row.body) return null;
+  try { return JSON.parse(row.body); }
+  catch { throw sourceError('catalog_cache_invalid'); }
 }
 
-function reserveBatch(cache, now) {
+function catalogNeedsRefresh(catalog, now, dates) {
+  if (!catalog || !dates.every(date => catalog.coverage?.byDate?.[date])) return true;
+  const lastFetch = Date.parse(catalog.fetchedAt || '');
+  return !Number.isFinite(lastFetch) || now - lastFetch >= DISCOVERY_SECONDS * 1000;
+}
+
+function reserveBatch(cache, now, calls, continuation = null) {
+  if (![LIVE_CALL_COST, CATALOG_CALL_COST].includes(calls)) throw sourceError('refresh_budget_invalid');
   const day = utcDay(now);
   const slot = Math.floor(now / SLOT_MS);
   let reservation = null;
   cache.ctx.storage.transactionSync(() => {
     const sql = cache.ctx.storage.sql;
     sql.exec('INSERT OR IGNORE INTO daily_budgets (day, calls_reserved) VALUES (?, 0)', day);
-    const claimed = sql.exec(`INSERT INTO refresh_slots (slot, day, claimed_at)
-      SELECT ?, ?, ? WHERE (SELECT calls_reserved FROM daily_budgets WHERE day = ?) <= 238
-      ON CONFLICT(slot) DO NOTHING RETURNING slot`, slot, day, new Date(now).toISOString(), day).toArray();
-    if (!claimed.length) return;
-    sql.exec('UPDATE daily_budgets SET calls_reserved = calls_reserved + 2 WHERE day = ?', day);
-    reservation = { day, slot };
+    if (continuation) {
+      if (continuation.day !== day || !sql.exec('SELECT slot FROM refresh_slots WHERE slot = ? AND day = ?',
+        continuation.slot, day).toArray().length
+        || sql.exec('SELECT calls_reserved FROM daily_budgets WHERE day = ?', day).one().calls_reserved > DAILY_CALL_LIMIT - calls) return;
+      if (slot !== continuation.slot) {
+        const claimed = sql.exec(`INSERT INTO refresh_slots (slot, day, claimed_at) VALUES (?, ?, ?)
+          ON CONFLICT(slot) DO NOTHING RETURNING slot`, slot, day, new Date(now).toISOString()).toArray();
+        if (!claimed.length) return;
+      }
+    } else {
+      const claimed = sql.exec(`INSERT INTO refresh_slots (slot, day, claimed_at)
+        SELECT ?, ?, ? WHERE (SELECT calls_reserved FROM daily_budgets WHERE day = ?) <= ?
+        ON CONFLICT(slot) DO NOTHING RETURNING slot`, slot, day, new Date(now).toISOString(), day, DAILY_CALL_LIMIT - calls).toArray();
+      if (!claimed.length) return;
+    }
+    sql.exec('UPDATE daily_budgets SET calls_reserved = calls_reserved + ? WHERE day = ?', calls, day);
+    reservation = { day, slot, calls };
   });
   return reservation;
+}
+
+function combineCatalog(results, dates) {
+  const byDate = Object.fromEntries(results.map(result => [result.coverage.date, result.coverage]));
+  const unique = new Map(results.flatMap(result => result.games).map(game => [game.id, game]));
+  return {
+    fetchedAt: results.map(result => result.coverage.fetchedAt).sort()[0],
+    coverage: { dates, timeZone: TIME_ZONE, partial: false, byDate },
+    games: [...unique.values()].sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+  };
+}
+
+function observationConflict(a, b) {
+  return a.scoreObservedAt === b.scoreObservedAt
+    && (a.status !== b.status || a.homeScore !== b.homeScore || a.awayScore !== b.awayScore);
+}
+
+function mergeScorePacket(catalog, feeds, priorPacket, now) {
+  const catalogIds = new Set(catalog.games.map(game => game.id));
+  const observations = new Map();
+  const conflicts = new Set();
+  const byLeague = feeds.length ? {} : { ...priorPacket?.coverage?.byLeague };
+  for (const feed of feeds) {
+    const coverage = { ...feed.coverage, matchedRows: 0, liveMatched: 0,
+      missingMatchIds: 0, unknownMatchIds: 0, conflictingRows: 0 };
+    byLeague[coverage.league] = coverage;
+    for (const observation of feed.observations) {
+      if (!observation.id) { coverage.missingMatchIds += 1; continue; }
+      if (!catalogIds.has(observation.id)) { coverage.unknownMatchIds += 1; continue; }
+      coverage.matchedRows += 1;
+      if (['live', 'suspended'].includes(observation.status)
+        && observation.homeScore != null && observation.awayScore != null) coverage.liveMatched += 1;
+      const existing = observations.get(observation.id);
+      if (existing && observationConflict(existing, observation)) {
+        conflicts.add(observation.id);
+        coverage.conflictingRows += 1;
+        continue;
+      }
+      if (!existing || Date.parse(observation.scoreObservedAt) > Date.parse(existing.scoreObservedAt)) {
+        observations.set(observation.id, observation);
+      }
+    }
+  }
+  // UUIDs come from the documented match_id field only. A feed can contain
+  // cross-subdivision games; its league never vetoes a canonical ID match.
+  for (const id of conflicts) observations.delete(id);
+  const priorScores = new Map((priorPacket?.games || [])
+    .filter(game => game.scoreSource === 'live-feed' && game.liveVerified === true)
+    .map(game => [game.id, game]));
+  let retainedLiveScores = 0;
+  let unverifiedLiveGames = 0;
+  let verifiedLiveGames = 0;
+  const games = catalog.games.map(game => {
+    const current = observations.get(game.id);
+    const prior = priorScores.get(game.id);
+    let observation = current;
+    let retained = false;
+    if (prior && (!observation || Date.parse(prior.scoreObservedAt) > Date.parse(observation.scoreObservedAt))) {
+      observation = prior;
+      retained = true;
+    }
+    // A completed catalog result does not regress to a last-seen live score.
+    if (game.catalogStatus === 'final' && observation?.status !== 'final') observation = null;
+    const hasScore = observation && observation.homeScore != null && observation.awayScore != null;
+    const verified = Boolean(hasScore && ['live', 'final', 'suspended'].includes(observation.status));
+    if (['live', 'suspended'].includes(game.catalogStatus)
+      && (!verified || (retained && observation.status !== 'final'))) unverifiedLiveGames += 1;
+    if (!observation) return game;
+    retained = retained && (feeds.length > 0 || prior?.retainedLiveScore === true);
+    if (retained) retainedLiveScores += 1;
+    if (verified && observation.status === 'live') verifiedLiveGames += 1;
+    return {
+      ...game, status: !verified && ['live', 'suspended'].includes(observation.status) ? 'unknown' : observation.status,
+      homeScore: verified ? observation.homeScore : null, awayScore: verified ? observation.awayScore : null,
+      scoreSource: 'live-feed', liveVerified: verified,
+      liveLeagueCode: observation.liveLeagueCode, scoreObservedAt: observation.scoreObservedAt,
+      providerAsOf: observation.providerAsOf, fetchedAt: observation.fetchedAt,
+      retainedLiveScore: retained, stale: observation.stale || (!verified && observation.status !== 'scheduled')
+        || (retained && observation.status !== 'final')
+        || now - Date.parse(observation.scoreObservedAt) >= STALE_SECONDS * 1000,
+      unavailableReason: retained && observation.status !== 'final' ? 'live_observation_not_returned'
+        : verified || observation.status === 'scheduled' ? null : 'live_score_unavailable'
+    };
+  });
+  const missingMatchIds = Object.values(byLeague).reduce((sum, coverage) => sum + coverage.missingMatchIds, 0);
+  const unknownMatchIds = Object.values(byLeague).reduce((sum, coverage) => sum + coverage.unknownMatchIds, 0);
+  const unresolvedLiveRows = missingMatchIds + unknownMatchIds + conflicts.size;
+  const matchedRows = feeds.length ? observations.size : priorPacket?.coverage?.matchedRows || 0;
+  const fetchedAt = feeds.map(feed => feed.coverage.fetchedAt).sort()[0] || priorPacket?.fetchedAt || catalog.fetchedAt;
+  const activeAsOf = games.filter(game => game.liveVerified && ['live', 'suspended'].includes(game.status))
+    .map(game => game.scoreObservedAt).filter(Boolean).sort();
+  const availableFeeds = Object.values(byLeague).filter(coverage => coverage.available !== false);
+  const stale = !availableFeeds.length || availableFeeds.some(coverage => coverage.stale);
+  return {
+    schemaVersion: 1, provider: PROVIDER, providerUrl: 'https://bigballsdata.com',
+    scoreFeedVersion: 2, refreshedAt: fetchedAt, fetchedAt,
+    providerAsOf: activeAsOf[0] || null, catalogFetchedAt: catalog.fetchedAt,
+    stale, status: stale ? 'stale' : 'fresh',
+    refreshIntervalSeconds: INTERVAL_SECONDS, staleAfterSeconds: STALE_SECONDS,
+    coverage: { ...catalog.coverage, leagues: LIVE_LEAGUES, byLeague,
+      partial: unresolvedLiveRows > 0 || unverifiedLiveGames > 0 || availableFeeds.length !== LIVE_LEAGUES.length,
+      liveMatched: verifiedLiveGames, matchedRows, missingMatchIds, unknownMatchIds,
+      unresolvedLiveRows, conflictingMatchIds: conflicts.size, unverifiedLiveGames, retainedLiveScores },
+    games
+  };
 }
 
 function preserveFailure(cache, state, error) {
@@ -230,38 +417,70 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
   const now = Date.now();
   const utcMonth = new Date(now).getUTCMonth() + 1;
   if (![1, 8, 9, 10, 11, 12].includes(utcMonth)) return { status: 'offseason' };
-  // Cron slots never fall here. Protect manually requested work from crossing
-  // a UTC quota rollover while either of the two bounded fetches is in flight.
-  if (86400000 - now % 86400000 < 60000) return { status: 'quota_day_rollover' };
   const state = readState(cache);
   if (Date.parse(state.backoff_until || '') > now) return { status: 'backoff', retryAt: state.backoff_until };
   const today = calendarDay(now);
-  const dates = [shiftDay(today, -1), today];
-  if (!forceDiscovery && !pollingNeeded(state, now, dates)) return { status: 'idle' };
-  const reservation = reserveBatch(cache, now);
-  if (!reservation) return { status: 'slot_or_daily_budget_used' };
+  const dates = [shiftDay(today, -1), today, shiftDay(today, 1)];
+  let catalog = readCatalog(cache);
+  const discover = forceDiscovery || catalogNeedsRefresh(catalog, now, dates);
+  let packet = state.packet;
+  let reservation = null;
+  let reservedCalls = 0;
+  const planFor = (at, forcePoll = false) => {
+    const quota = cache.ctx.storage.sql.exec('SELECT calls_reserved FROM daily_budgets WHERE day = ?', utcDay(at)).toArray()[0];
+    const priorGames = new Map((packet?.scoreFeedVersion === 2 ? packet.games : []).map(game => [game.id, game]));
+    const games = (catalog?.games || []).map(game => {
+      const prior = priorGames.get(game.id);
+      return prior?.liveVerified && !['final', 'canceled', 'postponed'].includes(game.catalogStatus)
+        ? { ...game, status: prior.status, liveVerified: true, scoreObservedAt: prior.scoreObservedAt } : game;
+    });
+    return buildPollPlan({ now: at, games, callsReserved: quota?.calls_reserved || 0,
+      catalogFetchedAt: catalog?.fetchedAt, catalogMissing: !catalog || !dates.every(date => catalog.coverage?.byDate?.[date]),
+      lastPollAt: Object.values(packet?.coverage?.byLeague || {}).map(coverage => coverage.fetchedAt).filter(Boolean).sort()[0] || null,
+      forcePoll });
+  };
+  const savePlan = plan => cache.ctx.storage.sql.exec('UPDATE poll_schedule SET body = ? WHERE id = 1', JSON.stringify(plan));
+  let plan = planFor(now, forceDiscovery);
+  savePlan(plan);
+  const liveDue = plan.nextPollAt && Date.parse(plan.nextPollAt) <= now;
+  if (!discover && !liveDue) return { status: 'waiting', nextRequestAt: plan.nextRequestAt };
+  // Every source call gets its own bounded timeout. Keep a whole batch within
+  // one quota day; the minute tick immediately after UTC midnight replans it.
+  const firstCost = discover ? CATALOG_CALL_COST : LIVE_CALL_COST;
+  if (86400000 - now % 86400000 < firstCost * FETCH_TIMEOUT_MS + 5000) return { status: 'quota_day_rollover' };
   try {
-    const previous = await requestDay(env, dates[0], reservation.day);
-    const current = await requestDay(env, dates[1], reservation.day);
-    const byDate = Object.fromEntries([previous, current].map(result => [result.coverage.date, result.coverage]));
-    const unique = new Map([...previous.games, ...current.games].map(game => [game.id, game]));
-    const fetchedAt = [previous.coverage.fetchedAt, current.coverage.fetchedAt].sort()[0];
-    const datesAsOf = [previous.coverage.providerAsOf, current.coverage.providerAsOf];
-    const packet = {
-      schemaVersion: 1, provider: PROVIDER, providerUrl: 'https://bigballsdata.com',
-      refreshedAt: fetchedAt, fetchedAt,
-      providerAsOf: datesAsOf.every(Boolean) ? datesAsOf.sort()[0] : null,
-      stale: previous.coverage.stale || current.coverage.stale,
-      status: previous.coverage.stale || current.coverage.stale ? 'stale' : 'fresh',
-      refreshIntervalSeconds: INTERVAL_SECONDS, staleAfterSeconds: STALE_SECONDS,
-      coverage: { dates, timeZone: TIME_ZONE, partial: false, byDate,
-        leagues: ['ncaaf', 'ncaaf-fcs'] },
-      games: [...unique.values()].sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
-    };
+    if (discover) {
+      reservation = reserveBatch(cache, now, CATALOG_CALL_COST);
+      if (!reservation) return { status: 'slot_or_daily_budget_used' };
+      reservedCalls += reservation.calls;
+      const results = [];
+      for (const date of dates) results.push(await requestDay(env, date, reservation.day));
+      catalog = combineCatalog(results, dates);
+      cache.ctx.storage.sql.exec('UPDATE live_catalog SET body = ? WHERE id = 1', JSON.stringify(catalog));
+      packet = mergeScorePacket(catalog, [], packet, Date.now());
+      cache.ctx.storage.sql.exec('UPDATE live_state SET body = ? WHERE id = 1', JSON.stringify(packet));
+      plan = planFor(Date.now(), forceDiscovery);
+      savePlan(plan);
+    }
+    if (!plan.nextPollAt || Date.parse(plan.nextPollAt) > Date.now()) {
+      return { status: 'catalog_refreshed', reservedCalls, nextRequestAt: plan.nextRequestAt };
+    }
+    if (86400000 - Date.now() % 86400000 < LIVE_CALL_COST * FETCH_TIMEOUT_MS + 5000) return { status: 'quota_day_rollover' };
+    const liveReservation = reserveBatch(cache, Date.now(), LIVE_CALL_COST, reservation);
+    if (!liveReservation) return { status: 'slot_or_daily_budget_used' };
+    reservedCalls += liveReservation.calls;
+    const fbs = await requestLive(env, LIVE_LEAGUES[0], liveReservation.day);
+    const fcs = await requestLive(env, LIVE_LEAGUES[1], liveReservation.day);
+    packet = mergeScorePacket(catalog, [fbs, fcs], packet, Date.now());
     cache.ctx.storage.sql.exec(`UPDATE live_state SET body = ?, last_attempt_at = ?,
       last_error_code = NULL, failure_count = 0, backoff_until = NULL WHERE id = 1`,
       JSON.stringify(packet), new Date().toISOString());
-    return { status: 'refreshed', games: packet.games.length, fetchedAt };
+    plan = planFor(Date.now());
+    savePlan(plan);
+    return { status: 'refreshed', games: packet.games.length, fetchedAt: packet.fetchedAt,
+      liveMatched: packet.coverage.liveMatched, unresolvedLiveRows: packet.coverage.unresolvedLiveRows,
+      partial: packet.coverage.partial, reservedCalls, nextRequestAt: plan.nextRequestAt,
+      intervalSeconds: plan.intervalSeconds, remainingCalls: plan.remainingCalls };
   } catch (error) {
     preserveFailure(cache, state, error);
     return { status: 'failed', reason: error.code || 'refresh_failed' };
@@ -276,19 +495,36 @@ function unavailablePacket(reason = 'scores_unavailable') {
   };
 }
 
-function servePacket(state, now) {
+function servePacket(state, now, pollSchedule = null) {
   if (!state.packet) return unavailablePacket(state.last_error_code || 'scores_not_loaded');
   const packet = state.packet;
+  const legacyCatalog = packet.scoreFeedVersion !== 2;
   const age = now - Date.parse(packet.fetchedAt || '');
   const failed = Boolean(state.last_error_code);
-  const stale = packet.stale || failed || !Number.isFinite(age) || age >= STALE_SECONDS * 1000;
+  const stale = legacyCatalog || packet.stale || failed || !Number.isFinite(age) || age >= STALE_SECONDS * 1000;
   return {
-    ...packet, stale, status: stale ? 'stale' : 'fresh', reason: state.last_error_code || null,
+    ...packet, stale, status: stale ? 'stale' : 'fresh',
+    pollSchedule,
+    refreshIntervalSeconds: pollSchedule?.intervalSeconds || packet.refreshIntervalSeconds,
+    reason: state.last_error_code || (legacyCatalog ? 'live_feed_not_loaded' : null),
     retryAt: state.backoff_until || null,
-    coverage: { ...packet.coverage, partial: packet.coverage.partial || /pagination|invalid|unrecognized|mismatch/.test(state.last_error_code || ''),
+    coverage: { ...packet.coverage, partial: legacyCatalog || packet.coverage.partial
+      || /pagination|invalid|unrecognized|mismatch|coverage/.test(state.last_error_code || ''),
       byDate: Object.fromEntries(Object.entries(packet.coverage.byDate).map(([date, coverage]) => [date,
+        { ...coverage, stale: coverage.stale || now - Date.parse(coverage.fetchedAt) >= DISCOVERY_SECONDS * 1000 }])),
+      byLeague: Object.fromEntries(Object.entries(packet.coverage.byLeague || {}).map(([league, coverage]) => [league,
         { ...coverage, stale: coverage.stale || failed || now - Date.parse(coverage.fetchedAt) >= STALE_SECONDS * 1000 }])) },
-    games: packet.games.map(game => ({ ...game, stale: game.stale || failed || now - Date.parse(game.fetchedAt) >= STALE_SECONDS * 1000 }))
+    games: packet.games.map(game => {
+      const unverifiedLive = game.scoreSource !== 'live-feed' && ['live', 'suspended'].includes(game.status);
+      return { ...game,
+        status: unverifiedLive ? 'unknown' : game.status,
+        homeScore: unverifiedLive ? null : game.homeScore, awayScore: unverifiedLive ? null : game.awayScore,
+        scoreSource: game.scoreSource || 'catalog', liveVerified: game.liveVerified === true,
+        unavailableReason: unverifiedLive ? 'live_observation_missing' : game.unavailableReason,
+        stale: unverifiedLive || game.stale || failed || now - Date.parse(game.fetchedAt) >= STALE_SECONDS * 1000
+          || Boolean(game.scoreObservedAt && now - Date.parse(game.scoreObservedAt) >= STALE_SECONDS * 1000)
+      };
+    })
   };
 }
 
@@ -319,6 +555,12 @@ export class LiveScoreCache extends DurableObject {
       id INTEGER PRIMARY KEY CHECK (id = 1), body TEXT, last_attempt_at TEXT,
       last_error_code TEXT, failure_count INTEGER NOT NULL DEFAULT 0, backoff_until TEXT)`);
     ctx.storage.sql.exec('INSERT OR IGNORE INTO live_state (id) VALUES (1)');
+    ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS live_catalog (
+      id INTEGER PRIMARY KEY CHECK (id = 1), body TEXT)`);
+    ctx.storage.sql.exec('INSERT OR IGNORE INTO live_catalog (id) VALUES (1)');
+    ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS poll_schedule (
+      id INTEGER PRIMARY KEY CHECK (id = 1), body TEXT)`);
+    ctx.storage.sql.exec('INSERT OR IGNORE INTO poll_schedule (id) VALUES (1)');
     this.inFlight = null;
   }
 
@@ -330,7 +572,8 @@ export class LiveScoreCache extends DurableObject {
   }
 
   readScores() {
-    return servePacket(readState(this), Date.now());
+    const row = this.ctx.storage.sql.exec('SELECT body FROM poll_schedule WHERE id = 1').one();
+    return servePacket(readState(this), Date.now(), row.body ? JSON.parse(row.body) : null);
   }
 }
 
@@ -354,7 +597,7 @@ export default {
       return response;
     }
     if (url.pathname === '/refresh' && request.method === 'POST') {
-      if (!env.REFRESH_TOKEN || request.headers.get('Authorization') !== 'Bearer ' + env.REFRESH_TOKEN) {
+      if (!env.REFRESH_TOKEN || request.headers.get('Authorization') !== 'Bearer ' + String(env.REFRESH_TOKEN).trim()) {
         return jsonResponse(request, { status: 'unauthorized' }, 401);
       }
       if (!env.BBS_API_KEY) return jsonResponse(request, { status: 'unconfigured', scope: 'worker' });

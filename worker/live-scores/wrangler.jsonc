@@ -6,7 +6,7 @@
   "compatibility_flags": ["global_fetch_strictly_public"],
   "workers_dev": true,
   "observability": { "enabled": false },
-  "triggers": { "crons": ["*/12 * * * *"] },
+  "triggers": { "crons": ["* * * * *"] },
   "vars": {
     "SITE_ORIGIN": "https://christopher-c-robinson.github.io"
   },

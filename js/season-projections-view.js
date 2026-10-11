@@ -3,7 +3,7 @@ import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
-import { renderLiveGameStatus } from './live-scores.js?v=c1700ff6e13d';
+import { renderLiveGameStatus } from './live-scores.js?v=62f378bab60f';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
