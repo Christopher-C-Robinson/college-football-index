@@ -1,4 +1,10 @@
-/* Phone layouts for Team Explorer and Matchups. Desktop styles stay in styles.css. */
+/* Shared score comparison rows, followed by phone layouts for Team Explorer
+   and Matchups. Other desktop styles stay in styles.css. */
+.forecast-matchup-score-line { min-width: 0; width: 100%; }
+.forecast-matchup-score-line.is-observed { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
+.forecast-matchup-score-line.is-observed .forecast-matchup-score { font-size: 30px; }
+.forecast-matchup-score-line.is-observed .forecast-matchup-status { color: var(--ink); }
+
 @media (max-width: 680px) {
   #dossier .panel,
   #matchups .panel,
@@ -160,6 +166,10 @@
 
   .forecast-margin-panel > .forecast-margin-headline {
     margin-bottom: 8px;
+  }
+
+  .forecast-matchup-score-line.is-observed .forecast-matchup-score {
+    font-size: 27px;
   }
 
   .forecast-details-grid {
@@ -366,6 +376,10 @@
 
   .forecast-matchup-score i {
     font-size: 20px;
+  }
+
+  .forecast-matchup-score-line.is-observed .forecast-matchup-score {
+    font-size: clamp(24px, 6.6vw, 28px);
   }
 
   .forecast-team-copy h4 {

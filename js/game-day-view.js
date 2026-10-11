@@ -1,6 +1,6 @@
 import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
-import { renderMarginGraphic } from './margin-graphic.js?v=03abb6d365c2';
+import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=62f378bab60f';
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
@@ -24,6 +24,15 @@ function actualScores(row) {
   if (row.live?.status === 'final' && finite(row.live.homeScore) && finite(row.live.awayScore)) return { home: row.live.homeScore, away: row.live.awayScore };
   return row.status === 'final' && finite(row.game?.homePoints) && finite(row.game?.awayPoints)
     ? { home: row.game.homePoints, away: row.game.awayPoints } : null;
+}
+
+function observedScores(row, actual) {
+  if (actual) return { ...actual, label: 'Final score', markerLabel: 'Actual', final: true };
+  if (!['live', 'suspended'].includes(row.live?.status)
+    || !finite(row.live.homeScore) || !finite(row.live.awayScore)) return null;
+  const latest = row.live.stale || row.live.status === 'suspended';
+  return { home: row.live.homeScore, away: row.live.awayScore,
+    label: latest ? 'Latest fetched score' : 'Live score', markerLabel: latest ? 'Latest' : 'Live', final: false };
 }
 
 function statusLabel(row, options = {}) {
@@ -72,21 +81,21 @@ function favoriteLabel(row, prediction, actual) {
 }
 
 function scoreboard(row, prediction, actual) {
-  const playing = ['live', 'suspended'].includes(row.live?.status);
-  const liveScores = playing && finite(row.live.homeScore) && finite(row.live.awayScore) ? { home: row.live.homeScore, away: row.live.awayScore } : null;
-  const scores = actual || (playing ? liveScores : prediction ? { home: prediction.projectedHomeScore, away: prediction.projectedAwayScore } : null);
-  const awayScore = scores?.away;
-  const homeScore = scores?.home;
-  const hasScore = finite(awayScore) && finite(homeScore);
-  const label = actual ? 'Final score' : playing ? row.live.stale ? 'Latest fetched score' : 'Live score' : row.status === 'canceled' ? 'Canceled' : prediction ? 'Projected score' : 'Score unavailable';
-  const favorite = playing ? liveScores ? liveScores.home === liveScores.away ? 'Currently tied' : 'Leading: ' + (liveScores.home > liveScores.away ? row.home.name : row.away.name) : 'Score unavailable' : favoriteLabel(row, prediction, actual);
-  const favoredProbability = prediction && !actual && !playing ? Math.max(prediction.simulatedHomeWinProbability, 1 - prediction.simulatedHomeWinProbability) : null;
-  return '<div class="game-day-scoreboard"><span class="game-day-score-label">' + label + '</span>' +
-    '<strong class="game-day-score" aria-label="' + escapeHtml(label + ': ' + row.away.name + ' ' + (hasScore ? Math.round(awayScore) : 'unavailable') + ', ' + row.home.name + ' ' + (hasScore ? Math.round(homeScore) : 'unavailable')) + '">' +
-    (hasScore ? '<span>' + Math.round(awayScore) + '</span><i aria-hidden="true">–</i><span>' + Math.round(homeScore) + '</span>' : '<span>—</span>') + '</strong>' +
-    (favorite ? '<span class="game-day-favorite">' + escapeHtml(favorite) + '</span>' : '') +
-    (finite(favoredProbability) ? '<span class="game-day-favorite-chance">' + percent(favoredProbability) + ' win chance</span>' : '') +
-    (playing && prediction ? '<span class="game-day-favorite-chance">Snapshot model: ' + Math.round(prediction.projectedAwayScore) + '–' + Math.round(prediction.projectedHomeScore) + '</span>' : '') + '</div>';
+  const observed = observedScores(row, actual);
+  const scoreLine = (label, away, home, className) => '<div class="game-day-score-line ' + className + '"><span class="game-day-score-label">' + escapeHtml(label) + '</span>' +
+    '<strong class="game-day-score" aria-label="' + escapeHtml(label + ': ' + row.away.name + ' ' + Math.round(away) + ', ' + row.home.name + ' ' + Math.round(home)) + '">' +
+    '<span>' + Math.round(away) + '</span><i aria-hidden="true">–</i><span>' + Math.round(home) + '</span></strong></div>';
+  const forecast = prediction
+    ? scoreLine('Snapshot projection', prediction.projectedAwayScore, prediction.projectedHomeScore, 'is-projected')
+    : '<span class="game-day-score-label">' + (row.status === 'canceled' ? 'Canceled' : 'Projection unavailable') + '</span>';
+  const observedFavorite = observed ? observed.final ? favoriteLabel(row, prediction, actual)
+    : observed.home === observed.away ? 'Currently tied' : 'Leading: ' + (observed.home > observed.away ? row.home.name : row.away.name) : '';
+  // The snapshot projection remains visible when a score arrives. Live/final
+  // points form a separate row in the same away–home order as the team sides.
+  return '<div class="game-day-scoreboard' + (observed ? ' has-observed-score' : '') + '">' + forecast +
+    (observed ? scoreLine(observed.label, observed.away, observed.home, 'is-observed' + (observed.final ? ' is-final' : '')) +
+      '<span class="game-day-favorite">' + escapeHtml(observedFavorite) + '</span>'
+      : prediction ? '<span class="game-day-favorite">' + escapeHtml(favoriteLabel(row, prediction, null)) + '</span>' : '') + '</div>';
 }
 
 function probabilityBar(row, prediction) {
@@ -109,11 +118,24 @@ function probabilityBar(row, prediction) {
     (hasDivider ? '<i class="game-day-probability-divider" style="left:' + (awayProbability * 100).toFixed(3) + '%" aria-hidden="true"></i>' : '') + '</div></div>';
 }
 
+function marginComparison(row, prediction, actual) {
+  // Keep the wrapper mounted so a corrected canceled status can restore it.
+  if (!prediction) return '<section class="game-day-range game-day-margin-comparison" hidden></section>';
+  const observed = observedScores(row, actual);
+  const graphic = renderMarginGraphic({ margin: prediction.predictedMargin,
+    low80: prediction.marginLow80, high80: prediction.marginHigh80,
+    actualMargin: observed ? observed.home - observed.away : null,
+    actualLabel: observed?.markerLabel, teamName: row.home.name });
+  if (!graphic) return '<section class="game-day-range game-day-margin-comparison" hidden></section>';
+  const abbreviation = row.home.abbreviation || row.home.name;
+  return '<section class="game-day-range game-day-margin-comparison" aria-label="Snapshot margin range and observed score"><div class="game-day-margin-heading"><h4>' + escapeHtml(row.home.name) + ' margin</h4>' +
+    '<span>Positive favors ' + escapeHtml(abbreviation) + '</span></div>' + graphic +
+    '<p class="game-day-range-note">Exploratory range · uncalibrated' + (observed && !observed.final ? ' · ' + observed.markerLabel + ' is the current score, not the final result.' : '.') + '</p></section>';
+}
+
 function forecastDetails(row, prediction, actual) {
   if (!prediction) return '<details class="game-day-details"><summary>' + (row.status === 'canceled' ? 'Canceled game' : 'Forecast unavailable') + '</summary>' +
     '<div class="game-day-details-content"><p class="game-day-unavailable">' + escapeHtml(row.status === 'canceled' ? 'No forecast for this canceled game.' : row.unavailableReason || 'Forecast unavailable for this matchup.') + '</p></div></details>';
-  const ranges = renderMarginGraphic({ margin: prediction.predictedMargin, low80: prediction.marginLow80,
-    high80: prediction.marginHigh80, actualMargin: actual ? actual.home - actual.away : null, teamName: row.home.name });
   const prior = [[row.away.name, prediction.awayPriorSeason], [row.home.name, prediction.homePriorSeason]]
     .filter(([, season]) => season).map(([name, season]) => name + ' uses ' + season + ' data').join(' · ');
   const components = [
@@ -127,9 +149,7 @@ function forecastDetails(row, prediction, actual) {
   const favored = prediction.predictedMargin >= 0 ? row.home : row.away;
   const marginLabel = prediction.predictedMargin === 0 ? 'Even matchup' : (favored.abbreviation || favored.name) + ' by ' + Math.abs(prediction.predictedMargin).toFixed(1);
   return '<details class="game-day-details"><summary>Forecast details <span>' + escapeHtml(marginLabel) + ' · ' + Math.round(prediction.predictedTotal) + ' total</span></summary>' +
-    '<div class="game-day-details-content"><section class="game-day-range"><h4>' + escapeHtml(row.home.name) + ' margin</h4><p class="game-day-range-caption">Positive points favor ' + escapeHtml(row.home.name) + '.</p>' +
-    (ranges || '<p class="game-day-unavailable">Simulated margin range unavailable.</p>') + '<p class="game-day-detail-note">Exploratory 80% range; historical coverage has not been calibrated.</p></section>' +
-    '<section class="game-day-margin-breakdown"><h4>How the margin adds up</h4><dl>' + components.map(([label, value]) => '<div><dt>' + label + '</dt><dd>' + signed(value) + '</dd></div>').join('') + '</dl></section>' +
+    '<div class="game-day-details-content"><section class="game-day-margin-breakdown"><h4>How the margin adds up</h4><dl>' + components.map(([label, value]) => '<div><dt>' + label + '</dt><dd>' + signed(value) + '</dd></div>').join('') + '</dl></section>' +
     '<p class="game-day-detail-note game-day-projection-note">' + (actual ? 'Snapshot model projection: ' + escapeHtml(row.away.name) + ' ' + Math.round(prediction.projectedAwayScore) + ' – ' + escapeHtml(row.home.name) + ' ' + Math.round(prediction.projectedHomeScore) + '. ' + (row.live && !row.liveResultIncluded ? 'The live result is displayed separately; it has not changed these model inputs.' : 'These projections use current data, including this result.') : 'Projections use the loaded snapshot and this game’s home, away, or neutral setting. Score updates do not change them.') +
     (prior ? ' ' + escapeHtml(prior) + '.' : '') + ' Model ' + escapeHtml(prediction.modelVersion || 'unknown') + '.</p></div></details>';
 }
@@ -146,7 +166,7 @@ function renderRow(row, options, index) {
     '<header class="game-day-card-heading"><div class="game-day-kickoff">' + (kickoff.dateTime ? '<time datetime="' + kickoff.dateTime + '">' + escapeHtml(kickoff.text) + '</time>' : '<span>' + kickoff.text + '</span>') +
     (row.game?.week !== undefined && row.game.week !== null ? '<span class="game-day-week">WK ' + escapeHtml(row.game.week) + '</span>' : '') + '</div><span class="game-day-status' + (row.live?.status === 'live' ? ' is-live' : '') + (row.live?.stale ? ' is-stale' : '') + '">' + escapeHtml(status) + '</span></header>' +
     '<div class="game-day-matchup">' + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
-    '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
+    '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
 }
 
 /** Presentation only: forecasts, ranks, records, and ordering belong to game-day.js. */
@@ -177,7 +197,21 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       status.classList.toggle('is-stale', Boolean(row.live?.stale));
     }
     const center = card.querySelector('.game-day-scoreboard');
-    if (center) center.innerHTML = scoreboard(row, prediction, actual).replace(/^<div class="game-day-scoreboard">|<\/div>$/g, '');
+    if (center) {
+      const template = container.ownerDocument.createElement('template');
+      template.innerHTML = scoreboard(row, prediction, actual);
+      const fresh = template.content.firstElementChild;
+      center.className = fresh.className;
+      center.innerHTML = fresh.innerHTML;
+    }
+    const margin = card.querySelector('.game-day-margin-comparison');
+    if (margin) {
+      const template = container.ownerDocument.createElement('template');
+      template.innerHTML = marginComparison(row, prediction, actual);
+      const fresh = template.content.firstElementChild;
+      margin.hidden = fresh.hidden;
+      margin.innerHTML = fresh.innerHTML;
+    }
     // Keep the outer <details> and <summary> mounted so expansion, focus, and
     // scroll position survive a minute-by-minute score refresh.
     const details = card.querySelector('.game-day-details-content');
