@@ -354,8 +354,7 @@
 }
 
 @media (max-width: 480px) {
-  /* One scoreboard row: keep scores in the space between the two teams.
-     Separate grid tracks let long names grow vertically without covering it. */
+  /* Names share a wider top row; logos and records flank the score below. */
   .forecast-matchup-header {
     grid-template-columns: minmax(0, 1fr) clamp(84px, 26vw, 108px) minmax(0, 1fr);
     align-items: start;
@@ -365,17 +364,17 @@
 
   .forecast-matchup-header > .game-team-summary.is-away {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
   }
 
   .forecast-matchup-header > .game-team-summary.is-home {
     grid-column: 3;
-    grid-row: 1;
+    grid-row: 2;
   }
 
   .forecast-matchup-center {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 2;
     align-self: center;
     padding: 0;
     border: 0;

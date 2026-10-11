@@ -1,6 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderGameTeamSummary, renderGameTeamRanks, renderGameTeamRecord as recordValue,
-  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=bd96278172d7';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, renderGameTeamRanks, renderGameTeamRecord as recordValue,
+  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=459c513ed957';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
@@ -52,7 +52,7 @@ function scheduleLiveStatus(live) {
 }
 
 function scheduleVenue(row) {
-  return [row.site, row.venue, row.timeTBD ? 'Time TBD' : null].filter(Boolean).join(' · ');
+  return [row.site === 'Neutral site' ? row.site : null, row.venue, row.timeTBD ? 'Time TBD' : null].filter(Boolean).join(' · ');
 }
 
 function usableForecast(row) {
@@ -162,21 +162,6 @@ function matchupTeams(row, teamName, forecast, actual) {
     secondaryColor: row.matchup?.opponent?.alternateColor,
     location: neutral ? 'Neutral' : row.site === 'Home' ? 'Away' : 'Home', yardage: row.yardage?.opponent, actualYardage: row.yardage?.actualOpponent };
   return row.site === 'Home' && row.displayOrder !== 'selected-first' ? [opponent, selected] : [selected, opponent];
-}
-
-function scoreComparison(row, teamName, forecast, actual) {
-  const observed = observedScores(row, actual);
-  const observedLabel = observed && !observed.final ? observed.markerLabel : 'Final';
-  const teams = matchupTeams(row, teamName, forecast, observed);
-  const maximum = Math.max(1, ...teams.flatMap(team => [team.model, team.actual]).filter(finite));
-  const bar = (value, label, color, type) => '<div class="forecast-score-bar-row"><span class="forecast-score-bar-label">' + label + '</span>' +
-    (finite(value) ? '<span class="forecast-score-track" aria-hidden="true"><span class="forecast-score-fill ' + type + '" style="width:' + Math.max(0, Math.min(100, value / maximum * 100)).toFixed(3) + '%;--score-team-rgb:' + color + '"></span></span><strong class="forecast-score-value" title="' + label + ' points, unrounded: ' + value + '">' + Math.round(value) + '</strong>' :
-      '<span class="forecast-score-missing">' + (label === 'Final' ? row.status === 'canceled' ? 'Canceled' : row.status === 'final' ? 'Unavailable' : 'Not final' : 'Unavailable') + '</span>') + '</div>';
-  return '<section class="forecast-analytics-panel forecast-score-comparison" aria-label="Projected and ' + observedLabel.toLowerCase() + ' points, in scoreboard order"><h5 class="forecast-section-title">Projected vs. ' + observedLabel.toLowerCase() + ' points</h5>' +
-    '<div class="forecast-score-key">' + (row.site === 'Neutral site' ? escapeHtml(teams[0].name) + ' first · neutral site' : 'Away first · same order as scoreboard') + '</div>' +
-    teams.map(team => '<div class="forecast-score-team"><div class="forecast-score-team-heading"><strong>' + escapeHtml(team.name) + '</strong><span class="forecast-score-location">' + team.location + '</span></div>' +
-      bar(team.model, 'Projected', team.color, 'is-model') + bar(team.actual, observedLabel, team.color, 'is-actual') + '</div>').join('') +
-    '<p class="forecast-analytics-note">' + (observed && !observed.final ? observed.markerLabel + ' points show an unfinished game; the snapshot projection is unchanged.' : actual && forecast ? row.live && !row.liveResultIncluded ? 'Feed result compared with the unchanged model snapshot.' : 'Projection uses current data, including this result.' : row.status === 'canceled' ? 'Canceled; no scores to compare.' : actual ? 'Current projection unavailable.' : 'Projection uses the current snapshot.') + '</p></section>';
 }
 
 function matchupOutlook(row, teamName, forecast, actual) {
@@ -305,10 +290,13 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
   const favorite = observed ? winner.label :
     forecast ? forecast.winProbability === 0.5 ? 'Projected toss-up' : 'Projected favorite: ' + (forecast.winProbability > 0.5 ? teamName : row.opponentName) : '';
   const probability = forecast && !observed && forecast.winProbability !== 0.5 ? number(Math.max(forecast.winProbability, 1 - forecast.winProbability) * 100) + '% win chance' : '';
-  return '<div class="forecast-matchup-header">' + teamBlock(selectedOnLeft ? selected : opponent, true) +
+  const winnerMarkup = observed?.final && observed.for !== observed.against
+    ? renderGameWinner(observed.for > observed.against ? selected : opponent)
+    : favorite ? '<span class="forecast-matchup-favorite">' + escapeHtml(favorite) + '</span>' : '';
+  return '<div class="forecast-matchup-header">' + renderGameTeamNames(selectedOnLeft ? selected : opponent, selectedOnLeft ? opponent : selected) + teamBlock(selectedOnLeft ? selected : opponent, true) +
     '<div class="forecast-matchup-center">' + projected + (observed ? scoreLine(observed.label, observed, 'is-observed') : '') +
     (neutral ? '<span class="forecast-neutral-label">Neutral site</span>' : '') +
-    (favorite ? '<span class="forecast-matchup-favorite">' + escapeHtml(favorite) + '</span>' : '') +
+    winnerMarkup +
     (probability ? '<span class="forecast-matchup-probability">' + probability + '</span>' : '') + '</div>' +
     teamBlock(selectedOnLeft ? opponent : selected, false) + '</div>';
 }
@@ -324,7 +312,7 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) 
     '<div class="forecast-game-heading"><div class="forecast-date">' + scheduleDate(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span></div>' +
     '<span class="forecast-status-meta">' + scheduleLiveStatus(row.live) + '</span><span class="forecast-venue-meta">' + escapeHtml(scheduleVenue(row)) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
-    '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + scoreComparison(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
+    '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
     renderYardagePanel(row, teamName, forecast, actual) +
     forecastPriorSources(forecast, teamName, row.opponentName) +
     '<details class="forecast-supporting-details"><summary>Matchup details &amp; model breakdown</summary><div class="forecast-details-grid">' + pointBreakdown(row, teamName, forecast) +
@@ -371,7 +359,6 @@ export function updateSeasonLiveElements(container, analysis) {
     if (status) status.innerHTML = scheduleLiveStatus(row.live);
     const sections = [
       ['.forecast-matchup-outlook', matchupOutlook(row, analysis.teamName, forecast, actual)],
-      ['.forecast-score-comparison', scoreComparison(row, analysis.teamName, forecast, actual)],
       ['.forecast-margin-panel', marginPanel(row, analysis.teamName, forecast, actual)],
       ['.forecast-yardage', renderYardagePanel(row, analysis.teamName, forecast, actual)],
       ['.forecast-point-breakdown', pointBreakdown(row, analysis.teamName, forecast)],
