@@ -3,6 +3,7 @@ import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { FORECAST_VERSION } from './config.js';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
+import { recordGameKey } from './live-records.js?v=135b69186aa1';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const idOf = value => value.id ?? value.gameId;
@@ -66,7 +67,8 @@ function currentForecast(model, game, teamName, opponentName, status, cache) {
 
 function emptySeasonRecord() {
   return { currentWins: 0, currentLosses: 0, currentTies: 0,
-    totalRemainingGames: 0, remainingProjectedGames: 0, expectedAdditionalWins: 0 };
+    totalRemainingGames: 0, remainingProjectedGames: 0, expectedAdditionalWins: 0,
+    remainingGameForecasts: [] };
 }
 
 function includeSeasonGame(record, model, team, game, cache) {
@@ -83,6 +85,7 @@ function includeSeasonGame(record, model, team, game, cache) {
   record.totalRemainingGames += 1;
   const opponentName = home ? game.awayTeam : game.homeTeam;
   const { forecast } = currentForecast(model, game, team.name, opponentName, status, cache);
+  record.remainingGameForecasts.push({ gameKey: recordGameKey(game), winProbability: forecast?.winProbability ?? null });
   if (forecast) {
     record.remainingProjectedGames += 1;
     record.expectedAdditionalWins += forecast.winProbability;

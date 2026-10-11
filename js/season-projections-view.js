@@ -3,7 +3,7 @@ import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { liveGameLabel } from './live-scores.js?v=62f378bab60f';
+import { liveGameLabel } from './live-scores.js?v=6af7607cf3c9';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -39,8 +39,8 @@ function recordPresentation(team) {
   const current = outlook ? recordText(outlook) : team.record || '—';
   const pending = Boolean(team.seasonOutlookPending && !outlook);
   const projected = pending ? '…' : recordText(outlook, true);
-  const detail = pending ? 'Calculating this team’s projected final record from the current snapshot.' : !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
-    ? 'Rounded final record from the current snapshot for the listed schedule; completed results are preserved.'
+  const detail = pending ? 'Calculating the projected final record from reported results and remaining-game forecasts.' : !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
+    ? 'Reported completed results plus model forecasts for remaining games, rounded to whole wins and losses.'
     : plural(outlook.remainingUnmodeledGames, 'remaining game') + ' without a forecast; final record unavailable.';
   return { current, projected, detail, pending };
 }
@@ -48,11 +48,11 @@ function recordPresentation(team) {
 function recordValue(team, kind, tag = 'span') {
   const value = recordPresentation(team);
   return '<' + tag + ' data-season-record-team="' + escapeHtml(recordTeamKey(team.name)) + '" data-season-record-kind="' + kind + '"' +
-    (kind === 'projected' ? ' title="' + escapeHtml(value.detail) + '" aria-busy="' + value.pending + '"' : '') + '>' + escapeHtml(value[kind]) + '</' + tag + '>';
+    (kind === 'projected' ? ' title="' + escapeHtml(value.detail) + '" aria-busy="' + value.pending + '"' : ' title="Current record includes matched reported finals"') + '>' + escapeHtml(value[kind]) + '</' + tag + '>';
 }
 
 function teamRecords(team) {
-  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' season records from the model snapshot"><div><dt title="Record from the loaded model snapshot">Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
+  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' current and projected season records"><div><dt title="Current record includes matched reported finals">Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
     '<div><dt>Projected</dt>' + recordValue(team, 'projected', 'dd') + '</div></dl>';
 }
 
@@ -201,9 +201,9 @@ function forecastSource(forecast, analysis, row = null) {
   const modelVersion = forecast?.modelVersion || analysis?.modelVersion;
   return '<p class="forecast-source"><span>Current snapshot</span> · ' + time(generatedAt, true) +
     (modelVersion ? ' · v' + escapeHtml(modelVersion) : '') +
-    (analysis?.resultsThrough ? ' · Results through ' + escapeHtml(analysis.resultsThrough) : '') +
+    (analysis?.resultsThrough ? ' · Model results through ' + escapeHtml(analysis.resultsThrough) : '') +
     '</p><p class="forecast-analytics-note">' + (row?.live && !row.liveResultIncluded
-      ? 'Feed scores are displayed separately. They do not change the loaded snapshot, prediction, ranking, or season record.'
+      ? 'Reported final scores update season records. Predictions and rankings continue to use the loaded model snapshot.'
       : 'Completed games are reprojected with the current snapshot, including their actual results. These comparisons show current model fit, not pregame accuracy.') + '</p>';
 }
 
@@ -400,6 +400,11 @@ export function updateSeasonLiveElements(container, analysis) {
   for (const card of container.querySelectorAll('[data-season-game-index]')) {
     const row = analysis.rows[Number(card.dataset.seasonGameIndex)];
     if (!row) continue;
+    // Records reflect each team's whole schedule, so patch them even when
+    // this game's own score/status signature is unchanged.
+    for (const team of [row.matchup?.team, row.matchup?.opponent]) {
+      if (team?.name) updateSeasonRecordElements(card, team);
+    }
     const signature = JSON.stringify([row.status, row.actual?.for, row.actual?.against, row.live?.status, row.live?.for, row.live?.against, row.live?.refreshedAt, row.live?.stale]);
     if (card.dataset.liveSignature === signature) continue;
     card.dataset.liveSignature = signature;
@@ -463,7 +468,7 @@ export function renderProjectionSummary(analysis) {
     '<div class="season-projection-metrics"><div class="season-projection-metric"><span>PROJECTED REMAINING WINS</span><strong>' +
     (expectedWinsAvailable ? Math.round(summary.expectedAdditionalWins) : '—') + '<small> / ' + projectedGames + ' modeled</small></strong><p>Rounded expected wins; full game probabilities drive this projection. ' + escapeHtml(coverage) + '</p></div>' +
     '<div class="season-projection-metric"><span>PROJECTED FINAL RECORD</span><strong>' + projectedRecord + '</strong><p>' +
-    (finalRecordAvailable ? 'Rounded to whole games for the listed schedule.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
+    (finalRecordAvailable ? 'Reported results plus forecasts for remaining games; rounded to whole wins and losses.' : 'Requires forecasts for every remaining game.') + '</p></div></div>' +
     renderSeasonChart(analysis) +
     '<div class="season-projection-accuracy"><div class="season-projection-accuracy-heading"><span>CURRENT MODEL VS RESULTS</span><span>' + plural(graded, 'completed comparison') + '</span></div>' +
     '<div class="season-projection-error-metrics"><div><span>Margin error</span><strong>' + (graded ? number(summary.marginMae) : '—') + '<small> pts MAE</small></strong></div>' +
@@ -471,11 +476,11 @@ export function renderProjectionSummary(analysis) {
     '<div><span>Matched winners</span><strong>' + (summary.pickGames ? number(summary.correctPicks, 0) + '/' + summary.pickGames : '—') + '</strong></div></div>' +
     (!graded ? '<p>No completed games have current-model comparisons.</p>' : '<p>MAE is average absolute error. These comparisons describe current model fit to completed results, including those used to rate the teams.</p>') + '</div>' +
     '<div class="season-projection-provenance"><span>Current record ' + currentRecord + ' · ' + plural(totalRemaining, 'listed game') + ' remaining</span><span>' + escapeHtml(analysis.season || 'Season') + ' · Model v' + escapeHtml(analysis.modelVersion || 'unknown') + '</span>' +
-    '<span>Snapshot ' + time(analysis.snapshotAt, true) + '</span><span>Results through ' + escapeHtml(analysis.resultsThrough || 'date not recorded') + '</span></div>';
+    '<span>Snapshot ' + time(analysis.snapshotAt, true) + '</span><span>Model results through ' + escapeHtml(analysis.resultsThrough || 'date not recorded') + '</span></div>';
 }
 
 export function renderProjectionNote(analysis) {
   if (!analysis) return 'Choose a team to see current projections and actual results.';
-  return '<p>Every prediction uses the model snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their snapshot record and rounded projected final record for the listed schedule. Feed scores and statuses can refresh separately; they do not change these records, predictions, or rankings. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Projections include completed results already in the snapshot. Yardage estimates are experimental.</p>' +
-    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Completed-game comparisons use a model that includes those actual results. They describe current model fit; pregame accuracy is measured separately in historical backtests. All misses equal actual minus current projection. Neutral matchup ranks compare every model-ready FBS and FCS team against the full field at a neutral site, ordered by average win chance. Subdivision ranks follow that same full-field ordering. Filters hide teams without changing these ranks. A rank summarizes the full field, so a particular matchup or home/away effect can favor a team farther down the rankings. Probabilities and outcome ranges remain uncalibrated.</p></details>';
+  return '<p>Every prediction uses the model snapshot from ' + time(analysis.snapshotAt) + '. Both teams show their current record, including matched reported finals, and a rounded projected final record for the listed schedule. Completed results are preserved; only remaining games use forecast win chances. Score updates do not change the predictions or rankings. Scoreboards and team comparisons use away first, then home; neutral games show ' + escapeHtml(analysis.teamName) + ' first. Positive margins favor ' + escapeHtml(analysis.teamName) + '. Projections include completed results already in the snapshot. Yardage estimates are experimental.</p>' +
+    '<details class="forecast-method-details"><summary>How to read projections, differences, and ranks</summary><p>The projected margin combines team strength, the conference adjustment, home/away effects, and the fitted passing/rushing matchup adjustment. The conference adjustment shows how the margin changes when conference members share evidence from their results, with each team still judged on its own games. It can affect a same-conference matchup because the two teams and their opponents have different schedules. Missing unit data gives a labeled zero passing/rushing adjustment. Teams with no current-season FBS/FCS results use labeled prior-season data when available. Results already in the snapshot contributed to the fitted model. Reported finals fetched later are compared with that same snapshot. Historical backtests measure pregame accuracy separately. All misses equal actual minus current projection. Neutral matchup ranks compare every model-ready FBS and FCS team against the full field at a neutral site, ordered by average win chance. Subdivision ranks follow that same full-field ordering. Filters hide teams without changing these ranks. A rank summarizes the full field, so a particular matchup or home/away effect can favor a team farther down the rankings. Probabilities and outcome ranges remain uncalibrated.</p></details>';
 }

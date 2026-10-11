@@ -1,7 +1,7 @@
 import { renderTeamLogo } from './team-logo.js?v=23545b336420';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { liveGameLabel } from './live-scores.js?v=62f378bab60f';
+import { liveGameLabel } from './live-scores.js?v=6af7607cf3c9';
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const percent = value => (value * 100).toFixed(1) + '%';
@@ -60,13 +60,17 @@ function teamBlock(team, side, neutral, rankingsStatus) {
     ? '<span class="game-day-rank" title="Overall neutral matchup rank across FBS and FCS">#' + team.neutralRank + '</span>'
     : '<span class="game-day-rank is-unavailable">' + (rankingsStatus === 'pending' ? 'Ranking…' : 'Unranked') + '</span>';
   // Records arrive as whole-game strings. Do not turn expected wins into a record.
-  const record = /^\d+[–-]\d+(?:[–-]\d+)?$/.test(String(team?.record || '')) ? team.record : '—';
+  const record = currentRecord(team);
   return '<div class="game-day-team is-' + side + '">' +
     '<span class="game-day-side">' + (neutral ? 'Neutral site' : side === 'away' ? 'Away' : 'Home') + '</span>' +
     '<button class="game-day-team-link" type="button" data-select-team="' + escapeHtml(name) + '" aria-label="Open ' + escapeHtml(name) + ' in team explorer">' +
     renderTeamLogo({ ...team, name }, { size: 44 }) + '<strong>' + escapeHtml(name) + '</strong></button>' +
-    '<div class="game-day-team-meta">' + rank + '<span class="game-day-record" title="Record from the loaded model snapshot" aria-label="Snapshot record ' + escapeHtml(record) + '">' + escapeHtml(record) + '</span></div>' +
+    '<div class="game-day-team-meta">' + rank + '<span class="game-day-record" data-game-day-record-side="' + side + '" title="Current record includes matched reported finals" aria-label="' + escapeHtml(name + ' current record ' + record) + '">' + escapeHtml(record) + '</span></div>' +
     '<small class="game-day-team-conference">' + escapeHtml([String(team?.classification || '').toUpperCase(), team?.conference].filter(Boolean).join(' · ')) + '</small></div>';
+}
+
+function currentRecord(team) {
+  return /^\d+[–-]\d+(?:[–-]\d+)?$/.test(String(team?.record || '')) ? team.record : '—';
 }
 
 function favoriteLabel(row, prediction, actual) {
@@ -173,7 +177,7 @@ function renderRow(row, options, index) {
     '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
 }
 
-/** Presentation only: forecasts, ranks, records, and ordering belong to game-day.js. */
+/** Presentation only: forecasts, ranks, records, and ordering arrive in the report. */
 export function renderGameDayRows(rows, options = {}) {
   if (!Array.isArray(rows) || !rows.length) return '<div class="game-day-empty"><h3>' + (options.loading ? 'Loading the game board…' : 'No matching games') + '</h3><p>' +
     (options.loading ? 'Preparing forecasts from the loaded snapshot.' : 'Try another date or broaden the division, conference, status, or team filters.') + '</p></div>';
@@ -187,6 +191,15 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
   for (const card of container.querySelectorAll('[data-game-day-id]')) {
     const row = entries.get(card.dataset.gameDayId);
     if (!row) continue;
+    // A team's record can change because another game reached final, even
+    // when this card's own score and status did not change.
+    for (const side of ['away', 'home']) {
+      const record = card.querySelector('[data-game-day-record-side="' + side + '"]');
+      if (!record) continue;
+      const value = currentRecord(row[side]);
+      record.textContent = value;
+      record.setAttribute('aria-label', row[side].name + ' current record ' + value);
+    }
     const signature = JSON.stringify([row.status, row.live?.status, row.live?.homeScore, row.live?.awayScore, row.live?.refreshedAt, row.live?.stale]);
     if (card.dataset.liveSignature === signature) continue;
     card.dataset.liveSignature = signature;
