@@ -4,9 +4,9 @@
   "bootstrapDate": "2026-10-10",
   "days": {
     "2026:2026-10-10": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-11T07:36:18.519Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-11T06:37:30.545Z",
       "publishedAt": null,
@@ -1516,9 +1516,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 30,
+          "awayPoints": 12
         },
         {
           "id": 401860901,
@@ -1532,9 +1532,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 38
         }
       ],
       "movedGameIds": [],
@@ -1544,13 +1544,76 @@
         "401867980",
         "401868144",
         "401868180"
+      ],
+      "lastReadinessAttemptAt": "2026-10-11T07:06:18.519Z",
+      "stagedMissingRequiredBoxIds": [
+        "401867980",
+        "401868144",
+        "401868180"
       ]
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-11T07:06:18.519Z",
+    "inputFingerprint": "30c32042b5385521251bc421d495edfb81be933bfff575961b30e470dd3a1904",
+    "dayKeys": [
+      "2026:2026-10-10"
+    ],
+    "dayKinds": {
+      "2026:2026-10-10": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-11T07:06:18.519Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
-  "confirmedMissingGameIds": []
+  "confirmedMissingGameIds": [],
+  "confirmedScheduleOverrides": {
+    "401856808": {
+      "game": {
+        "id": 401856808,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 6,
+        "startDate": "2026-10-11T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Arizona State",
+        "awayTeam": "Hawai'i",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 30,
+        "awayPoints": 12
+      },
+      "checkedAt": "2026-10-11T07:06:18.519Z"
+    },
+    "401860901": {
+      "game": {
+        "id": 401860901,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 6,
+        "startDate": "2026-10-11T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Fresno State",
+        "awayTeam": "Boise State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-11T07:06:18.519Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-11T07:06:18.519Z",
+  "quota": {
+    "checkedAt": "2026-10-11T07:06:18.519Z",
+    "remainingCalls": 690,
+    "reserve": 155
+  }
 }
