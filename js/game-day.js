@@ -242,8 +242,10 @@ export function filterGameDay(report, { division = 'all', tier = 'all', conferen
     // to satisfy the same full selection, as on the Rankings team filter.
     const matches = team => matchesTeamFilters(team, { division, tier, conference });
     if (!(bothTeams ? teams.every(matches) : teams.some(matches))) return false;
-    if (status === 'upcoming' && !['upcoming', 'unplayed'].includes(row.status)) return false;
-    if (status !== 'all' && status !== 'upcoming' && row.status !== status) return false;
+    const inProgress = ['live', 'suspended'].includes(row.live?.status);
+    if (status === 'upcoming' && (!['upcoming', 'unplayed'].includes(row.status) || inProgress || row.live?.status === 'postponed')) return false;
+    if (status === 'live' && !inProgress) return false;
+    if (!['all', 'upcoming', 'live'].includes(status) && row.status !== status) return false;
     return !query || teams.some(team => key(team.name + ' ' + team.abbreviation + ' ' + team.conference).includes(query));
   });
 }
@@ -258,6 +260,7 @@ function metric(row, sort) {
   const ranks = [row.home.neutralRank, row.away.neutralRank].filter(finite);
   if (sort === 'best-team') return ranks.length ? Math.min(...ranks) : null;
   if (sort === 'combined-rank') return ranks.length === 2 ? ranks[0] + ranks[1] : null;
+  if (row.status === 'canceled') return null;
   if (sort === 'closest') return finite(row.prediction?.predictedMargin) ? Math.abs(row.prediction.predictedMargin) : null;
   if (sort === 'total') return finite(row.prediction?.predictedTotal) ? -row.prediction.predictedTotal : null;
   return null;

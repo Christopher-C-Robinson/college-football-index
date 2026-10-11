@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="./mobile.css?v=cc935a614492">
     <link rel="stylesheet" href="./mobile-team.css?v=5dd0f906cf0b">
     <link rel="stylesheet" href="./device-theme.css?v=ba58071ec2c1">
-    <link rel="stylesheet" href="./game-day.css?v=6c72ef598127">
-    <script type="module" src="./js/app.js?v=940dd21d7726"></script>
+    <link rel="stylesheet" href="./game-day.css?v=a7f271dc15c2">
+    <script type="module" src="./js/app.js?v=209f7a70fdc2"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -73,7 +73,7 @@
             <label><span>Subdivision</span><select id="games-division" class="select-control" aria-label="Game subdivision"><option value="all">FBS + FCS</option><option value="fbs">FBS</option><option value="fcs">FCS</option></select></label>
             <label><span>Conference group</span><select id="games-tier" class="select-control" aria-label="Game conference group"><option value="all">All groups</option><option value="power">Power Four</option><option value="nonpower">Non-Power Four</option><option value="other">Other FBS</option></select></label>
             <label><span>Conference</span><select id="games-conference" class="select-control" aria-label="Game conference"><option value="all">All conferences</option></select></label>
-            <label><span>Results</span><select id="games-status" class="select-control" aria-label="Game result status"><option value="all">All games</option><option value="upcoming">Not final in snapshot</option><option value="final">Final in snapshot</option><option value="canceled">Canceled</option></select></label>
+            <label><span>Results</span><select id="games-status" class="select-control" aria-label="Game result status"><option value="all">All games</option><option value="upcoming">Upcoming</option><option value="live">In progress</option><option value="final">Final</option><option value="canceled">Canceled</option></select></label>
             <label><span>Find a team</span><input id="games-search" class="select-control" type="search" placeholder="Team name or abbreviation" aria-label="Find games by team"></label>
           </div>
           <p class="game-day-note">Non-Power Four includes other FBS teams, independents, and FCS. Other FBS excludes FCS.</p>
@@ -81,6 +81,7 @@
           <div class="game-day-toolbar"><p id="games-sort-note" class="game-day-note"></p><p id="games-count" role="status" aria-live="polite">Loading the game day…</p></div>
         </div>
         <p id="games-snapshot" class="game-day-note"></p>
+        <p id="games-live-status" class="game-day-note"></p>
         <p id="games-progress" class="game-day-note" role="status" aria-live="polite"></p>
         <div id="games-content"><div class="game-day-empty">Loading the current season’s schedule…</div></div>
       </section>
@@ -127,6 +128,7 @@
         <article class="panel schedule-panel" aria-labelledby="schedule-ledger-title">
           <div class="panel-heading"><div><h3 id="schedule-ledger-title">Schedule &amp; predictions</h3></div><span class="panel-tag" id="schedule-count">—</span></div>
           <p class="panel-intro">Past and future games use the current snapshot. Solid colors mark actual winners; pale colors mark projected winners.</p>
+          <p id="schedule-live-status" class="game-day-note"></p>
           <div id="schedule-list" class="schedule-list"></div>
         </article>
       </section>
