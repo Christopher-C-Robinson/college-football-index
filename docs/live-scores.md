@@ -4,11 +4,24 @@ The site’s forecasts continue to use its CFBD snapshot. This optional backend 
 
 ## Activation status
 
-The implementation uses the published Big Balls Sports Data (BBS) contract. A deployment alone does not confirm a working feed: activation requires an authorized free account, a secret API key, and a successful authenticated response containing the expected college leagues and team names. Keep the frontend endpoint unset until that response and the website’s joins have been checked.
+The implementation uses the published Big Balls Sports Data (BBS) contract. As of the October 10, 2026 verification checkpoint, the user-approved free account is created and authenticated. It has the ordinary 250-call/day allowance, requires no payment card, and its key is stored privately as the Cloudflare Worker secret. Authenticated provider responses include both expected college leagues. These steps establish account and source access; a successful cached Worker response is still required before enabling the website feed.
 
 BBS advertises free current-season FBS and FCS score coverage. The response’s `league` is a **display name**, not its query slug. This normalizer accepts the documented `NCAAF` and `NCAAF FCS` display names, including punctuation variations. An unfamiliar NCAA league causes an explicit coverage error instead of silently disappearing. No provider UUID is treated as a CFBD ID.
 
-The inactive cache service is deployed at `https://cfi-live-scores.bingoflow-support.workers.dev/scores`. It currently returns `scores_not_loaded`; the provider account/key and real FBS/FCS response are still pending. The website endpoint remains unset until activation is checked. No API requests have been made by this service without a key.
+The cache service is deployed at `https://cfi-live-scores.bingoflow-support.workers.dev/scores`. Its first successful cached board is still pending. A network-routing fix has been deployed; the observed retry time is `2026-10-11T02:42:32Z`. That retry time is a checkpoint, not evidence that retrieval has succeeded. The website endpoint remains unset until the public `/scores` cache and website joins are confirmed operational.
+
+### Verified source and join coverage
+
+Direct authenticated samples produced the following provider rows. These are rows in the source response, not a claim that every row is a distinct game in the website schedule.
+
+| Chicago date | Total provider rows | `NCAAF` rows | `NCAAF FCS` rows |
+|---|---:|---:|---:|
+| October 10, 2026 | 109 | 48 | 61 |
+| October 9, 2026 | 11 | 7 | 4 |
+
+Against the October 10 snapshot schedule, exact safe joins found **82 of 95 games**: 44 of 46 in the FBS group and 38 of 44 in the FCS group. Five additional lower-division matchup rows lack sufficient provider team metadata for a safe join. This is observed coverage for these samples, not a guarantee for every day or season. Unmatched games retain their labeled CFBD snapshot information.
+
+The samples also contain duplicate or conflicting provider game entries. Ambiguous matches are rejected rather than choosing a score arbitrarily. A join requires known team names/aliases, compatible kickoff/date, and a unique scheduled matchup; provider IDs never become CFBD IDs. A complete backend board can therefore still have frontend coverage gaps. Live activation must preserve the snapshot fallback for those gaps.
 
 ## Free architecture and quota
 
