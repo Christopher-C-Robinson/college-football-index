@@ -530,10 +530,11 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
     if (resultDates.length) {
       plan = planFor(Date.now(), forceDiscovery);
       savePlan(plan);
-      // Stop as soon as named scored finals resolve all remaining windows.
+      // Stop when named scored finals resolve every game active now; a later
+      // kickoff window must not start live polling ahead of its scheduled time.
       // When games remain, finish the due cycle even if spending the catalog
       // call just increased the cadence; no extra independent polling starts.
-      if ((!plan.activeWindows.length && !forceDiscovery)
+      if ((!plan.activeNow && !forceDiscovery)
         || plan.remainingCalls - plan.discoveryCallsReserved < LIVE_CALL_COST) {
         return { status: 'catalog_refreshed', reservedCalls, nextRequestAt: plan.nextRequestAt };
       }
