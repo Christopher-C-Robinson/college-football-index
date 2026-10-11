@@ -72,7 +72,9 @@ jobs:
           fi
 
       - name: Preserve failed-attempt deadlines without publishing rejected inputs
-        if: failure() && steps.plan.outcome == 'success' && steps.commit.outcome != 'success'
+        # Only recover before the commit step ran. A failed push may leave a
+        # new local HEAD; do not retry ledger-only commits atop that snapshot.
+        if: failure() && steps.plan.outcome == 'success' && steps.commit.outcome == 'skipped'
         run: |
           node scripts/refresh-after-games.mjs --discard-publication
           git restore data/current-season.json data/forecasts
