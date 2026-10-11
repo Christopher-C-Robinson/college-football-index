@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { buildPollPlan, DAILY_CALL_LIMIT, LIVE_CALL_COST, CATALOG_CALL_COST,
+import { buildPollPlan, DAILY_CALL_LIMIT, LIVE_CALL_COST, CATALOG_CALL_COST, RESULT_DAY_CALL_COST,
   DISCOVERY_MS } from './poll-plan.js';
 
 const PROVIDER = 'Big Balls Sports Data';
@@ -28,7 +28,7 @@ const iso = value => {
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
 };
 const utcDay = value => new Date(value).toISOString().slice(0, 10);
-const score = value => Number.isInteger(value) && value >= 0 ? value : null;
+const score = value => Number.isInteger(value) && value >= 0 && value <= 1000 ? value : null;
 
 function calendarDay(value) {
   const date = value instanceof Date ? value : new Date(value);
@@ -120,18 +120,24 @@ function normalizeMatches(packet, date, fetchedAt) {
       ? match.game_date : calendarDay(startDate);
     const catalogStatus = KNOWN_STATUSES.get(match.status) || 'unknown';
     const unverifiedLive = ['live', 'suspended'].includes(catalogStatus);
+    const homeScore = score(match.score?.home);
+    const awayScore = score(match.score?.away);
+    const finalScoreAvailable = catalogStatus === 'final'
+      && homeScore != null && awayScore != null && homeScore !== awayScore;
+    const unverifiedFinal = catalogStatus === 'final' && !finalScoreAvailable;
     const observedAt = iso(match.updated_at) || asOf;
     games.push({
       id: match.id.slice(0, 120), providerId: match.id.slice(0, 120),
-      date: gameDate, startDate, kickoffTBD: match.time_precision === 'date',
+      date: gameDate, catalogDate: date, startDate, kickoffTBD: match.time_precision === 'date',
       leagueCode: league.code, leagueClassification: league.classification,
-      home, away, catalogStatus, status: unverifiedLive ? 'unknown' : catalogStatus,
-      homeScore: catalogStatus === 'final' ? score(match.score?.home) : null,
-      awayScore: catalogStatus === 'final' ? score(match.score?.away) : null,
+      home, away, catalogStatus, status: unverifiedLive || unverifiedFinal ? 'unknown' : catalogStatus,
+      homeScore: finalScoreAvailable ? homeScore : null,
+      awayScore: finalScoreAvailable ? awayScore : null,
       scoreSource: 'catalog', liveVerified: false, scoreObservedAt: observedAt,
       providerAsOf: observedAt, fetchedAt, catalogFetchedAt: fetchedAt,
-      stale: stale || unverifiedLive,
-      unavailableReason: unverifiedLive ? 'live_observation_missing' : null
+      stale: stale || unverifiedLive || unverifiedFinal,
+      unavailableReason: unverifiedLive ? 'live_observation_missing'
+        : unverifiedFinal ? 'catalog_final_score_unavailable' : null
     });
   }
   return { games, coverage: { date, fetchedAt, providerAsOf: asOf, stale,
@@ -268,7 +274,7 @@ function catalogNeedsRefresh(catalog, now, dates) {
 }
 
 function reserveBatch(cache, now, calls, continuation = null) {
-  if (![LIVE_CALL_COST, CATALOG_CALL_COST].includes(calls)) throw sourceError('refresh_budget_invalid');
+  if (![RESULT_DAY_CALL_COST, LIVE_CALL_COST, CATALOG_CALL_COST].includes(calls)) throw sourceError('refresh_budget_invalid');
   const day = utcDay(now);
   const slot = Math.floor(now / SLOT_MS);
   let reservation = null;
@@ -302,6 +308,23 @@ function combineCatalog(results, dates) {
   return {
     fetchedAt: results.map(result => result.coverage.fetchedAt).sort()[0],
     coverage: { dates, timeZone: TIME_ZONE, partial: false, byDate },
+    games: [...unique.values()].sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
+  };
+}
+
+function mergeCatalogDay(catalog, result) {
+  const date = result.coverage.date;
+  // A result check updates returned rows without erasing known identities when
+  // a provider temporarily omits a game. Its old per-game timestamps remain.
+  // Full discovery still replaces the three-date schedule as a whole.
+  const unique = new Map(catalog.games.map(game => [game.id, game]));
+  for (const game of result.games) unique.set(game.id, game);
+  return {
+    // Partial final-result checks must not postpone the full three-date
+    // discovery that keeps tomorrow's games and rollover windows available.
+    ...catalog,
+    coverage: { ...catalog.coverage,
+      byDate: { ...catalog.coverage.byDate, [date]: result.coverage } },
     games: [...unique.values()].sort((a, b) => a.startDate.localeCompare(b.startDate) || a.id.localeCompare(b.id))
   };
 }
@@ -345,6 +368,7 @@ function mergeScorePacket(catalog, feeds, priorPacket, now) {
     .map(game => [game.id, game]));
   let retainedLiveScores = 0;
   let unverifiedLiveGames = 0;
+  let unverifiedFinalGames = 0;
   let verifiedLiveGames = 0;
   const games = catalog.games.map(game => {
     const current = observations.get(game.id);
@@ -355,10 +379,22 @@ function mergeScorePacket(catalog, feeds, priorPacket, now) {
       observation = prior;
       retained = true;
     }
-    // A completed catalog result does not regress to a last-seen live score.
-    if (game.catalogStatus === 'final' && observation?.status !== 'final') observation = null;
+    // A usable completed catalog result does not regress to a last-seen live
+    // score. Missing/tied placeholders cannot override a genuine observation.
+    const catalogFinal = game.catalogStatus === 'final' && score(game.homeScore) != null
+      && score(game.awayScore) != null && game.homeScore !== game.awayScore;
+    const catalogObservedAt = Date.parse(game.scoreObservedAt || '');
+    const liveObservedAt = Date.parse(observation?.scoreObservedAt || '');
+    // A later source-confirmed catalog correction also supersedes a retained
+    // final. Retrieval times cannot prove which reported score is newer.
+    const newerCatalogFinal = observation?.status === 'final'
+      && Number.isFinite(catalogObservedAt) && Number.isFinite(liveObservedAt)
+      && catalogObservedAt > liveObservedAt;
+    if (catalogFinal && (observation?.status !== 'final' || newerCatalogFinal)) observation = null;
     const hasScore = observation && observation.homeScore != null && observation.awayScore != null;
     const verified = Boolean(hasScore && ['live', 'final', 'suspended'].includes(observation.status));
+    if (game.catalogStatus === 'final' && !catalogFinal
+      && !(verified && observation.status === 'final' && observation.homeScore !== observation.awayScore)) unverifiedFinalGames += 1;
     if (['live', 'suspended'].includes(game.catalogStatus)
       && (!verified || (retained && observation.status !== 'final'))) unverifiedLiveGames += 1;
     if (!observation) return game;
@@ -394,9 +430,10 @@ function mergeScorePacket(catalog, feeds, priorPacket, now) {
     stale, status: stale ? 'stale' : 'fresh',
     refreshIntervalSeconds: INTERVAL_SECONDS, staleAfterSeconds: STALE_SECONDS,
     coverage: { ...catalog.coverage, leagues: LIVE_LEAGUES, byLeague,
-      partial: unresolvedLiveRows > 0 || unverifiedLiveGames > 0 || availableFeeds.length !== LIVE_LEAGUES.length,
+      partial: unresolvedLiveRows > 0 || unverifiedLiveGames > 0 || unverifiedFinalGames > 0
+        || availableFeeds.length !== LIVE_LEAGUES.length,
       liveMatched: verifiedLiveGames, matchedRows, missingMatchIds, unknownMatchIds,
-      unresolvedLiveRows, conflictingMatchIds: conflicts.size, unverifiedLiveGames, retainedLiveScores },
+      unresolvedLiveRows, conflictingMatchIds: conflicts.size, unverifiedLiveGames, unverifiedFinalGames, retainedLiveScores },
     games
   };
 }
@@ -431,10 +468,16 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
     const priorGames = new Map((packet?.scoreFeedVersion === 2 ? packet.games : []).map(game => [game.id, game]));
     const games = (catalog?.games || []).map(game => {
       const prior = priorGames.get(game.id);
+      const catalogHasFinalScore = game.catalogStatus === 'final'
+        && score(game.homeScore) != null && score(game.awayScore) != null && game.homeScore !== game.awayScore;
+      const planningGame = { ...game, catalogHasFinalScore };
       const recentLive = prior?.liveVerified && ['live', 'suspended'].includes(prior.status)
         && Date.parse(prior.scoreObservedAt) >= at - 3600000 && Date.parse(prior.scoreObservedAt) <= at + 60000;
-      return prior?.liveVerified && (recentLive || !['final', 'canceled', 'postponed'].includes(game.catalogStatus))
-        ? { ...game, status: prior.status, liveVerified: true, scoreObservedAt: prior.scoreObservedAt } : game;
+      const priorFinal = prior?.status === 'final' && score(prior.homeScore) != null
+        && score(prior.awayScore) != null && prior.homeScore !== prior.awayScore;
+      return prior?.liveVerified && (recentLive || priorFinal || !['final', 'canceled', 'postponed'].includes(game.catalogStatus))
+        ? { ...planningGame, status: prior.status, liveVerified: true, scoreObservedAt: prior.scoreObservedAt,
+          homeScore: prior.homeScore, awayScore: prior.awayScore } : planningGame;
     });
     return buildPollPlan({ now: at, games, callsReserved: quota?.calls_reserved || 0,
       catalogFetchedAt: catalog?.fetchedAt, catalogMissing: !catalog || !dates.every(date => catalog.coverage?.byDate?.[date]),
@@ -448,7 +491,8 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
   if (!discover && !liveDue) return { status: 'waiting', nextRequestAt: plan.nextRequestAt };
   // Every source call gets its own bounded timeout. Keep a whole batch within
   // one quota day; the minute tick immediately after UTC midnight replans it.
-  const firstCost = discover ? CATALOG_CALL_COST : LIVE_CALL_COST;
+  const firstCost = discover ? CATALOG_CALL_COST
+    : LIVE_CALL_COST + (plan.catalogRefreshDates?.length || 0) * RESULT_DAY_CALL_COST;
   if (86400000 - now % 86400000 < firstCost * FETCH_TIMEOUT_MS + 5000) return { status: 'quota_day_rollover' };
   try {
     if (discover) {
@@ -464,8 +508,36 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
       plan = planFor(Date.now(), forceDiscovery);
       savePlan(plan);
     }
-    if (!plan.nextPollAt || Date.parse(plan.nextPollAt) > Date.now()) {
+    const pollWasDue = plan.nextPollAt && Date.parse(plan.nextPollAt) <= Date.now();
+    if (!pollWasDue) {
       return { status: 'catalog_refreshed', reservedCalls, nextRequestAt: plan.nextRequestAt };
+    }
+    // A full discovery already fetched all relevant days. Other score cycles
+    // refresh only dates whose unfinished games are near/past expected finish.
+    // Yesterday remains eligible after Chicago midnight for overnight results.
+    const resultDates = discover ? [] : plan.catalogRefreshDates || [];
+    for (const date of resultDates) {
+      const resultReservation = reserveBatch(cache, Date.now(), RESULT_DAY_CALL_COST, reservation);
+      if (!resultReservation) return { status: 'slot_or_daily_budget_used' };
+      reservation = resultReservation;
+      reservedCalls += resultReservation.calls;
+      const result = await requestDay(env, date, resultReservation.day);
+      catalog = mergeCatalogDay(catalog, result);
+      cache.ctx.storage.sql.exec('UPDATE live_catalog SET body = ? WHERE id = 1', JSON.stringify(catalog));
+      packet = mergeScorePacket(catalog, [], packet, Date.now());
+      cache.ctx.storage.sql.exec('UPDATE live_state SET body = ? WHERE id = 1', JSON.stringify(packet));
+    }
+    if (resultDates.length) {
+      plan = planFor(Date.now(), forceDiscovery);
+      savePlan(plan);
+      // Stop when named scored finals resolve every game active now; a later
+      // kickoff window must not start live polling ahead of its scheduled time.
+      // When games remain, finish the due cycle even if spending the catalog
+      // call just increased the cadence; no extra independent polling starts.
+      if ((!plan.activeNow && !forceDiscovery)
+        || plan.remainingCalls - plan.discoveryCallsReserved < LIVE_CALL_COST) {
+        return { status: 'catalog_refreshed', reservedCalls, nextRequestAt: plan.nextRequestAt };
+      }
     }
     if (86400000 - Date.now() % 86400000 < LIVE_CALL_COST * FETCH_TIMEOUT_MS + 5000) return { status: 'quota_day_rollover' };
     const liveReservation = reserveBatch(cache, Date.now(), LIVE_CALL_COST, reservation);
