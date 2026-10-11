@@ -125,43 +125,49 @@ async function requestDay(env, date, reservedDay) {
   const url = new URL(PROVIDER_URL);
   url.search = new URLSearchParams({ sport: 'american_football', date, tz: TIME_ZONE,
     limit: String(PAGE_LIMIT), offset: '0' }).toString();
-  let response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    response = await fetch(url, {
-      headers: { Authorization: 'Bearer ' + env.BBS_API_KEY, Accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), redirect: 'error'
-    });
-  } catch {
-    throw sourceError('provider_network_error');
+    let response;
+    try {
+      response = await fetch(url.toString(), {
+        headers: { Authorization: 'Bearer ' + env.BBS_API_KEY, Accept: 'application/json' },
+        signal: controller.signal, redirect: 'manual'
+      });
+    } catch {
+      throw sourceError('provider_network_error');
+    }
+    const retryHeader = response.headers.get('Retry-After');
+    const retryAfter = /^\d+$/.test(retryHeader || '') ? Number(retryHeader)
+      : Math.max(0, (Date.parse(retryHeader || '') - Date.now()) / 1000) || 0;
+    if (!response.ok) {
+      // Do not persist or return raw error bodies: they can contain request details.
+      if (response.status === 401 || response.status === 403) throw sourceError('provider_auth_unavailable', { retryAfter: 21600 });
+      if (response.status === 429) throw sourceError('provider_rate_limited', { retryAfter });
+      throw sourceError('provider_http_error', { retryAfter });
+    }
+    const remainingHeader = response.headers.get('X-RateLimit-Remaining');
+    const resetHeader = response.headers.get('X-RateLimit-Reset');
+    if (/^\d+$/.test(remainingHeader || '') && Number(remainingHeader) <= 10) {
+      // Keep headroom for authorized diagnostics or other uses of this key. The
+      // provider reports the tighter minute/day bucket; honor its reset time.
+      const resetSeconds = /^\d+$/.test(resetHeader || '') ? Number(resetHeader) : 0;
+      const untilReset = resetSeconds > Date.now() / 1000 ? resetSeconds - Date.now() / 1000 : 0;
+      throw sourceError('provider_quota_low', { retryAfter: untilReset });
+    }
+    if (Number(response.headers.get('Content-Length')) > 1048576) throw sourceError('provider_payload_too_large');
+    let packet;
+    try {
+      const body = await response.text();
+      if (body.length > 1048576) throw new Error('large');
+      packet = JSON.parse(body);
+    } catch {
+      throw sourceError('provider_payload_invalid');
+    }
+    return normalizeMatches(packet, date, new Date().toISOString());
+  } finally {
+    clearTimeout(timeout);
   }
-  const retryHeader = response.headers.get('Retry-After');
-  const retryAfter = /^\d+$/.test(retryHeader || '') ? Number(retryHeader)
-    : Math.max(0, (Date.parse(retryHeader || '') - Date.now()) / 1000) || 0;
-  if (!response.ok) {
-    // Do not persist or return raw error bodies: they can contain request details.
-    if (response.status === 401 || response.status === 403) throw sourceError('provider_auth_unavailable', { retryAfter: 21600 });
-    if (response.status === 429) throw sourceError('provider_rate_limited', { retryAfter });
-    throw sourceError('provider_http_error', { retryAfter });
-  }
-  const remainingHeader = response.headers.get('X-RateLimit-Remaining');
-  const resetHeader = response.headers.get('X-RateLimit-Reset');
-  if (/^\d+$/.test(remainingHeader || '') && Number(remainingHeader) <= 10) {
-    // Keep headroom for authorized diagnostics or other uses of this key. The
-    // provider reports the tighter minute/day bucket; honor its reset time.
-    const resetSeconds = /^\d+$/.test(resetHeader || '') ? Number(resetHeader) : 0;
-    const untilReset = resetSeconds > Date.now() / 1000 ? resetSeconds - Date.now() / 1000 : 0;
-    throw sourceError('provider_quota_low', { retryAfter: untilReset });
-  }
-  if (Number(response.headers.get('Content-Length')) > 1048576) throw sourceError('provider_payload_too_large');
-  let packet;
-  try {
-    const body = await response.text();
-    if (body.length > 1048576) throw new Error('large');
-    packet = JSON.parse(body);
-  } catch {
-    throw sourceError('provider_payload_invalid');
-  }
-  return normalizeMatches(packet, date, new Date().toISOString());
 }
 
 function readState(cache) {
@@ -220,7 +226,7 @@ function preserveFailure(cache, state, error) {
 
 async function refreshScores(cache, { forceDiscovery = false } = {}) {
   const env = cache.env;
-  if (!env.BBS_API_KEY) return { status: 'unconfigured' };
+  if (!env.BBS_API_KEY) return { status: 'unconfigured', scope: 'score-cache' };
   const now = Date.now();
   const utcMonth = new Date(now).getUTCMonth() + 1;
   if (![1, 8, 9, 10, 11, 12].includes(utcMonth)) return { status: 'offseason' };
@@ -351,6 +357,7 @@ export default {
       if (!env.REFRESH_TOKEN || request.headers.get('Authorization') !== 'Bearer ' + env.REFRESH_TOKEN) {
         return jsonResponse(request, { status: 'unauthorized' }, 401);
       }
+      if (!env.BBS_API_KEY) return jsonResponse(request, { status: 'unconfigured', scope: 'worker' });
       try { return jsonResponse(request, await scoreCache(env).refresh({ forceDiscovery: true })); }
       catch { return jsonResponse(request, { status: 'failed', reason: 'refresh_storage_unavailable' }, 503); }
     }
