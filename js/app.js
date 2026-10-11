@@ -112,6 +112,7 @@ function refreshGameDayRankingStatus() {
 function renderGameDay() {
   const today = localDateKey(new Date(), gameDayTimeZone);
   ids('games-date').value = gameDayDate;
+  ids('games-date-display').textContent = gameDayLabel(gameDayDate, { month: 'short', day: 'numeric', year: 'numeric' });
   ids('games-page-title').textContent = gameDayDate === today ? 'Today’s games' : gameDayLabel(gameDayDate);
   ids('games-timezone').textContent = 'Kickoffs shown in your device timezone: ' + gameDayTimeZone.replaceAll('_', ' ') + '. TBD games keep their scheduled calendar date.';
   const sort = ids('games-sort').value;
@@ -1112,6 +1113,12 @@ document.addEventListener('keydown', function (event) {
 });
 
 document.addEventListener('click', async function (event) {
+  if (event.target.id === 'games-date') {
+    // Open the native calendar from any point on the visible date field.
+    // Safari versions without showPicker keep their normal input behavior.
+    try { event.target.showPicker?.(); } catch { /* Native tap behavior remains available. */ }
+    return;
+  }
   const gameDayButton = event.target.closest('#games-previous, #games-next, #games-today, [data-games-date]');
   if (gameDayButton) {
     const date = gameDayButton.dataset.gamesDate || (gameDayButton.id === 'games-today'
