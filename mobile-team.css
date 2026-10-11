@@ -1,6 +1,7 @@
 /* Shared score comparison rows, followed by phone layouts for Team Explorer
    and Matchups. Other desktop styles stay in styles.css. */
 .forecast-matchup-score-line { min-width: 0; width: 100%; }
+.forecast-matchup-score-line > .forecast-matchup-status { white-space: nowrap; }
 .forecast-matchup-score-line.is-observed { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
 .forecast-matchup-score-line.is-observed .forecast-matchup-score { font-size: 30px; }
 .forecast-matchup-score-line.is-observed .forecast-matchup-status { color: var(--ink); }

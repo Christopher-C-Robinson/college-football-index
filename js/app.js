@@ -8,7 +8,7 @@ import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=471d6fa90b4d';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=3e98c84b5f5b';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=0923769cca7c';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
@@ -19,7 +19,7 @@ import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
 import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
-import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=85b819c8aa6a';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=3e464a9c3ef2';
 import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, renderLiveScoreStatus } from './live-scores.js?v=62f378bab60f';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
 

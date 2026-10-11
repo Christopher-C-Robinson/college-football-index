@@ -96,7 +96,7 @@ function observedScores(row, actual) {
     || !finite(row.live.for) || !finite(row.live.against)) return null;
   const latest = row.live.stale || row.live.status === 'suspended';
   return { for: row.live.for, against: row.live.against,
-    label: latest ? 'Latest fetched score' : 'Live score', markerLabel: latest ? 'Latest' : 'Live', final: false };
+    label: latest ? 'Latest score' : 'Live score', markerLabel: latest ? 'Latest' : 'Live', final: false };
 }
 
 function primaryColor(value) {
@@ -219,7 +219,7 @@ function matchupOutlook(row, teamName, forecast, actual) {
   const teams = matchupTeams(row, teamName, forecast, actual).map(team => ({ ...team, probability: team.name === teamName ? probability : 100 - probability }));
   const hasDivider = teams.every(team => Number(team.probability.toFixed(3)) > 0);
   const divider = barDividerColor(teams[0].color, teams[1].color);
-  return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Snapshot model win chance</h5>' +
+  return '<section class="forecast-analytics-panel forecast-matchup-outlook"><h5 class="forecast-section-title">Model win chance</h5>' +
     '<div class="forecast-probability-headline"><strong>' + number(probability) + '%</strong><span>' + escapeHtml(teamName) + '</span></div>' +
     '<div class="forecast-probability-bar' + (hasDivider ? ' has-divider' : '') + '" style="--bar-divider-color:' + divider + '" role="img" aria-label="' + escapeHtml(probabilityLabel) + '">' + teams.map(team => '<span class="' + (team.name === teamName ? 'is-selected' : 'is-opponent') + '" style="width:' + team.probability.toFixed(3) + '%;--probability-team-rgb:' + team.color + '"></span>').join('') + '</div>' +
     '<div class="forecast-probability-labels">' + teams.map(team => '<span>' + escapeHtml(team.abbreviation) + '<strong>' + number(team.probability) + '%</strong></span>').join('') + '</div>' +
@@ -332,7 +332,7 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
       '<strong class="forecast-matchup-score" aria-label="' + escapeHtml(label + ': ' + (selectedOnLeft ? teamName : row.opponentName) + ' ' + Math.round(leftScore) + ', ' + (selectedOnLeft ? row.opponentName : teamName) + ' ' + Math.round(rightScore)) + '">' +
       '<span>' + Math.round(leftScore) + '</span><i aria-hidden="true">–</i><span>' + Math.round(rightScore) + '</span></strong></div>';
   };
-  const projected = forecast ? scoreLine('Snapshot projection', forecast, 'is-projected')
+  const projected = forecast ? scoreLine('Projected', forecast, 'is-projected')
     : '<span class="forecast-matchup-status">' + (row.status === 'canceled' ? 'Canceled' : 'Projection unavailable') + '</span>';
   const favorite = observed ? winner.label :
     forecast ? forecast.winProbability === 0.5 ? 'Projected toss-up' : 'Projected favorite: ' + (forecast.winProbability > 0.5 ? teamName : row.opponentName) : '';
