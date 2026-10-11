@@ -3,6 +3,7 @@
 export const DAILY_CALL_LIMIT = 240;
 export const LIVE_CALL_COST = 2;
 export const CATALOG_CALL_COST = 3;
+export const RESULT_DAY_CALL_COST = 1;
 export const DISCOVERY_MS = 2 * 60 * 60 * 1000;
 const GAME_MS = 3.5 * 60 * 60 * 1000;
 const FINAL_CHECK_MS = 15 * 60 * 1000;
@@ -11,6 +12,15 @@ const MIN_INTERVAL_MS = 60 * 1000;
 const UTC_DAY_MS = 24 * 60 * 60 * 1000;
 const stamp = value => Date.parse(value || '');
 const format = value => Number.isFinite(value) ? new Date(value).toISOString() : null;
+const validScore = value => Number.isInteger(value) && value >= 0 && value <= 1000;
+
+function finalResultKnown(game) {
+  if (game.catalogHasFinalScore === true) return true;
+  const scores = validScore(game.homeScore) && validScore(game.awayScore)
+    && game.homeScore !== game.awayScore;
+  return scores && (game.status === 'final'
+    || game.catalogHasFinalScore == null && game.catalogStatus === 'final');
+}
 
 function union(windows) {
   const merged = [];
@@ -43,17 +53,23 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
   const reset = Math.floor(now / UTC_DAY_MS) * UTC_DAY_MS + UTC_DAY_MS;
   const remainingCalls = Math.max(0, DAILY_CALL_LIMIT - callsReserved);
   const windows = [];
+  const resultDates = new Set();
+  const futureResultDates = new Set();
   let overdueLiveGames = 0;
   let pendingGames = 0;
+  let pendingFinalChecks = 0;
   for (const game of games) {
     const observed = stamp(game.scoreObservedAt);
     const recentVerifiedLive = game.liveVerified === true
       && ['live', 'suspended'].includes(game.status)
       && observed >= now - OVERRUN_MS && observed <= now + MIN_INTERVAL_MS;
+    // Missing/tied catalog finals do not prove that a result is available.
+    // Keep their bounded named-result checks until a usable final arrives.
+    if (!recentVerifiedLive && finalResultKnown(game)) continue;
     // A stored cancellation/postponement can be superseded by a genuine recent
     // live observation. Its catalog label must not turn off an active game's feed.
-    if (!recentVerifiedLive && (['final', 'canceled', 'postponed'].includes(game.status)
-      || ['final', 'canceled', 'postponed'].includes(game.catalogStatus))) continue;
+    if (!recentVerifiedLive && (['canceled', 'postponed'].includes(game.status)
+      || ['canceled', 'postponed'].includes(game.catalogStatus))) continue;
     const kickoff = stamp(game.startDate);
     if (!Number.isFinite(kickoff)) continue;
     let start = kickoff;
@@ -65,6 +81,23 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
       start = nextChicagoMidnight(noon - UTC_DAY_MS);
       end = nextChicagoMidnight(noon) + GAME_MS + FINAL_CHECK_MS;
     }
+    // Anonymous/missing live rows can still gain an identified final from the
+    // date catalog. Begin near the expected finish and allow bounded reporting
+    // delay. These are checks, never a timer-derived final or live score.
+    const resultStart = start + GAME_MS - FINAL_CHECK_MS;
+    const resultEnd = end - FINAL_CHECK_MS + DISCOVERY_MS;
+    const resultFrom = Math.max(now, resultStart);
+    const resultThrough = Math.min(reset, resultEnd);
+    const catalogDate = game.catalogDate || game.date;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(catalogDate || '') && resultThrough > resultFrom) {
+      futureResultDates.add(catalogDate);
+      windows.push([resultFrom, resultThrough]);
+      if (now >= resultStart && now < resultEnd) {
+        resultDates.add(catalogDate);
+        pendingFinalChecks += 1;
+      }
+    }
+    if (!recentVerifiedLive && (game.status === 'final' || game.catalogStatus === 'final')) continue;
     if (recentVerifiedLive && now >= kickoff + GAME_MS) {
       // Extra time is a planning estimate, never an invented final result. Only
       // a recent actual live observation extends a game beyond its normal window.
@@ -92,7 +125,12 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
     due = midnight > due && midnight < periodic ? midnight : periodic;
   }
   const discoveryReserve = Math.min(remainingCalls, discoveryBatches * CATALOG_CALL_COST);
-  const pollsAvailable = Math.floor(Math.max(0, remainingCalls - discoveryReserve) / LIVE_CALL_COST);
+  // Price all dates whose result-check windows can occur before UTC reset,
+  // including tomorrow's games and yesterday's overnight finishes. Reserving
+  // only today's active dates would overspend the future part of the schedule.
+  const catalogCallsPerRefresh = futureResultDates.size * RESULT_DAY_CALL_COST;
+  const callsPerRefresh = LIVE_CALL_COST + catalogCallsPerRefresh;
+  const pollsAvailable = Math.floor(Math.max(0, remainingCalls - discoveryReserve) / callsPerRefresh);
   const intervalMs = Math.max(MIN_INTERVAL_MS,
     Math.ceil((pollsAvailable > 0 ? activeMs / pollsAvailable : UTC_DAY_MS) / MIN_INTERVAL_MS) * MIN_INTERVAL_MS);
   const lastPoll = stamp(lastPollAt);
@@ -110,10 +148,14 @@ export function buildPollPlan({ now, games = [], callsReserved = 0, catalogFetch
     mode: 'adaptive', quotaDay: new Date(now).toISOString().slice(0, 10),
     quotaResetsAt: format(reset), dailyCallLimit: DAILY_CALL_LIMIT,
     callsReserved, remainingCalls, discoveryCallsReserved: discoveryReserve,
-    liveCallsPerRefresh: LIVE_CALL_COST, pollsAvailable,
+    liveCallsPerRefresh: LIVE_CALL_COST, resultDayCallsPerRefresh: RESULT_DAY_CALL_COST,
+    catalogCallsPerRefresh, callsPerRefresh, pollsAvailable,
+    catalogRefreshDates: [...resultDates].sort(), futureResultCheckDates: [...futureResultDates].sort(),
     expectedGameHours: 3.5, finalCheckMinutes: 15,
+    resultChecksBeforeFinishMinutes: FINAL_CHECK_MS / 60000,
+    resultCheckGraceMinutes: DISCOVERY_MS / 60000,
     expectedActiveMinutesRemaining: Math.round(activeMs / 60000),
-    pendingGames, overdueLiveGames, activeNow,
+    pendingGames, overdueLiveGames, pendingFinalChecks, activeNow,
     activeWindows: activeWindows.map(([from, through]) => ({ start: format(from), end: format(through) })),
     intervalSeconds: intervalMs / 1000, nextPollAt: format(nextPoll),
     nextDiscoveryAt: format(nextDiscovery), nextRequestAt: format(nextRequest)
