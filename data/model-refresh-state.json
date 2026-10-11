@@ -5,9 +5,9 @@
   "days": {
     "2026:2026-10-10": {
       "readinessAttempts": 1,
-      "statsAttempts": 3,
+      "statsAttempts": 4,
       "nextReadinessAt": "2026-10-11T07:36:18.519Z",
-      "nextStatsAt": "2026-10-11T13:22:39.478Z",
+      "nextStatsAt": "2026-10-12T01:44:23.870Z",
       "firstAllFinalSeenAt": "2026-10-11T06:37:30.545Z",
       "publishedAt": "2026-10-11T07:07:16.337Z",
       "baseline": false,
@@ -1549,10 +1549,26 @@
       "lastPublishedAt": "2026-10-11T07:07:16.337Z",
       "snapshotGeneratedAt": "2026-10-11T07:06:18.519Z",
       "inputFingerprint": "30c32042b5385521251bc421d495edfb81be933bfff575961b30e470dd3a1904",
-      "lastStatsAttemptAt": "2026-10-11T10:22:39.478Z"
+      "lastStatsAttemptAt": "2026-10-11T13:44:23.870Z",
+      "stagedMissingRequiredBoxIds": [
+        "401867980",
+        "401868144",
+        "401868180"
+      ]
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-11T13:44:23.870Z",
+    "inputFingerprint": "77787891e31ff74c925ca4c29a20f4b2b6202d274e0b49c1a3606bcab4d76a79",
+    "dayKeys": [
+      "2026:2026-10-10"
+    ],
+    "dayKinds": {
+      "2026:2026-10-10": "stats-retry"
+    },
+    "kind": "stats-retry",
+    "stagedAt": "2026-10-11T13:44:23.870Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -1561,8 +1577,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-10-11T07:06:18.519Z",
   "quota": {
-    "checkedAt": "2026-10-11T10:22:39.478Z",
-    "remainingCalls": 684,
+    "checkedAt": "2026-10-11T13:44:23.870Z",
+    "remainingCalls": 682,
     "reserve": 155
   }
 }
