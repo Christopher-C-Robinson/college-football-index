@@ -56,7 +56,9 @@
           "verifiedAt": "2026-10-11T04:45:47Z",
           "reason": "Canceled due to weather; no makeup game."
         }
-      ]
+      ],
+      "supersededCount": 0,
+      "supersededEntries": []
     }
   },
   "games": [

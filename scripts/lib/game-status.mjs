@@ -32,12 +32,23 @@ export function validateGameStatusOverrides(config) {
 export function applyGameStatusOverrides(dataset, config) {
   validateGameStatusOverrides(config);
   if (!Array.isArray(dataset?.games)) throw new Error('Game-status overrides require a season dataset.');
+  const season = dataset.meta?.season;
+  if (!Number.isInteger(season)) throw new Error('Game-status overrides require an integer dataset season.');
+  const applicable = config.overrides.filter(entry => entry.season === season);
+  const matched = new Set();
   const applied = [];
+  const superseded = [];
   const games = dataset.games.map(game => {
-    const override = config.overrides.find(entry => String(game.id ?? game.gameId) === String(entry.gameId)
-      && Number(game.season ?? dataset.meta?.season) === entry.season
+    const override = applicable.find(entry => String(game.id ?? game.gameId) === String(entry.gameId)
+      && Number(game.season ?? season) === entry.season
       && game.homeTeam === entry.homeTeam && game.awayTeam === entry.awayTeam);
-    if (!override || confirmedFinal(game)) return game;
+    if (!override) return game;
+    matched.add(override.gameId);
+    if (confirmedFinal(game)) {
+      superseded.push({ ...override, supersededBy: 'confirmed-final',
+        homePoints: game.homePoints ?? game.homeScore, awayPoints: game.awayPoints ?? game.awayScore });
+      return game;
+    }
     const source = { sourceURL: override.sourceURL, verifiedAt: override.verifiedAt, reason: override.reason };
     applied.push({ ...override });
     return { ...game, canceled: true, status: 'canceled', completed: false,
@@ -46,11 +57,18 @@ export function applyGameStatusOverrides(dataset, config) {
       ...(Object.hasOwn(game, 'awayScore') ? { awayScore: null } : {}),
       statusSource: source };
   });
+  const missing = applicable.filter(entry => !matched.has(entry.gameId));
+  if (missing.length) {
+    throw new Error('Sourced game-status correction no longer matches the season schedule: '
+      + missing.map(entry => entry.season + ':' + entry.gameId + ' (' + entry.awayTeam + ' at ' + entry.homeTeam + ')').join(', ')
+      + '. Refresh stopped to preserve the verified status.');
+  }
   // Some providers attach box rows to completed 0–0 cancellation placeholders.
   // Once corrected, those rows cannot remain statistics for an unfinished game.
   const canceledIds = new Set(applied.map(entry => String(entry.gameId)));
   const teamStats = Array.isArray(dataset.teamStats)
     ? { teamStats: dataset.teamStats.filter(entry => !canceledIds.has(String(entry.id ?? entry.gameId))) } : {};
   return { ...dataset, games, ...teamStats, meta: { ...dataset.meta,
-    gameStatusOverrides: { appliedCount: applied.length, entries: applied } } };
+    gameStatusOverrides: { appliedCount: applied.length, entries: applied,
+      supersededCount: superseded.length, supersededEntries: superseded } } };
 }
