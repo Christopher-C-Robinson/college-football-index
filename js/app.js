@@ -7,8 +7,8 @@ import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
-import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=471d6fa90b4d';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=aa99b708701b';
+import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=63dc6ae174c5';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=bb4ae0019b27';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
@@ -19,9 +19,9 @@ import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
 import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
-import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=b11292842e2b';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=4be93fcb0586';
 import { computeGameDayAccuracy, renderGameDayAccuracy } from './game-day-accuracy.js?v=97259e8d6505';
-import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, renderLiveScoreStatus } from './live-scores.js?v=62f378bab60f';
+import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, liveRecordForTeam, overlaySeasonRecord, renderLiveScoreStatus } from './live-scores.js?v=6af7607cf3c9';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
 
 const STARTER_URL = './data/current-season.json';
@@ -31,6 +31,7 @@ const SIMULATION_RUNS = MODEL_PARAMETERS.simulationRuns;
 const NEUTRAL_THEME = { primary: '#255b7a', secondary: '#df8e5a' };
 const state = { raw: null, publicDataset: null, publicUnavailable: false, source: 'public', model: null, focusTeam: null, compareA: null, compareB: null, mapDivisions: { fbs: true, fcs: true } };
 const seasonAnalysisCache = new Map();
+let seasonSummaryMarkup = null;
 let opponentRecordRequest = 0;
 let neutralRankingController = null;
 let neutralRankingError = '';
@@ -47,18 +48,25 @@ let gameDayFollowToday = true;
 let liveScoreController = null;
 let liveScoreState = { hasData: false, games: [], loading: false };
 
+function liveScoreViewActive() {
+  return Boolean(state.model && (['rankings', 'games', 'matchups'].includes(activeView) || (activeView === 'dossier' && currentFocus())));
+}
+
 function syncLiveScorePolling() {
   if (!liveScoreController) return;
-  if (state.model && (activeView === 'games' || (activeView === 'dossier' && currentFocus()))) liveScoreController.start();
+  if (liveScoreViewActive()) liveScoreController.start();
   else liveScoreController.stop();
 }
 
 function refreshLiveScoreViews() {
+  updateBoardRecordElements();
+  updateCompareRecordElements();
   if (activeView === 'games') renderGameDay({ liveOnly: true });
   if (activeView === 'dossier') {
     const analysis = seasonAnalysisCache.get(teamKey(state.focusTeam));
     const display = overlaySeasonAnalysis(analysis, liveScoreState, state.model);
     ids('schedule-live-status').innerHTML = renderLiveScoreStatus(liveScoreState, { timeZone: gameDayTimeZone, matched: display?.liveMatched });
+    updateFocusedRecordElements(display);
     if (display) updateSeasonLiveElements(ids('schedule-list'), display);
   }
 }
@@ -73,7 +81,7 @@ async function initializeLiveScores() {
     if (endpoint.protocol !== 'https:') throw new Error('Live scores require a secure endpoint.');
     liveScoreController = createLiveScoreController({ endpoint: endpoint.href,
       refreshMs: 60000, staleMs: 30 * 60 * 1000,
-      isActive: () => Boolean(state.model && (activeView === 'games' || (activeView === 'dossier' && currentFocus()))),
+      isActive: liveScoreViewActive,
       onUpdate: scores => { liveScoreState = scores; refreshLiveScoreViews(); }
     });
     syncLiveScorePolling();
@@ -104,7 +112,10 @@ function showView({ focus = false } = {}) {
   if (activeView === 'rankings') centerMobileMap();
   if (activeView === 'games') startGameDay();
   else { gameDayController?.abort(); gameDayController = null; ids('games-content').setAttribute('aria-busy', 'false'); }
-  if (activeView === 'dossier') updateOpponentRecords();
+  if (activeView === 'dossier') {
+    refreshLiveScoreViews();
+    updateOpponentRecords();
+  }
   else opponentRecordRequest += 1;
   syncLiveScorePolling();
   if (focus) {
@@ -177,7 +188,7 @@ function renderGameDay({ liveOnly = false } = {}) {
     const timestamp = Number.isFinite(generated.getTime()) ? new Intl.DateTimeFormat(undefined, {
       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: gameDayTimeZone
     }).format(generated) : 'time unavailable';
-    snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' model snapshot · Updated ' + timestamp + '. Predictions, rankings, and team records use this snapshot. Separately fetched scores are labeled with their update time.';
+    snapshot = (state.source === 'imported' ? 'Imported' : 'Public') + ' ' + (meta.season || '') + ' model snapshot · Updated ' + timestamp + '. Predictions and rankings use this snapshot. Records also include matched final scores; separately fetched scores show their update time.';
   }
   ids('games-snapshot').textContent = snapshot;
   const display = overlayGameDayReport(gameDayReport, liveScoreState, state.model);
@@ -380,13 +391,56 @@ function teamGames(name) {
   }).sort(function (a, b) { return String(a.startDate || '').localeCompare(String(b.startDate || '')); });
 }
 function formatRecord(team) {
-  return team ? recordText(team.wins, team.losses, team.ties) : '0-0';
+  const record = team && (liveRecordForTeam(state.model, liveScoreState, team.name) || team);
+  return record ? recordText(record.wins, record.losses, record.ties) : '0-0';
 }
 function fbsRecord(team) {
-  return team ? recordText(team.fbsWins, team.fbsLosses, team.fbsTies) : '0-0';
+  const record = team && (liveRecordForTeam(state.model, liveScoreState, team.name) || team);
+  return record ? recordText(record.fbsWins, record.fbsLosses, record.fbsTies) : '0-0';
 }
 function fcsRecord(team) {
-  return team ? recordText(team.fcsWins, team.fcsLosses, team.fcsTies) : '0-0';
+  const record = team && (liveRecordForTeam(state.model, liveScoreState, team.name) || team);
+  return record ? recordText(record.fcsWins, record.fcsLosses, record.fcsTies) : '0-0';
+}
+
+function recordCellAttributes(team, kind = 'overall', includeDivision = false) {
+  return ' data-live-record-team="' + escapeHtml(teamKey(team.name)) + '" data-live-record-kind="' + kind + '"' + (includeDivision ? ' data-live-record-division="true"' : '');
+}
+
+function renderRecordCell(team, label, kind = 'overall', includeDivision = false) {
+  const record = kind === 'fbs' ? fbsRecord(team) : kind === 'fcs' ? fcsRecord(team) : formatRecord(team);
+  const text = (includeDivision ? String(team.classification).toUpperCase() + ' · ' : '') + record;
+  return '<td data-label="' + escapeHtml(label) + '" class="rank-record"' + recordCellAttributes(team, kind, includeDivision) + '>' + escapeHtml(text) + '</td>';
+}
+
+// Patch records without reranking, rerunning simulations, or remounting rows.
+function updateBoardRecordElements() {
+  for (const element of ids('board-content').querySelectorAll('[data-live-record-team]')) {
+    const team = teamByKey(element.dataset.liveRecordTeam);
+    if (!team) continue;
+    const record = element.dataset.liveRecordKind === 'fbs' ? fbsRecord(team)
+      : element.dataset.liveRecordKind === 'fcs' ? fcsRecord(team) : formatRecord(team);
+    const text = (element.dataset.liveRecordDivision === 'true' ? String(team.classification).toUpperCase() + ' · ' : '') + record;
+    if (element.textContent !== text) element.textContent = text;
+  }
+}
+
+function updateFocusedRecordElements(analysis) {
+  const team = currentFocus();
+  if (!team) return;
+  ids('team-record').textContent = formatRecord(team);
+  ids('team-fbs-record').textContent = fbsRecord(team);
+  ids('team-fcs-record').textContent = fcsRecord(team);
+  if (!analysis) return;
+  const finals = analysis.summary.currentWins + analysis.summary.currentLosses + analysis.summary.currentTies;
+  const canceled = analysis.rows.filter(row => row.status === 'canceled').length;
+  ids('schedule-count').textContent = finals + ' FINAL · ' + analysis.summary.totalRemainingGames + ' UNPLAYED' + (canceled ? ' · ' + canceled + ' CANCELED' : '');
+  const summaryMarkup = renderProjectionSummary(analysis);
+  const summary = ids('season-projection-summary');
+  if (seasonSummaryMarkup !== summaryMarkup) {
+    summary.innerHTML = summaryMarkup;
+    seasonSummaryMarkup = summaryMarkup;
+  }
 }
 function visibleTeams() {
   return state.model.allTeams.filter(function (team) { return team.games.length > 0 && ['fbs', 'fcs'].includes(String(team.classification).toLowerCase()); })
@@ -585,6 +639,7 @@ function renderHero() {
 
 function renderDossier() {
   opponentRecordRequest += 1;
+  seasonSummaryMarkup = null;
   const team = currentFocus();
   if (ids('clear-team')) ids('clear-team').hidden = !team;
   if (!team) {
@@ -636,13 +691,11 @@ function renderDossier() {
     analysis.rankingsStatus = 'unavailable';
     for (const row of analysis.rows) row.rankingsStatus = 'unavailable';
   }
-  const canceled = analysis.rows.filter(row => row.status === 'canceled').length;
-  ids('schedule-count').textContent = played.length + ' FINAL · ' + analysis.summary.totalRemainingGames + ' UNPLAYED' + (canceled ? ' · ' + canceled + ' CANCELED' : '');
+  const display = overlaySeasonAnalysis(analysis, liveScoreState, state.model);
   ids('season-projection-summary').hidden = false;
-  ids('season-projection-summary').innerHTML = renderProjectionSummary(analysis);
+  updateFocusedRecordElements(display);
   ids('schedule-forecast-note').hidden = false;
   ids('schedule-forecast-note').innerHTML = renderProjectionNote(analysis);
-  const display = overlaySeasonAnalysis(analysis, liveScoreState, state.model);
   if (!analysis.rows.length) {
     ids('schedule-list').innerHTML = '<div class="schedule-empty">No games in this season file yet.</div>';
   } else {
@@ -667,12 +720,19 @@ async function updateOpponentRecords(analysis = seasonAnalysisCache.get(teamKey(
       isCanceled: () => !current(),
       onRecord: (name, seasonOutlook) => {
         if (!current()) return;
-        updateSeasonRecordElements(container, { name, seasonOutlook, seasonOutlookPending: false });
+        updateSeasonRecordElements(container, { name,
+          record: formatRecord(teamByKey(name)),
+          seasonOutlook: overlaySeasonRecord(seasonOutlook, name, liveScoreState, model),
+          seasonOutlookPending: false });
       }
     });
   } catch (error) {
     if (!current()) return;
     for (const row of analysis.rows) {
+      if (row.matchup?.opponent) row.matchup.opponent.seasonOutlookPending = false;
+    }
+    const display = overlaySeasonAnalysis(analysis, liveScoreState, model);
+    for (const row of display.rows) {
       const opponent = row.matchup?.opponent;
       if (!opponent) continue;
       opponent.seasonOutlookPending = false;
@@ -735,7 +795,7 @@ function renderInsight(team, games) {
   const average = rated.length ? rated.reduce(function (sum, game) { return sum + margin(game, team.name); }, 0) / rated.length : null;
   const shutouts = rated.filter(function (game) { return opponentScore(game, team.name) === 0; }).length;
   const text = state.model.broadCoverage && team.power !== null
-    ? 'Schedule-adjusted power: <strong>' + (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1) + ' points per game</strong>. Model expectation: ' + formatNumber(team.expectedWins, 1) + ' wins; actual: ' + team.wins + '.'
+    ? 'Schedule-adjusted power: <strong>' + (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1) + ' points per game</strong>. In the model snapshot: expected ' + formatNumber(team.expectedWins, 1) + ' wins; recorded ' + team.wins + '.'
     : rated.length + ' FBS/FCS games · ' + (average === null ? 'no D1 games yet' : '<strong>' + (average >= 0 ? '+' : '') + formatNumber(average, 1) + ' raw points per game</strong> on average') + ' · ' + shutouts + ' shutout' + (shutouts === 1 ? '' : 's') + '. Full opponent adjustment unlocks with season-wide results.';
   ids('team-insight').innerHTML = text;
 }
@@ -803,7 +863,7 @@ function renderBoard(resetMatchups = false) {
     const preview = filteredBoardTeams().filter(function (team) { return team.wins + team.losses + team.ties > 0; }).slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
     const previewRows = preview.map(function (team) {
       const focusClass = teamKey(team.name) === teamKey(state.focusTeam) ? ' is-focus' : '';
-      return '<tr><td><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Division" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td><td data-label="Overall" class="rank-record">' + escapeHtml(formatRecord(team)) + '</td><td data-label="vs FBS" class="rank-record">' + escapeHtml(fbsRecord(team)) + '</td><td data-label="vs FCS" class="rank-record">' + escapeHtml(fcsRecord(team)) + '</td><td data-label="Model" class="rank-power">NOT RANKED</td></tr>';
+      return '<tr><td><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Division" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + '</td>' + renderRecordCell(team, 'Overall') + renderRecordCell(team, 'vs FBS', 'fbs') + renderRecordCell(team, 'vs FCS', 'fcs') + '<td data-label="Model" class="rank-power">NOT RANKED</td></tr>';
     }).join('');
     const filters = selectedBoardFilters();
     const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -825,7 +885,7 @@ function renderBoard(resetMatchups = false) {
     const rank = ranked ? String(team.neutralRank) : '—';
     if (ranked) rankedCount += 1;
     const modelLabel = ranked ? formatNumber(team.neutralScore * 100, 1) + '%' : rankingsReady ? 'NOT RANKED' : '—';
-    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td><td data-label="Record" class="rank-record">' + escapeHtml(String(team.classification).toUpperCase()) + ' · ' + escapeHtml(formatRecord(team)) + '</td><td data-label="Results power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="Avg. neutral win chance" class="rank-index">' + modelLabel + (team.neutralPriorSeason ? '<span class="rank-coverage">Uses ' + team.neutralPriorSeason + ' data</span>' : '') + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
+    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td>' + renderRecordCell(team, 'Record', 'overall', true) + '<td data-label="Results power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="Avg. neutral win chance" class="rank-index">' + modelLabel + (team.neutralPriorSeason ? '<span class="rank-coverage">Uses ' + team.neutralPriorSeason + ' data</span>' : '') + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -854,6 +914,23 @@ function compareMetrics(team) {
   ];
 }
 
+function compareRecordText(team) {
+  return team.name + ' · ' + formatRecord(team) + ' overall · ' + fbsRecord(team) + ' vs FBS · ' + fcsRecord(team) + ' vs FCS';
+}
+
+function renderCompareRecord(team) {
+  return '<span data-compare-record-team="' + escapeHtml(teamKey(team.name)) + '">' + escapeHtml(compareRecordText(team)) + '</span>';
+}
+
+function updateCompareRecordElements() {
+  for (const element of ids('compare-content').querySelectorAll('[data-compare-record-team]')) {
+    const team = teamByKey(element.dataset.compareRecordTeam);
+    if (!team) continue;
+    const text = compareRecordText(team);
+    if (element.textContent !== text) element.textContent = text;
+  }
+}
+
 function renderCompare() {
   const a = teamByKey(ids('compare-a').value || state.compareA);
   const b = teamByKey(ids('compare-b').value || state.compareB);
@@ -873,8 +950,8 @@ function renderCompare() {
     const valueB = '<span class="comparison-bar"><i style="width:' + (other.scale === null ? 0 : other.scale) + '%"></i></span><span>' + escapeHtml(other.display) + '</span>';
     return '<div class="compare-row"><div class="compare-value' + (aBetter ? ' is-strong' : '') + '">' + valueA + '</div><div class="compare-label">' + escapeHtml(metric.label) + '</div><div class="compare-value' + (bBetter ? ' is-strong' : '') + '">' + valueB + '</div></div>';
   }).join('');
-  const footnote = state.model.broadCoverage ? 'Values use the current FBS + FCS results graph. Overall ranks come from forecast win chances across the full neutral field.' : 'Power, opponent quality, and expected wins remain unavailable until the FBS + FCS results graph is broad enough.';
-  ids('compare-content').innerHTML = '<div class="compare-team-headings"><div>' + renderTeamLogo(a, { size: 40 }) + '<strong>' + escapeHtml(a.name) + '</strong></div><div>' + renderTeamLogo(b, { size: 40 }) + '<strong>' + escapeHtml(b.name) + '</strong></div></div>' + rows + '<div class="compare-empty">' + escapeHtml(a.name) + ' · ' + escapeHtml(formatRecord(a)) + ' overall · ' + escapeHtml(fbsRecord(a)) + ' vs FBS · ' + escapeHtml(fcsRecord(a)) + ' vs FCS<br>' + escapeHtml(b.name) + ' · ' + escapeHtml(formatRecord(b)) + ' overall · ' + escapeHtml(fbsRecord(b)) + ' vs FBS · ' + escapeHtml(fcsRecord(b)) + ' vs FCS<br>' + escapeHtml(footnote) + '</div>';
+  const footnote = (state.model.broadCoverage ? 'Values use the current FBS + FCS results graph. Overall ranks come from forecast win chances across the full neutral field.' : 'Power, opponent quality, and expected wins remain unavailable until the FBS + FCS results graph is broad enough.') + ' Records also include matched final scores.';
+  ids('compare-content').innerHTML = '<div class="compare-team-headings"><div>' + renderTeamLogo(a, { size: 40 }) + '<strong>' + escapeHtml(a.name) + '</strong></div><div>' + renderTeamLogo(b, { size: 40 }) + '<strong>' + escapeHtml(b.name) + '</strong></div></div>' + rows + '<div class="compare-empty">' + renderCompareRecord(a) + '<br>' + renderCompareRecord(b) + '<br>' + escapeHtml(footnote) + '</div>';
 }
 
 function runMatchupSimulation() {
@@ -1008,10 +1085,10 @@ function csvCell(value) { return '"' + String(value === undefined || value === n
 function exportRankings() {
   const report = getNeutralRankings(state.model);
   if (report?.status !== 'ready') return;
-  const rows = [['Overall Neutral Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Neutral Forecast Win Chance (%)', 'Expected Wins vs Full Field', 'Neutral Opponents', 'Results Power (pts/game)', 'Opponent Power', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Ranking Method', 'Forecast Version', 'Dataset Source', 'Generated At']];
+  const rows = [['Overall Neutral Rank', 'Team', 'Subdivision', 'Conference', 'Overall Record', 'Record vs FBS', 'Record vs FCS', 'Neutral Forecast Win Chance (%)', 'Expected Wins vs Full Field', 'Neutral Opponents', 'Results Power (pts/game)', 'Opponent Power', 'Rated Results', 'Usable Box Scores', 'Box Score Coverage (%)', 'Ranking Method', 'Forecast Version', 'Dataset Source', 'Generated At', 'Record Sources', 'Score Feed Refreshed At']];
   for (const team of rankBoardTeams(filteredBoardTeams()).filter(team => Number.isInteger(team.neutralRank))) {
     const entry = report.entries.get(teamKey(team.name));
-    rows.push([entry.rank, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(entry.score * 100, 2), formatNumber(entry.expectedWins, 2), entry.opponents, formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, report.methodVersion, report.forecastVersion, state.source, state.model.meta.generatedAt || '']);
+    rows.push([entry.rank, team.name, team.classification.toUpperCase(), team.conference, formatRecord(team), fbsRecord(team), fcsRecord(team), formatNumber(entry.score * 100, 2), formatNumber(entry.expectedWins, 2), entry.opponents, formatNumber(team.power, 2), formatNumber(team.opponentPower, 2), team.coverage.results, team.coverage.boxScores, team.coverage.boxScorePercent, report.methodVersion, report.forecastVersion, state.source, state.model.meta.generatedAt || '', 'Model snapshot and any confirmed matched final scores', liveScoreState.refreshedAt || '']);
   }
   const content = rows.map(row => row.map(csvCell).join(',')).join('\n');
   const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));

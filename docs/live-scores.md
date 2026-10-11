@@ -2,6 +2,8 @@
 
 The site’s forecasts continue to use its CFBD snapshot. This optional backend supplies reported game status and actual scores, without replacing the forecast model or pretending a scheduled game is live because its kickoff time passed.
 
+Displayed team records also incorporate uniquely matched, valid final scores. Each scheduled game contributes at most once, including when CFBD later imports the same result. Current overall/FBS/FCS records and season-record outlooks use those results; live or incomplete scores cannot create a win or loss. Forecast calculations and rankings retain their CFBD model snapshot until the usual data refresh.
+
 ## Activation status
 
 At the October 10 Chicago / October 11 UTC, 2026 verification checkpoint, the user-approved Big Balls Sports Data (BBS) free account is authenticated. It has the ordinary 250-call/day allowance, requires no payment card, and its key is stored privately as the Cloudflare Worker secret. The corrected cache is operational. The website endpoint is configured in `data/live-scores-config.json` for the local preview and the GitHub Pages release.

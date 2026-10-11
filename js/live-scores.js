@@ -1,5 +1,7 @@
-// Scores are a display overlay. Never write them into the model snapshot, team
-// records, fitted rankings, cached simulations, or season projection summaries.
+import { buildLiveRecordIndex, applyLiveSeasonRecord, displayRecordText } from './live-records.js?v=135b69186aa1';
+
+// Scores and current records are display overlays. Never write them into the
+// model snapshot, fitted rankings, or cached simulations.
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const validScore = value => Number.isInteger(value) && value >= 0 && value <= 1000;
 const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))
@@ -163,10 +165,32 @@ function overlayStatus(status, live) {
   return status;
 }
 
+/** Overall/FBS/FCS display counts; the immutable model's counters stay frozen. */
+export function liveRecordForTeam(model, state, teamName) {
+  const index = buildLiveRecordIndex(model, state, matchLiveGame);
+  const identity = String(teamName || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  return index?.records.get(identity) || null;
+}
+
+export function overlaySeasonRecord(record, teamName, state, model) {
+  return applyLiveSeasonRecord(record, teamName, buildLiveRecordIndex(model, state, matchLiveGame));
+}
+
+function overlayTeamRecord(team, index) {
+  if (!team || team.record === null || team.record === undefined || !index) return team;
+  const identity = String(team.name || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const current = index.records.get(identity);
+  if (!current) return team;
+  return { ...team, record: displayRecordText(current),
+    ...(team.seasonOutlook ? { seasonOutlook: applyLiveSeasonRecord(team.seasonOutlook, team.name, index) } : {}) };
+}
+
 export function overlayGameDayReport(report, state, model = null) {
   if (!report?.rows) return report;
+  const records = buildLiveRecordIndex(model, state, matchLiveGame);
   let matched = 0;
-  const rows = report.rows.map(row => {
+  const rows = report.rows.map(snapshotRow => {
+    const row = { ...snapshotRow, home: overlayTeamRecord(snapshotRow.home, records), away: overlayTeamRecord(snapshotRow.away, records) };
     // The built row already applied legacy completion compatibility. Carry that
     // fact into matching without changing the imported/normalized game object.
     const live = matchLiveGame({ ...row.game, completed: row.status === 'final' }, state, model);
@@ -181,8 +205,12 @@ export function overlayGameDayReport(report, state, model = null) {
 
 export function overlaySeasonAnalysis(analysis, state, model = null) {
   if (!analysis?.rows) return analysis;
+  const records = buildLiveRecordIndex(model, state, matchLiveGame);
   let matched = 0;
-  const rows = analysis.rows.map(row => {
+  const rows = analysis.rows.map(snapshotRow => {
+    const row = { ...snapshotRow, matchup: snapshotRow.matchup ? { ...snapshotRow.matchup,
+      team: overlayTeamRecord(snapshotRow.matchup.team, records),
+      opponent: overlayTeamRecord(snapshotRow.matchup.opponent, records) } : snapshotRow.matchup };
     const selectedHome = row.site === 'Home';
     const neutral = row.site === 'Neutral site';
     const selectedName = analysis.teamName;
@@ -205,8 +233,10 @@ export function overlaySeasonAnalysis(analysis, state, model = null) {
       yardage: live.status === 'canceled' && row.yardage ? { ...row.yardage, team: null, opponent: null } : row.yardage,
       liveResultIncluded: row.status === 'final' && row.actual?.for === forScore && row.actual?.against === againstScore };
   });
-  // The season record/outlook/error summary deliberately remains the snapshot.
-  return { ...analysis, rows, liveFeed: state, liveMatched: matched };
+  // Current records and remaining wins incorporate confirmed finals; forecasts
+  // and the snapshot error metrics retain their original inputs.
+  return { ...analysis, rows, summary: applyLiveSeasonRecord(analysis.summary, analysis.teamName, records),
+    liveFeed: state, liveMatched: matched };
 }
 
 function timestampLabel(value, timeZone) {
@@ -239,7 +269,7 @@ export function renderLiveScoreStatus(state, { timeZone, matched } = {}) {
     escapeHtml(state.provider || 'Score feed') + ' · refreshed ' + escapeHtml(timestampLabel(state.refreshedAt, timeZone)) +
     (stale ? ' · updates delayed; showing last fetched scores' : escapeHtml(cadence)) +
     (finite(matched) ? ' · ' + matched + (matched === 1 ? ' matched game' : ' matched games') : '') +
-    (state.partial ? ' · partial coverage' : '') + '. Predictions, rankings, and records use the model snapshot.</span>';
+    (state.partial ? ' · partial coverage' : '') + '. Records include matched finals; predictions and rankings use the model snapshot.</span>';
 }
 
 /** One visible-tab request at a time, with cancellation and retained stale data. */
