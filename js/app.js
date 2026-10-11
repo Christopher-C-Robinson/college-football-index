@@ -19,7 +19,7 @@ import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
 import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
-import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=3e464a9c3ef2';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=b11292842e2b';
 import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, renderLiveScoreStatus } from './live-scores.js?v=62f378bab60f';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
 
