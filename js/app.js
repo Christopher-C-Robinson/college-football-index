@@ -20,6 +20,7 @@ import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
 import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
 import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=b11292842e2b';
+import { computeGameDayAccuracy, renderGameDayAccuracy } from './game-day-accuracy.js?v=97259e8d6505';
 import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, renderLiveScoreStatus } from './live-scores.js?v=62f378bab60f';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
 
@@ -184,7 +185,15 @@ function renderGameDay({ liveOnly = false } = {}) {
   ids('games-filter-mode-note').textContent = ids('games-both-teams').checked
     ? 'Only games where both teams match the selected subdivision, group, and conference.'
     : 'Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.';
-  if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) return;
+  const accuracy = ids('games-accuracy');
+  if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) {
+    accuracy.hidden = true;
+    accuracy.innerHTML = '';
+    return;
+  }
+  const accuracyMarkup = renderGameDayAccuracy(computeGameDayAccuracy(display.rows));
+  if (accuracy.innerHTML !== accuracyMarkup) accuracy.innerHTML = accuracyMarkup;
+  accuracy.hidden = false;
   const rows = sortGameDay(filterGameDay(display, {
     division: ids('games-division').value, tier: ids('games-tier').value, conference: ids('games-conference').value,
     bothTeams: ids('games-both-teams').checked,
