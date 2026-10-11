@@ -983,7 +983,7 @@ html { scroll-padding-top: 104px; }
 .team-brand-context .team-logo-fallback { font-size: 8px; }
 .simulation-probability { align-items: center; text-align: center; }
 .simulation-team-heading { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 100%; min-width: 0; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.4; text-align: center; }
-.simulation-team-heading > span { display: grid; place-items: center; min-height: 2.8em; max-width: 100%; overflow-wrap: anywhere; }
+.simulation-team-heading > span:not(.team-logo) { display: grid; place-items: center; min-height: 2.8em; max-width: 100%; overflow-wrap: anywhere; }
 .simulation-team-heading .team-logo { width: 32px; height: 32px; }
 .simulation-scoreline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .simulation-score-team { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px 9px; align-items: center; justify-items: center; min-width: 0; flex: 1; color: var(--ink); font-size: 12px; line-height: 1.4; text-align: center; }
