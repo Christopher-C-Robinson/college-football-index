@@ -122,27 +122,6 @@ function probabilityBar(row, prediction) {
     (hasDivider ? '<i class="game-day-probability-divider" style="left:' + (awayProbability * 100).toFixed(3) + '%" aria-hidden="true"></i>' : '') + '</div></div>';
 }
 
-function pointComparison(row, prediction, actual) {
-  const observed = observedScores(row, actual);
-  // Mounted even while canceled/unmodeled, so corrected feed statuses can
-  // restore comparisons without replacing the card or its open details.
-  if (!prediction && !observed) return '<section class="game-day-point-comparison" hidden></section>';
-  const observedLabel = observed && !observed.final ? observed.markerLabel : 'Final';
-  const teams = [
-    { ...row.away, side: 'Away', model: prediction?.projectedAwayScore, observed: observed?.away },
-    { ...row.home, side: 'Home', model: prediction?.projectedHomeScore, observed: observed?.home }
-  ];
-  const maximum = Math.max(1, ...teams.flatMap(team => [team.model, team.observed]).filter(finite));
-  const bar = (value, label, color, kind) => '<div class="game-day-point-row"><span>' + label + '</span>' +
-    (finite(value) ? '<span class="game-day-point-track" aria-hidden="true"><i class="is-' + kind + '" style="width:' + Math.max(0, Math.min(100, value / maximum * 100)).toFixed(3) + '%;--game-day-point-color:' + color + '"></i></span>' +
-      '<strong title="' + escapeHtml(label + ' points, before rounding: ' + value) + '">' + Math.round(value) + '</strong>'
-      : '<span class="game-day-point-missing">' + (label === 'Projected' ? 'Unavailable' : row.status === 'final' || row.live?.status === 'unknown' ? 'Unavailable' : 'Not final') + '</span>') + '</div>';
-  return '<section class="game-day-point-comparison" aria-label="Projected and ' + observedLabel.toLowerCase() + ' points, away then home"><h4>Projected vs. ' + observedLabel.toLowerCase() + ' points</h4>' +
-    teams.map(team => '<div class="game-day-point-team"><div class="game-day-point-team-heading"><strong>' + escapeHtml(team.name) + '</strong><span>' + (row.game?.neutralSite ? 'Neutral' : team.side) + '</span></div>' +
-      bar(team.model, 'Projected', yardageBarColors(team.color, team.alternateColor).passing, 'model') +
-      bar(team.observed, observedLabel, yardageBarColors(team.color, team.alternateColor).passing, 'observed') + '</div>').join('') + '</section>';
-}
-
 function marginComparison(row, prediction, actual) {
   // Keep the wrapper mounted so a corrected canceled status can restore it.
   if (!prediction) return '<section class="game-day-range game-day-margin-comparison" hidden></section>';
@@ -191,7 +170,7 @@ function renderRow(row, options, index) {
     '<header class="game-day-card-heading"><div class="game-day-kickoff">' + (kickoff.dateTime ? '<time datetime="' + kickoff.dateTime + '">' + escapeHtml(kickoff.text) + '</time>' : '<span>' + kickoff.text + '</span>') +
     (row.game?.week !== undefined && row.game.week !== null ? '<span class="game-day-week">WK ' + escapeHtml(row.game.week) + '</span>' : '') + '</div><span class="game-day-status' + (row.live?.status === 'live' ? ' is-live' : '') + (row.live?.stale ? ' is-stale' : '') + '">' + escapeHtml(status) + '</span></header>' +
     '<div class="game-day-matchup">' + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
-    '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + pointComparison(row, prediction, actual) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
+    '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
 }
 
 /** Presentation only: forecasts, ranks, records, and ordering belong to game-day.js. */
@@ -236,16 +215,6 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       const fresh = template.content.firstElementChild;
       margin.hidden = fresh.hidden;
       margin.innerHTML = fresh.innerHTML;
-    }
-    const points = card.querySelector('.game-day-point-comparison');
-    if (points) {
-      const template = container.ownerDocument.createElement('template');
-      template.innerHTML = pointComparison(row, prediction, actual);
-      const fresh = template.content.firstElementChild;
-      points.hidden = fresh.hidden;
-      if (fresh.hasAttribute('aria-label')) points.setAttribute('aria-label', fresh.getAttribute('aria-label'));
-      else points.removeAttribute('aria-label');
-      points.innerHTML = fresh.innerHTML;
     }
     // Keep the outer <details> and <summary> mounted so expansion, focus, and
     // scroll position survive a minute-by-minute score refresh.
