@@ -1,6 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, renderGameTeamRanks, renderGameTeamRecord as recordValue,
-  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=459c513ed957';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, renderGameTeamRanks, renderGameTeamRecord as recordValue,
+  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=bca1dfd5cfda';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
@@ -352,7 +352,8 @@ export function updateSeasonLiveElements(container, analysis) {
     const template = container.ownerDocument.createElement('template');
     template.innerHTML = renderMatchupHeader(row, analysis.teamName, forecast, actual, winner, analysis);
     const center = card.querySelector('.forecast-matchup-center');
-    if (center) center.innerHTML = template.content.querySelector('.forecast-matchup-center')?.innerHTML || '';
+    const freshCenter = template.content.querySelector('.forecast-matchup-center');
+    if (center && freshCenter) updateGameScoreboard(center, freshCenter);
     const venue = card.querySelector('.forecast-venue-meta');
     if (venue) venue.textContent = scheduleVenue(row);
     const status = card.querySelector('.forecast-status-meta');

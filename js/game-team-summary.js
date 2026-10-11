@@ -104,6 +104,34 @@ export function renderGameWinner(team) {
     renderTeamLogo(team, { size: 32 }) + '</button></div>';
 }
 
+/** Keep the winner action mounted during polling, including keyboard focus. */
+export function updateGameScoreboard(target, source) {
+  const winner = target.querySelector('.game-matchup-winner');
+  const nextWinner = source.querySelector('.game-matchup-winner');
+  const action = winner?.querySelector('.game-winner-logo');
+  const nextAction = nextWinner?.querySelector('.game-winner-logo');
+  const focused = action && action === target.ownerDocument.activeElement;
+  if (action && nextAction && action.dataset.selectTeam === nextAction.dataset.selectTeam) {
+    // Replace score lines around the existing winner without detaching it.
+    for (const child of [...target.childNodes]) if (child !== winner) child.remove();
+    let anchor = winner;
+    for (const child of [...source.childNodes]) {
+      if (child === nextWinner) { anchor = null; continue; }
+      target.insertBefore(child, anchor);
+    }
+    return;
+  }
+  target.replaceChildren(...source.childNodes);
+  if (focused) {
+    // A corrected result can change/remove the winner. Keep navigation in
+    // the card: use the new winner, or the previous team's name action.
+    const fallback = target.querySelector('.game-winner-logo') ||
+      [...(target.closest('article')?.querySelectorAll('.game-matchup-name') || [])]
+        .find(button => button.dataset.selectTeam === action.dataset.selectTeam);
+    fallback?.focus({ preventScroll: true });
+  }
+}
+
 /** The same team panel is used by Today's games and the season schedule. */
 export function renderGameTeamSummary(team, { side = 'away', neutral = false } = {}) {
   const name = team?.name || 'Team unavailable';

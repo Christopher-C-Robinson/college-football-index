@@ -1,4 +1,4 @@
-import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=459c513ed957';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=bca1dfd5cfda';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
@@ -199,7 +199,7 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       template.innerHTML = scoreboard(row, prediction, actual);
       const fresh = template.content.firstElementChild;
       center.className = fresh.className;
-      center.innerHTML = fresh.innerHTML;
+      updateGameScoreboard(center, fresh);
     }
     const margin = card.querySelector('.game-day-margin-comparison');
     if (margin) {
