@@ -93,8 +93,9 @@ export function normalizeLiveScores(payload, { now = Date.now(), staleMs = DEFAU
       || !validTimestamp(source.startDate)) continue;
     const homeScore = validScore(source.homeScore) ? source.homeScore : null;
     const awayScore = validScore(source.awayScore) ? source.awayScore : null;
-    // A final label is never enough to manufacture a result without both scores.
-    if (source.status === 'final' && (homeScore === null || awayScore === null)) continue;
+    // Current college games finish with a winner. Reject missing scores and
+    // placeholder tied finals (including the provider's observed 0–0 entries).
+    if (source.status === 'final' && (homeScore === null || awayScore === null || homeScore === awayScore)) continue;
     identifiers.add(id);
     const gameAt = validTimestamp(source.fetchedAt) && Date.parse(source.fetchedAt) <= now + 2 * 60 * 1000 ? source.fetchedAt : refreshedAt;
     games.push({ ...source, id, homeScore, awayScore,

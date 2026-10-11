@@ -21,7 +21,7 @@ Direct authenticated samples produced the following provider rows. These are row
 
 Against the October 10 snapshot schedule, exact safe joins found **82 of 95 games**: 44 of 46 in the FBS group and 38 of 44 in the FCS group. Five additional lower-division matchup rows lack sufficient provider team metadata for a safe join. This is observed coverage for these samples, not a guarantee for every day or season. Unmatched games retain their labeled CFBD snapshot information.
 
-The samples also contain duplicate or conflicting provider game entries. Ambiguous matches are rejected rather than choosing a score arbitrarily. A join requires known team names/aliases, compatible kickoff/date, and a unique scheduled matchup; provider IDs never become CFBD IDs. A complete backend board can therefore still have frontend coverage gaps. Live activation must preserve the snapshot fallback for those gaps.
+The samples also contain duplicate or conflicting provider game entries. Ambiguous matches are rejected rather than choosing a score arbitrarily. A join requires known team names/aliases, compatible kickoff/date, and a unique scheduled matchup; provider IDs never become CFBD IDs. A complete backend board can therefore still have frontend coverage gaps. The website also rejects tied provider finals, including observed 0–0 placeholders. Live activation must preserve the snapshot fallback for those gaps.
 
 ## Free architecture and quota
 
