@@ -70,13 +70,13 @@ export function renderGameTeamRanks(team) {
   if (!Number.isInteger(rank) || rank < 1) {
     const pending = ['pending', 'waiting', 'calculating'].includes(team.rankingsStatus);
     return '<span class="game-team-rank forecast-rank is-unranked">' +
-      (pending ? 'Neutral rank…' : team.rankingsStatus === 'unavailable' ? 'Neutral rank unavailable' : 'Unranked') + '</span>';
+      (pending ? 'Rank…' : team.rankingsStatus === 'unavailable' ? 'Rank unavailable' : 'Unranked') + '</span>';
   }
   const overallTitle = 'Overall neutral matchup rank across ' + (finite(team.rankFieldSize) ? team.rankFieldSize + ' model-ready ' : '') +
     'FBS and FCS teams, based on average neutral-field win chance against the full field. Filters do not change this rank.';
   const subdivisionTitle = 'Rank within ' + division + (finite(team.subdivisionFieldSize) ? ' across ' + team.subdivisionFieldSize + ' ranked teams' : '') +
     ', ordered by the same full-field neutral matchup comparison.';
-  return '<span class="game-team-rank forecast-rank" title="' + escapeHtml(overallTitle) + '">Neutral #' + rank + '</span>' +
+  return '<span class="game-team-rank forecast-rank" title="' + escapeHtml(overallTitle) + '">#' + rank + '</span>' +
     (Number.isInteger(team.subdivisionRank) && team.subdivisionRank > 0
       ? '<span class="game-team-rank forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + team.subdivisionRank + '</span>' : '');
 }
@@ -90,16 +90,57 @@ export function updateGameTeamRanks(container, team) {
   }
 }
 
+/** Names get the full header width instead of sharing the score's side columns. */
+export function renderGameTeamNames(away, home) {
+  const nameButton = team => '<button class="game-matchup-name" type="button" data-select-team="' + escapeHtml(team.name) +
+    '" aria-label="Open ' + escapeHtml(team.name) + ' in team explorer">' + escapeHtml(team.name) + '</button>';
+  return '<div class="game-matchup-names">' + nameButton(away) + nameButton(home) + '</div>';
+}
+
+/** A winning logo keeps the result legible without repeating a long name. */
+export function renderGameWinner(team) {
+  return '<div class="game-matchup-winner"><span>Winner</span><button type="button" class="game-winner-logo" data-select-team="' +
+    escapeHtml(team.name) + '" aria-label="Winner: ' + escapeHtml(team.name) + '. Open team explorer">' +
+    renderTeamLogo(team, { size: 32 }) + '</button></div>';
+}
+
+/** Keep the winner action mounted during polling, including keyboard focus. */
+export function updateGameScoreboard(target, source) {
+  const winner = target.querySelector('.game-matchup-winner');
+  const nextWinner = source.querySelector('.game-matchup-winner');
+  const action = winner?.querySelector('.game-winner-logo');
+  const nextAction = nextWinner?.querySelector('.game-winner-logo');
+  const focused = action && action === target.ownerDocument.activeElement;
+  if (action && nextAction && action.dataset.selectTeam === nextAction.dataset.selectTeam) {
+    // Replace score lines around the existing winner without detaching it.
+    for (const child of [...target.childNodes]) if (child !== winner) child.remove();
+    let anchor = winner;
+    for (const child of [...source.childNodes]) {
+      if (child === nextWinner) { anchor = null; continue; }
+      target.insertBefore(child, anchor);
+    }
+    return;
+  }
+  target.replaceChildren(...source.childNodes);
+  if (focused) {
+    // A corrected result can change/remove the winner. Keep navigation in
+    // the card: use the new winner, or the previous team's name action.
+    const fallback = target.querySelector('.game-winner-logo') ||
+      [...(target.closest('article')?.querySelectorAll('.game-matchup-name') || [])]
+        .find(button => button.dataset.selectTeam === action.dataset.selectTeam);
+    fallback?.focus({ preventScroll: true });
+  }
+}
+
 /** The same team panel is used by Today's games and the season schedule. */
 export function renderGameTeamSummary(team, { side = 'away', neutral = false } = {}) {
   const name = team?.name || 'Team unavailable';
   const division = String(team?.classification || '').toUpperCase();
   const conference = team?.conference || 'Conference unavailable';
   const label = neutral ? 'Neutral site' : side === 'home' ? 'Home' : 'Away';
-  return '<div class="game-team-summary is-' + (side === 'home' ? 'home' : 'away') + '">' +
-    '<span class="game-team-role">' + label + '</span>' +
+  return '<div class="game-team-summary is-' + (side === 'home' ? 'home' : 'away') + '" role="group" aria-label="' + escapeHtml(label + ' team ' + name) + '">' +
     '<button class="game-team-identity" type="button" data-select-team="' + escapeHtml(name) + '" aria-label="Open ' + escapeHtml(name) + ' in team explorer">' +
-    renderTeamLogo({ ...team, name }, { size: 44 }) + '<strong>' + escapeHtml(name) + '</strong></button>' +
+    renderTeamLogo({ ...team, name }, { size: 44 }) + '</button>' +
     '<dl class="game-team-records" aria-label="' + escapeHtml(name) + ' current and projected season records"><div><dt>Current</dt>' + renderGameTeamRecord(team, 'current', 'dd') + '</div>' +
     '<div><dt>Projected</dt>' + renderGameTeamRecord(team, 'projected', 'dd') + '</div></dl>' +
     '<div class="game-team-ranks" data-season-rank-team="' + escapeHtml(gameTeamKey(name)) + '" aria-label="' + escapeHtml(name) + ' overall neutral and subdivision rankings">' + renderGameTeamRanks(team) + '</div>' +

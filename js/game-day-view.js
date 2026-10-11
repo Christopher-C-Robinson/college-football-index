@@ -1,4 +1,4 @@
-import { renderGameTeamSummary, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=bd96278172d7';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=bca1dfd5cfda';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
@@ -58,11 +58,7 @@ function teamBlock(team, side, neutral, rankingsStatus) {
   return renderGameTeamSummary({ ...team, rankingsStatus }, { side, neutral });
 }
 
-function favoriteLabel(row, prediction, actual) {
-  if (actual) {
-    if (actual.home === actual.away) return 'Game ended tied';
-    return 'Winner: ' + (actual.home > actual.away ? row.home.name : row.away.name);
-  }
+function favoriteLabel(row, prediction) {
   if (!prediction) return '';
   if (prediction.simulatedHomeWinProbability === 0.5) return 'Projected toss-up';
   const homeFavored = prediction.simulatedHomeWinProbability > 0.5;
@@ -77,14 +73,16 @@ function scoreboard(row, prediction, actual) {
   const forecast = prediction
     ? scoreLine('Projected', prediction.projectedAwayScore, prediction.projectedHomeScore, 'is-projected')
     : '<span class="game-day-score-label">' + (row.status === 'canceled' ? 'Canceled' : 'Projection unavailable') + '</span>';
-  const observedFavorite = observed ? observed.final ? favoriteLabel(row, prediction, actual)
-    : observed.home === observed.away ? 'Currently tied' : 'Leading: ' + (observed.home > observed.away ? row.home.name : row.away.name) : '';
+  const observedFavorite = observed ? observed.final
+    ? observed.home === observed.away ? '<span class="game-day-favorite">Game ended tied</span>'
+      : renderGameWinner(observed.home > observed.away ? row.home : row.away)
+    : '<span class="game-day-favorite">' + escapeHtml(observed.home === observed.away ? 'Currently tied' : 'Leading: ' + (observed.home > observed.away ? row.home.name : row.away.name)) + '</span>' : '';
   // The snapshot projection remains visible when a score arrives. Live/final
   // points form a separate row in the same away–home order as the team sides.
   return '<div class="game-day-scoreboard' + (observed ? ' has-observed-score' : '') + '">' + forecast +
     (observed ? scoreLine(observed.label, observed.away, observed.home, 'is-observed' + (observed.final ? ' is-final' : '')) +
-      '<span class="game-day-favorite">' + escapeHtml(observedFavorite) + '</span>'
-      : prediction ? '<span class="game-day-favorite">' + escapeHtml(favoriteLabel(row, prediction, null)) + '</span>' : '') + '</div>';
+      observedFavorite
+      : prediction ? '<span class="game-day-favorite">' + escapeHtml(favoriteLabel(row, prediction)) + '</span>' : '') + '</div>';
 }
 
 function probabilityBar(row, prediction) {
@@ -158,7 +156,7 @@ function renderRow(row, options, index) {
   return '<article class="game-day-card is-' + escapeHtml(row.status || 'upcoming') + '" data-game-day-id="' + escapeHtml(row.id ?? index) + '" role="listitem" aria-label="' + escapeHtml(description) + '">' +
     '<header class="game-day-card-heading"><div class="game-day-kickoff">' + (kickoff.dateTime ? '<time datetime="' + kickoff.dateTime + '">' + escapeHtml(kickoff.text) + '</time>' : '<span>' + kickoff.text + '</span>') +
     (row.game?.week !== undefined && row.game.week !== null ? '<span class="game-day-week">WK ' + escapeHtml(row.game.week) + '</span>' : '') + '</div><span class="game-day-status' + (row.live?.status === 'live' ? ' is-live' : '') + (row.live?.stale ? ' is-stale' : '') + '">' + escapeHtml(status) + '</span></header>' +
-    '<div class="game-day-matchup">' + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
+    '<div class="game-day-matchup">' + renderGameTeamNames(row.away, row.home) + teamBlock(row.away, 'away', neutral, row.rankingsStatus || options.rankingsStatus) + scoreboard(row, prediction, actual) + teamBlock(row.home, 'home', neutral, row.rankingsStatus || options.rankingsStatus) + '</div>' +
     '<div class="game-day-card-footer">' + probabilityBar(row, prediction) + marginComparison(row, prediction, actual) + (venue ? '<p class="game-day-venue">' + (neutral ? 'Neutral · ' : '') + escapeHtml(venue) + '</p>' : '') + '</div>' + forecastDetails(row, prediction, actual) + '</article>';
 }
 
@@ -201,7 +199,7 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       template.innerHTML = scoreboard(row, prediction, actual);
       const fresh = template.content.firstElementChild;
       center.className = fresh.className;
-      center.innerHTML = fresh.innerHTML;
+      updateGameScoreboard(center, fresh);
     }
     const margin = card.querySelector('.game-day-margin-comparison');
     if (margin) {
