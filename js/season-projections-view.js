@@ -87,7 +87,7 @@ function scheduleDate(value) {
   const date = new Date(value || '');
   if (!Number.isFinite(date.getTime())) return '<span>Date unavailable</span>';
   const label = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
-  return '<time datetime="' + escapeHtml(value) + '" title="' + escapeHtml(dateText(value)) + '">' + escapeHtml(label) + '</time>';
+  return '<time datetime="' + escapeHtml(value) + '" title="' + escapeHtml(dateText(value)) + '" aria-label="' + escapeHtml(dateText(value)) + '">' + escapeHtml(label) + '</time>';
 }
 
 function scheduleLiveStatus(live) {
@@ -410,7 +410,7 @@ export function updateSeasonLiveElements(container, analysis) {
     card.classList.toggle('is-canceled', row.status === 'canceled');
     if (winner.color) card.style.setProperty('--game-winner-rgb', winner.color);
     else card.style.removeProperty('--game-winner-rgb');
-    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
+    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
     const template = container.ownerDocument.createElement('template');
     template.innerHTML = renderMatchupHeader(row, analysis.teamName, forecast, actual, winner, analysis);
     const center = card.querySelector('.forecast-matchup-center');
