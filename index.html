@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="./mobile.css?v=cc935a614492">
     <link rel="stylesheet" href="./mobile-team.css?v=5dd0f906cf0b">
     <link rel="stylesheet" href="./device-theme.css?v=ba58071ec2c1">
-    <link rel="stylesheet" href="./game-day.css?v=2ce5a9b1cc91">
-    <script type="module" src="./js/app.js?v=191bdc3cdbb3"></script>
+    <link rel="stylesheet" href="./game-day.css?v=f11573e1bb7e">
+    <script type="module" src="./js/app.js?v=940dd21d7726"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
@@ -63,7 +63,7 @@
         <div class="panel game-day-controls">
           <div class="game-day-date-controls" aria-label="Choose a game day">
             <button id="games-previous" class="button button-outline" type="button" aria-label="Previous game day">←</button>
-            <label for="games-date"><span>Game date</span><input id="games-date" type="date" aria-label="Game date"></label>
+            <label for="games-date"><span>Game date</span><span class="game-day-date-field"><span id="games-date-display" aria-hidden="true">Choose date</span><svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 3v4m10-4v4M3 11h18"></path></svg><input id="games-date" type="date" aria-label="Game date"></span></label>
             <button id="games-next" class="button button-outline" type="button" aria-label="Next game day">→</button>
             <button id="games-today" class="button button-outline" type="button">Today</button>
           </div>

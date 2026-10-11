@@ -3,9 +3,15 @@
 .game-day-toolbar { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 20px; margin: 16px 0 0; }
 .game-day-controls { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-bottom: 16px; }
 .game-day-date-controls { display: grid; grid-template-columns: 44px minmax(160px, 200px) 44px max-content; align-items: end; gap: 8px; width: max-content; max-width: 100%; }
-.game-day-date-controls > button { min-height: 44px; min-width: 44px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); cursor: pointer; }
+.game-day-date-controls > button { min-height: 48px; min-width: 44px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); cursor: pointer; }
 .game-day-date-controls > label { min-width: 0; min-inline-size: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; color: var(--ink-soft); font-size: 13px; font-weight: 600; }
-.game-day-date-controls input { display: block; min-width: 0; min-inline-size: 0; max-width: 100%; max-inline-size: 100%; min-height: 44px; box-sizing: border-box; }
+.game-day-date-field { position: relative; display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; height: 48px; padding: 10px 12px; overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-size: 16px; cursor: pointer; }
+.game-day-date-field:focus-within { outline: 3px solid var(--blue-mid); outline-offset: 2px; }
+#games-date-display { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; }
+.game-day-date-field > svg { flex: none; pointer-events: none; }
+/* The native picker remains accessible and receives taps, but its Safari
+   editor cannot paint beyond the clipped field or influence the grid size. */
+#games-date { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; max-width: 100%; margin: 0; padding: 0; border: 0; opacity: 0; font-size: 16px; cursor: pointer; }
 .game-day-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: end; }
 .game-day-filters > label { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; color: var(--ink-soft); font-size: 13px; font-weight: 600; }
 .game-day-match-mode { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
@@ -14,13 +20,8 @@
 .game-day-match-rule:has(#games-both-teams:checked) { background: color-mix(in srgb, var(--blue-mid) 7%, var(--paper)); }
 .game-day-match-rule:has(#games-both-teams:focus-visible) { outline: 3px solid var(--blue-mid); outline-offset: 2px; }
 .game-day-controls .searchable-select, .game-day-filters .searchable-select { min-width: 0; width: 100%; }
-#games-date, #games-search { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-size: 16px; }
+#games-search { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font-size: 16px; }
 #games-search { min-width: 0; min-inline-size: 0; }
-/* Safari's native date editor has an intrinsic width: keep it inside its grid
-   track so the next-day button cannot overlap its painted field. */
-#games-date { inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; line-height: 1.4; text-align: left; }
-#games-date::-webkit-date-and-time-value { min-width: 0; text-align: left; }
-#games-date::-webkit-datetime-edit { min-width: 0; padding: 0; }
 .game-day-note { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
 #games-sort-note { margin: 0; max-width: 750px; }
 #games-snapshot { margin: 14px 0 6px; }
@@ -127,6 +128,7 @@
 @media (max-width: 360px) {
   .main-nav a { padding: 0 2px; font-size: 10px; }
   .game-day-date-controls { gap: 6px; }
+  .game-day-date-field { gap: 6px; padding-inline: 10px; }
   .game-day-date-controls > button { padding: 8px 10px; }
   .game-day-controls, .game-day-filters { gap: 10px; }
   .game-day-matchup { grid-template-columns: minmax(0, 1fr) 78px minmax(0, 1fr); gap: 6px; padding-left: 10px; padding-right: 10px; }
