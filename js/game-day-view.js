@@ -1,4 +1,4 @@
-import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=63229fd832b9';
+import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=fbd4a8e1faf4';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { liveGameLabel } from './live-scores.js?v=cea7490438a4';

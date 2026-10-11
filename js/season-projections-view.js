@@ -1,6 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
 import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, renderGameTeamRanks, updateGameTeamRanks, renderGameTeamRecord as recordValue,
-  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=63229fd832b9';
+  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=fbd4a8e1faf4';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';

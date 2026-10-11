@@ -63,14 +63,24 @@ export function updateGameTeamRecords(container, team) {
   }
 }
 
+function overallRankLabel(team) {
+  if (!['FBS', 'FCS'].includes(String(team.classification || '').toUpperCase())) return 'Not ranked';
+  if (Number.isInteger(team.neutralRank) && team.neutralRank > 0) return '#' + team.neutralRank;
+  return ['pending', 'waiting', 'calculating'].includes(team.rankingsStatus) ? 'Rank…'
+    : team.rankingsStatus === 'unavailable' ? 'Rank unavailable' : 'Unranked';
+}
+
+function nameActionLabel(name, team) {
+  return 'Open ' + name + ' in team explorer. Overall rank: ' + overallRankLabel(team);
+}
+
 export function renderGameTeamRanks(team, { overall = true, subdivision = true } = {}) {
   const division = String(team.classification || '').toUpperCase();
   if (!['FBS', 'FCS'].includes(division)) return overall ? '<span class="game-team-rank forecast-rank is-unranked">Not ranked</span>' : '';
   const rank = team.neutralRank;
   if (!Number.isInteger(rank) || rank < 1) {
-    const pending = ['pending', 'waiting', 'calculating'].includes(team.rankingsStatus);
     return overall ? '<span class="game-team-rank forecast-rank is-unranked">' +
-      (pending ? 'Rank…' : team.rankingsStatus === 'unavailable' ? 'Rank unavailable' : 'Unranked') + '</span>' : '';
+      overallRankLabel(team) + '</span>' : '';
   }
   const overallTitle = 'Overall neutral matchup rank across ' + (finite(team.rankFieldSize) ? team.rankFieldSize + ' model-ready ' : '') +
     'FBS and FCS teams, based on average neutral-field win chance against the full field. Filters do not change this rank.';
@@ -91,15 +101,18 @@ export function updateGameTeamRanks(container, team) {
   }
   const nameRank = renderGameTeamRanks(team, { subdivision: false });
   for (const element of container.querySelectorAll('[data-game-name-rank-team]')) {
-    if (element.dataset.gameNameRankTeam === name && element.innerHTML !== nameRank) element.innerHTML = nameRank;
+    if (element.dataset.gameNameRankTeam !== name) continue;
+    if (element.innerHTML !== nameRank) element.innerHTML = nameRank;
+    const button = element.closest('.game-matchup-name');
+    if (button) button.setAttribute('aria-label', nameActionLabel(button.dataset.selectTeam, team));
   }
 }
 
 /** Names get the full header width instead of sharing the score's side columns. */
 export function renderGameTeamNames(away, home) {
   const nameButton = team => '<button class="game-matchup-name" type="button" data-select-team="' + escapeHtml(team.name) +
-    '" aria-label="Open ' + escapeHtml(team.name) + ' in team explorer"><span class="game-matchup-name-rank" data-game-name-rank-team="' +
-    escapeHtml(gameTeamKey(team.name)) + '" aria-label="' + escapeHtml(team.name) + ' overall rank">' + renderGameTeamRanks(team, { subdivision: false }) +
+    '" aria-label="' + escapeHtml(nameActionLabel(team.name, team)) + '"><span class="game-matchup-name-rank" data-game-name-rank-team="' +
+    escapeHtml(gameTeamKey(team.name)) + '" aria-hidden="true">' + renderGameTeamRanks(team, { subdivision: false }) +
     '</span><span class="game-matchup-name-text">' + escapeHtml(team.name) + '</span></button>';
   return '<div class="game-matchup-names">' + nameButton(away) + nameButton(home) + '</div>';
 }
