@@ -7,8 +7,8 @@ import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
-import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=63dc6ae174c5';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=4145bf72f52f';
+import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=3f437a6f176e';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=bd9cb9c41843';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
@@ -18,8 +18,8 @@ import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
-import { buildGameDay, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=5bc6a3847d7d';
-import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=a165c1a14ca0';
+import { buildGameDay, completeGameDaySeasonRecords, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=21de554d8e79';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=d6a73ace9e52';
 import { computeGameDayAccuracy, renderGameDayAccuracy } from './game-day-accuracy.js?v=97259e8d6505';
 import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, liveRecordForTeam, overlaySeasonRecord, renderLiveScoreStatus } from './live-scores.js?v=cea7490438a4';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
@@ -44,6 +44,8 @@ let gameDayDate = localDateKey(new Date(), gameDayTimeZone);
 let gameDayReport = null;
 let gameDayModel = null;
 let gameDayController = null;
+let gameDayRecordRequest = 0;
+let gameDayRecordReport = null;
 let gameDayFollowToday = true;
 let liveScoreController = null;
 let liveScoreState = { hasData: false, games: [], loading: false };
@@ -111,7 +113,11 @@ function showView({ focus = false } = {}) {
   }
   if (activeView === 'rankings') centerMobileMap();
   if (activeView === 'games') startGameDay();
-  else { gameDayController?.abort(); gameDayController = null; ids('games-content').setAttribute('aria-busy', 'false'); }
+  else {
+    gameDayController?.abort(); gameDayController = null;
+    gameDayRecordRequest += 1; gameDayRecordReport = null;
+    ids('games-content').setAttribute('aria-busy', 'false');
+  }
   if (activeView === 'dossier') {
     refreshLiveScoreViews();
     updateOpponentRecords();
@@ -234,6 +240,27 @@ function renderGameDay({ liveOnly = false } = {}) {
   }
 }
 
+function updateGameDaySeasonRecords() {
+  const report = gameDayReport;
+  const model = state.model;
+  if (!report || gameDayModel !== model || activeView !== 'games' || gameDayRecordReport === report) return;
+  gameDayRecordReport = report;
+  const request = ++gameDayRecordRequest;
+  const current = () => request === gameDayRecordRequest && gameDayReport === report
+    && state.model === model && activeView === 'games';
+  void completeGameDaySeasonRecords(model, report, {
+    isCanceled: () => !current(),
+    onRecord: () => { if (current()) renderGameDay({ liveOnly: true }); }
+  }).then(finished => {
+    if (!finished && request === gameDayRecordRequest && gameDayRecordReport === report) gameDayRecordReport = null;
+  }).catch(error => {
+    if (!current()) return;
+    for (const row of report.rows) for (const team of [row.away, row.home]) team.seasonOutlookPending = false;
+    renderGameDay({ liveOnly: true });
+    console.warn('Game-day season records unavailable:', error.message);
+  });
+}
+
 async function startGameDay() {
   renderGameDay();
   if (activeView !== 'games' || !state.model) return;
@@ -241,6 +268,7 @@ async function startGameDay() {
     refreshGameDayRankingStatus();
     renderGameDay();
     ids('games-progress').textContent = '';
+    updateGameDaySeasonRecords();
     return;
   }
   if (gameDayController) return;
@@ -265,6 +293,7 @@ async function startGameDay() {
     refreshGameDayRankingStatus();
     renderGameDay();
     ids('games-progress').textContent = '';
+    updateGameDaySeasonRecords();
   } catch (error) {
     if (!current()) return;
     content.innerHTML = '<div class="game-day-empty">Could not prepare these games. ' + escapeHtml(error.message || 'Reload the dataset and try again.') + '</div>';

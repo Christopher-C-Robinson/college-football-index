@@ -1,5 +1,6 @@
 import { renderUnitMatchup } from './unit-profile-view.js';
-import { renderTeamLogo } from './team-logo.js?v=23545b336420';
+import { renderGameTeamSummary, renderGameTeamRanks, renderGameTeamRecord as recordValue,
+  seasonRecordText as recordText, gameTeamKey as recordTeamKey, updateGameTeamRecords } from './game-team-summary.js?v=bd96278172d7';
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
@@ -14,61 +15,9 @@ const number = (value, digits = 1) => finite(value) ? value.toFixed(digits) : '�
 const signed = value => finite(value) ? (value > 0 ? '+' : '') + value.toFixed(1) : '—';
 const plural = (count, singular, multiple = singular + 's') => count + ' ' + (count === 1 ? singular : multiple);
 
-function recordText(record, projected = false) {
-  if (!record) return '—';
-  let wins = record.currentWins, losses = record.currentLosses;
-  if (!Number.isInteger(wins) || !Number.isInteger(losses)) return '—';
-  if (projected) {
-    if (!record.fullRemainingCoverage || !finite(record.projectedWins) || !finite(record.projectedLosses)) return '—';
-    const remaining = Number.isInteger(record.totalRemainingGames) ? record.totalRemainingGames
-      : Math.max(0, Math.round(record.projectedWins + record.projectedLosses) - wins - losses);
-    // Round the remaining wins once; derive losses so the record preserves
-    // completed results and the number of listed games.
-    const expected = finite(record.expectedAdditionalWins) ? record.expectedAdditionalWins : record.projectedWins - wins;
-    const addedWins = Math.max(0, Math.min(remaining, Math.round(expected)));
-    wins += addedWins;
-    losses += remaining - addedWins;
-  }
-  return wins + '–' + losses + (record.currentTies ? '–' + Math.round(record.currentTies) : '');
-}
-
-const recordTeamKey = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-
-function recordPresentation(team) {
-  const outlook = team.seasonOutlook;
-  const current = outlook ? recordText(outlook) : team.record || '—';
-  const pending = Boolean(team.seasonOutlookPending && !outlook);
-  const projected = pending ? '…' : recordText(outlook, true);
-  const detail = pending ? 'Calculating the projected final record from reported results and remaining-game forecasts.' : !outlook ? 'Season projection unavailable.' : outlook.fullRemainingCoverage
-    ? 'Reported completed results plus model forecasts for remaining games, rounded to whole wins and losses.'
-    : plural(outlook.remainingUnmodeledGames, 'remaining game') + ' without a forecast; final record unavailable.';
-  return { current, projected, detail, pending };
-}
-
-function recordValue(team, kind, tag = 'span') {
-  const value = recordPresentation(team);
-  return '<' + tag + ' data-season-record-team="' + escapeHtml(recordTeamKey(team.name)) + '" data-season-record-kind="' + kind + '"' +
-    (kind === 'projected' ? ' title="' + escapeHtml(value.detail) + '" aria-busy="' + value.pending + '"' : ' title="Current record includes matched reported finals"') + '>' + escapeHtml(value[kind]) + '</' + tag + '>';
-}
-
-function teamRecords(team) {
-  return '<dl class="forecast-team-records" aria-label="' + escapeHtml(team.name) + ' current and projected season records"><div><dt title="Current record includes matched reported finals">Current</dt>' + recordValue(team, 'current', 'dd') + '</div>' +
-    '<div><dt>Projected</dt>' + recordValue(team, 'projected', 'dd') + '</div></dl>';
-}
-
 // Replace only record text, preserving open game details, focus, and scrolling.
 export function updateSeasonRecordElements(container, team) {
-  const value = recordPresentation(team);
-  const name = recordTeamKey(team.name);
-  for (const element of container.querySelectorAll('[data-season-record-team]')) {
-    if (element.dataset.seasonRecordTeam !== name) continue;
-    const kind = element.dataset.seasonRecordKind;
-    element.textContent = value[kind];
-    if (kind === 'projected') {
-      element.title = value.detail;
-      element.setAttribute('aria-busy', String(value.pending));
-    }
-  }
+  updateGameTeamRecords(container, team);
 }
 
 function dateText(value, timestamp = false) {
@@ -153,13 +102,8 @@ function winnerPresentation(row, teamName, forecast, actual) {
 }
 
 function rankBadges(rank, subdivisionRank, classification, fieldSize, subdivisionSize, rankingsReady = false, rankingsStatus = 'waiting') {
-  const division = String(classification || '').toUpperCase();
-  if (!['FBS', 'FCS'].includes(division)) return '<span class="forecast-rank is-unranked">Not ranked in FBS/FCS</span>';
-  if (!Number.isInteger(rank) || rank < 1) return '<span class="forecast-rank is-unranked">' + (rankingsReady ? 'Unranked' : rankingsStatus === 'calculating' ? 'Calculating neutral ranks' : rankingsStatus === 'unavailable' ? 'Neutral rank unavailable' : 'Neutral rank pending') + '</span>';
-  const overallTitle = 'Current neutral matchup rank across ' + (finite(fieldSize) ? fieldSize + ' model-ready ' : '') + 'FBS and FCS teams, based on average neutral-field win chance against the full field. Board filters do not change this rank.';
-  const subdivisionTitle = 'Current rank within ' + division + (finite(subdivisionSize) ? ' across ' + subdivisionSize + ' ranked teams' : '') + ', ordered by the same full-field neutral matchup comparison.';
-  return '<span class="forecast-rank" title="' + escapeHtml(overallTitle) + '">Neutral #' + rank + '</span>' +
-    (Number.isInteger(subdivisionRank) && subdivisionRank > 0 ? '<span class="forecast-rank is-subdivision" title="' + escapeHtml(subdivisionTitle) + '">' + division + ' #' + subdivisionRank + '</span>' : '');
+  return renderGameTeamRanks({ classification, neutralRank: rank, subdivisionRank, rankFieldSize: fieldSize,
+    subdivisionFieldSize: subdivisionSize, rankingsStatus: rankingsReady ? 'ready' : rankingsStatus });
 }
 
 export function updateSeasonRankElements(summaryContainer, scheduleContainer, analysis) {
@@ -338,15 +282,16 @@ function matchupContext(row, teamName, forecast) {
 function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) {
   const neutral = row.site === 'Neutral site';
   const selectedOnLeft = neutral || row.site === 'Away';
-  const selected = { ...row.matchup?.team, name: teamName };
-  const opponent = { ...row.matchup?.opponent, name: row.opponentName };
-  const selectedRanks = analysis ? rankBadges(analysis.teamRank, analysis.teamSubdivisionRank, analysis.classification, analysis.rankFieldSize, analysis.subdivisionFieldSize, analysis.rankingsReady, analysis.rankingsStatus) : '';
-  const opponentRanks = rankBadges(row.opponentRank, row.opponentSubdivisionRank, row.classification, row.rankFieldSize, row.subdivisionFieldSize, row.rankingsReady ?? analysis?.rankingsReady, row.rankingsStatus ?? analysis?.rankingsStatus);
-  const teamBlock = (team, left, selectedTeam) => '<div class="forecast-matchup-team ' + (left ? 'is-left' : 'is-right') + '">' +
-    (!neutral ? '<span class="forecast-team-location">' + (left ? 'Away' : 'Home') + '</span>' : '') +
-    '<div class="forecast-team-identity">' + renderTeamLogo(team, { size: 48 }) + '<div class="forecast-team-copy"><h4>' + escapeHtml(team.name) + '</h4>' +
-    teamRecords(team) +
-    '<div class="forecast-ranks" data-season-rank-team="' + escapeHtml(recordTeamKey(team.name)) + '" aria-label="' + escapeHtml(team.name) + ' neutral matchup rankings">' + (selectedTeam ? selectedRanks : opponentRanks) + '</div></div></div></div>';
+  const selected = { ...row.matchup?.team, name: teamName,
+    classification: analysis?.classification || row.matchup?.team?.classification,
+    neutralRank: analysis?.teamRank, subdivisionRank: analysis?.teamSubdivisionRank,
+    rankFieldSize: analysis?.rankFieldSize, subdivisionFieldSize: analysis?.subdivisionFieldSize,
+    rankingsStatus: analysis?.rankingsStatus };
+  const opponent = { ...row.matchup?.opponent, name: row.opponentName, classification: row.classification,
+    neutralRank: row.opponentRank, subdivisionRank: row.opponentSubdivisionRank,
+    rankFieldSize: row.rankFieldSize, subdivisionFieldSize: row.subdivisionFieldSize,
+    rankingsStatus: row.rankingsStatus ?? analysis?.rankingsStatus };
+  const teamBlock = (team, left) => renderGameTeamSummary(team, { side: left ? 'away' : 'home', neutral });
   const observed = observedScores(row, actual);
   const scoreLine = (label, scores, className) => {
     const leftScore = selectedOnLeft ? scores.for : scores.against;
@@ -360,12 +305,12 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
   const favorite = observed ? winner.label :
     forecast ? forecast.winProbability === 0.5 ? 'Projected toss-up' : 'Projected favorite: ' + (forecast.winProbability > 0.5 ? teamName : row.opponentName) : '';
   const probability = forecast && !observed && forecast.winProbability !== 0.5 ? number(Math.max(forecast.winProbability, 1 - forecast.winProbability) * 100) + '% win chance' : '';
-  return '<div class="forecast-matchup-header">' + teamBlock(selectedOnLeft ? selected : opponent, true, selectedOnLeft) +
+  return '<div class="forecast-matchup-header">' + teamBlock(selectedOnLeft ? selected : opponent, true) +
     '<div class="forecast-matchup-center">' + projected + (observed ? scoreLine(observed.label, observed, 'is-observed') : '') +
     (neutral ? '<span class="forecast-neutral-label">Neutral site</span>' : '') +
     (favorite ? '<span class="forecast-matchup-favorite">' + escapeHtml(favorite) + '</span>' : '') +
     (probability ? '<span class="forecast-matchup-probability">' + probability + '</span>' : '') + '</div>' +
-    teamBlock(selectedOnLeft ? opponent : selected, false, !selectedOnLeft) + '</div>';
+    teamBlock(selectedOnLeft ? opponent : selected, false) + '</div>';
 }
 
 function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) {

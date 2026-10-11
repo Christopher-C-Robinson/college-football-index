@@ -114,6 +114,11 @@ function seasonRecord(model, team, cache) {
   return complete;
 }
 
+// Other views can reuse a completed season outlook without starting new work.
+export function cachedSeasonRecord(model, teamName) {
+  return projectionCache(model).records.get(key(teamName)) || null;
+}
+
 // Opponent seasons can require many new simulations. Yield between games so
 // their records fill in without blocking the selected schedule or phone input.
 export async function completeOpponentSeasonRecords(model, analysis, {
@@ -191,6 +196,8 @@ function matchupTeam(team, name, effectivePower, seasonOutlook, pending = false)
   const power = finite(effectivePower) ? effectivePower : team?.power;
   return {
     name,
+    classification: String(team?.classification || '').toLowerCase(),
+    conference: team?.conference || '',
     color: team?.color || null,
     alternateColor: team?.alternateColor || null,
     abbreviation: team?.abbreviation || '',
