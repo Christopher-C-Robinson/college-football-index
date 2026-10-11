@@ -25,6 +25,10 @@ const aliases = new Map([
   ['saint francis pa', 'saint francis'], ['st francis pa', 'saint francis'], ['st francis', 'saint francis'],
   ['saint francis', 'saint francis'], ['saint thomas mn', 'st thomas'],
   ['st thomas minnesota', 'st thomas'], ['st thomas mn', 'st thomas'],
+  ['american international yellow jackets', 'american international'],
+  ['franklin pierce ravens', 'franklin pierce'],
+  ['virginia lynchburg hornets', 'virginia lynchburg'],
+  ['arkansas baptist buffaloes', 'arkansas baptist'],
   ['miami florida', 'miami'], ['miami fl', 'miami'], ['miami ohio', 'miami oh'],
   ['hawai i', 'hawaii'], ['hawaii', 'hawaii']
 ]);
@@ -130,7 +134,57 @@ function scheduledTogether(snapshot, live) {
   return validDate(day) && [live.date, String(live.startDate || '').slice(0, 10)].includes(day);
 }
 
-/** Both team names and the scheduled window must match one unique feed game. */
+function knownKickoff(game) {
+  const value = game?.startDate;
+  return game?.startTimeTBD !== true && game?.kickoffTBD !== true && typeof value === 'string'
+    && /T.*(?:Z|[+-]\d{2}:?\d{2})$/i.test(value) && validTimestamp(value) ? Date.parse(value) : null;
+}
+
+function finalLeague(game) {
+  const value = String(game.leagueCode || game.league || game.liveLeagueCode || game.leagueClassification || '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return value === 'fbs' ? 'ncaaf' : value === 'fcs' ? 'ncaaffcs' : value;
+}
+
+function candidateTime(game, fields) {
+  const value = fields.map(field => game[field]).find(validTimestamp);
+  return value ? Date.parse(value) : -Infinity;
+}
+
+function agreeingFinal(snapshot, candidates) {
+  if (knownKickoff(snapshot) === null) return null;
+  const finals = candidates.filter(game => game.status === 'final'
+    && validScore(game.homeScore) && validScore(game.awayScore) && game.homeScore !== game.awayScore);
+  if (!finals.length) return null;
+  const first = finals[0];
+  const kickoff = knownKickoff(first);
+  const leagues = new Set(candidates.map(finalLeague).filter(Boolean));
+  if (kickoff === null || leagues.size > 1 || candidates.some(game => {
+    if (knownKickoff(game) !== kickoff) return true;
+    if (game.status === 'final') return !validScore(game.homeScore) || !validScore(game.awayScore)
+      || game.homeScore !== first.homeScore || game.awayScore !== first.awayScore;
+    // An unverified, scoreless catalog stub does not contradict a final. Any
+    // scored or genuinely live row remains an ambiguous result.
+    return !['scheduled', 'unknown'].includes(game.status) || game.liveVerified === true
+      || game.homeScore !== null && game.homeScore !== undefined
+      || game.awayScore !== null && game.awayScore !== undefined;
+  })) return null;
+  // Select only confirmed finals. Prefer a fresh observation, then its actual
+  // source/retrieval times and a stable ID tie-break.
+  return finals.slice().sort((a, b) => {
+    if (Boolean(a.stale) !== Boolean(b.stale)) return a.stale ? 1 : -1;
+    const observedA = candidateTime(a, ['scoreObservedAt', 'providerAsOf', 'fetchedAt', 'refreshedAt']);
+    const observedB = candidateTime(b, ['scoreObservedAt', 'providerAsOf', 'fetchedAt', 'refreshedAt']);
+    if (observedA !== observedB) return observedA > observedB ? -1 : 1;
+    const fetchedA = candidateTime(a, ['fetchedAt', 'refreshedAt']);
+    const fetchedB = candidateTime(b, ['fetchedAt', 'refreshedAt']);
+    if (fetchedA !== fetchedB) return fetchedA > fetchedB ? -1 : 1;
+    const idA = String(a.id || ''), idB = String(b.id || '');
+    return idA < idB ? -1 : idA > idB ? 1 : 0;
+  })[0];
+}
+
+/** Match one feed game, or duplicate UUIDs that agree on one precise final. */
 export function matchLiveGame(snapshot, state, model = null) {
   if (!snapshot || !state?.hasData || !Array.isArray(state.games)) return null;
   const candidates = [];
@@ -155,7 +209,7 @@ export function matchLiveGame(snapshot, state, model = null) {
       provider: state.provider, refreshedAt: live.fetchedAt || state.refreshedAt,
       stale, feedError: Boolean(state.error) });
   }
-  return candidates.length === 1 ? candidates[0] : null;
+  return candidates.length === 1 ? candidates[0] : candidates.length > 1 ? agreeingFinal(snapshot, candidates) : null;
 }
 
 function overlayStatus(status, live) {
