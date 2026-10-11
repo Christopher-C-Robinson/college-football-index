@@ -187,6 +187,8 @@ function agreeingFinal(snapshot, candidates) {
 /** Match one feed game, or duplicate UUIDs that agree on one precise final. */
 export function matchLiveGame(snapshot, state, model = null) {
   if (!snapshot || !state?.hasData || !Array.isArray(state.games)) return null;
+  if (snapshot.canceled === true || snapshot.cancelled === true
+    || ['canceled', 'cancelled'].includes(String(snapshot.status || '').toLowerCase())) return null;
   const candidates = [];
   for (const live of state.games) {
     const forward = sameNames(snapshot.homeTeam, live.home, model) && sameNames(snapshot.awayTeam, live.away, model);
@@ -247,7 +249,8 @@ export function overlayGameDayReport(report, state, model = null) {
     const row = { ...snapshotRow, home: overlayTeamRecord(snapshotRow.home, records), away: overlayTeamRecord(snapshotRow.away, records) };
     // The built row already applied legacy completion compatibility. Carry that
     // fact into matching without changing the imported/normalized game object.
-    const live = matchLiveGame({ ...row.game, completed: row.status === 'final' }, state, model);
+    const live = row.status === 'canceled' ? null
+      : matchLiveGame({ ...row.game, completed: row.status === 'final' }, state, model);
     if (!live) return { ...row, live: null };
     matched += 1;
     return { ...row, snapshotStatus: row.status, status: overlayStatus(row.status, live), live,
@@ -274,7 +277,7 @@ export function overlaySeasonAnalysis(analysis, state, model = null) {
       homePoints: selectedHome || neutral ? row.actual?.for : row.actual?.against,
       awayPoints: selectedHome || neutral ? row.actual?.against : row.actual?.for,
       completed: row.status === 'final' };
-    const live = matchLiveGame(snapshot, state, model);
+    const live = row.status === 'canceled' ? null : matchLiveGame(snapshot, state, model);
     if (!live) return { ...row, live: null };
     matched += 1;
     const forScore = selectedHome || neutral ? live.homeScore : live.awayScore;
