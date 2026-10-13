@@ -1546,6 +1546,55 @@
       "snapshotGeneratedAt": "2026-10-12T01:58:23.329Z",
       "inputFingerprint": "41e1b5c87a0d1188a0cdf2c3678d742d4c21d7d67c849b6575f35846d6e409fe",
       "lastStatsAttemptAt": "2026-10-12T01:58:23.329Z"
+    },
+    "2026:2026-10-13": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-10-13",
+      "expectedGames": [
+        {
+          "id": 401871067,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 7,
+          "startDate": "2026-10-13T23:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Middle Tennessee",
+          "awayTeam": "Delaware",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401871053,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 7,
+          "startDate": "2026-10-14T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Jacksonville State",
+          "awayTeam": "Florida International",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
