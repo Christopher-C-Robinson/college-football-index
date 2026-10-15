@@ -3,7 +3,7 @@ import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { FORECAST_VERSION } from './config.js';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
-import { recordGameKey } from './live-records.js?v=135b69186aa1';
+import { recordGameKey } from './live-records.js?v=26cd88d85c9b';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const idOf = value => value.id ?? value.gameId;

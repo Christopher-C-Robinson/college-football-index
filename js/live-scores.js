@@ -1,4 +1,4 @@
-import { buildLiveRecordIndex, applyLiveSeasonRecord, displayRecordText } from './live-records.js?v=135b69186aa1';
+import { buildLiveRecordIndex, applyLiveSeasonRecord, displayRecordText } from './live-records.js?v=26cd88d85c9b';
 
 // Scores and current records are display overlays. Never write them into the
 // model snapshot, fitted rankings, or cached simulations.
@@ -104,7 +104,11 @@ export function normalizeLiveScores(payload, { now = Date.now(), staleMs = DEFAU
     if (source.status === 'final' && (homeScore === null || awayScore === null || homeScore === awayScore)) continue;
     identifiers.add(id);
     const gameAt = validTimestamp(source.fetchedAt) && Date.parse(source.fetchedAt) <= now + 2 * 60 * 1000 ? source.fetchedAt : refreshedAt;
+    // Keep source identity and observation times; matching weighs them by source.
     games.push({ ...source, id, homeScore, awayScore,
+      sourceProvider: typeof source.sourceProvider === 'string' ? source.sourceProvider.trim().slice(0, 40) || null : null,
+      liveVerified: source.liveVerified === true,
+      providerAsOf: validTimestamp(source.providerAsOf) ? source.providerAsOf : null,
       home: { ...source.home, aliases: Array.isArray(source.home.aliases) ? source.home.aliases.filter(value => typeof value === 'string').slice(0, 20) : [] },
       away: { ...source.away, aliases: Array.isArray(source.away.aliases) ? source.away.aliases.filter(value => typeof value === 'string').slice(0, 20) : [] },
       fetchedAt: gameAt, stale: globalStale || source.stale === true || now - Date.parse(gameAt) > staleMs });
@@ -117,15 +121,82 @@ export function normalizeLiveScores(payload, { now = Date.now(), staleMs = DEFAU
     pollSchedule: payload.pollSchedule?.mode === 'adaptive' ? payload.pollSchedule : null, error: null };
 }
 
-function sameNames(name, team, model) {
+function sameNames(name, names, model) {
   const allowed = snapshotTeamNames(name, model);
-  return [...teamNames(team)].some(value => allowed.has(value));
+  for (const value of names) if (allowed.has(value)) return true;
+  return false;
 }
+
+// Feed arrays are immutable once normalized (each refresh builds a new one),
+// so a per-array index of candidate days and normalized names stays valid.
+// Lookup only narrows the scan: every row scheduledTogether could accept is
+// in some bucket returned for the snapshot, and the full name, kickoff, and
+// same-source checks still run on each.
+const feedIndexes = new WeakMap();
+const SIX_HOURS = 6 * 60 * 60 * 1000;
+
+function feedIndex(games) {
+  let index = feedIndexes.get(games);
+  if (index) return index;
+  index = { byName: new Map(), names: new Map() };
+  games.forEach((live, position) => {
+    const at = Date.parse(live.startDate || '');
+    const days = new Set([live.date, String(live.startDate || '').slice(0, 10)].filter(validDate));
+    if (Number.isFinite(at)) days.add(utcDay(at));
+    const entry = { position, days, home: teamNames(live.home), away: teamNames(live.away) };
+    index.names.set(live, entry);
+    for (const name of new Set([...entry.home, ...entry.away])) {
+      if (!index.byName.has(name)) index.byName.set(name, []);
+      index.byName.get(name).push(live);
+    }
+  });
+  feedIndexes.set(games, index);
+  return index;
+}
+
+// Rows naming the snapshot home team (either side) on a day it could match.
+function nearbyRows(snapshot, index, model) {
+  const days = new Set();
+  const literal = String(snapshot.startDate || '').slice(0, 10);
+  if (validDate(literal)) days.add(literal);
+  const expected = Date.parse(snapshot.startDate || '');
+  if (Number.isFinite(expected)) {
+    for (const offset of [-SIX_HOURS, 0, SIX_HOURS]) days.add(utcDay(expected + offset));
+    // Implied by the ±6 h UTC days, but kept explicit for source-TBD rows.
+    const central = chicagoDay(expected);
+    if (central) days.add(central);
+  }
+  const rows = new Set();
+  for (const name of snapshotTeamNames(snapshot.homeTeam, model)) {
+    for (const live of index.byName.get(name) || []) {
+      for (const day of index.names.get(live).days) if (days.has(day)) { rows.add(live); break; }
+    }
+  }
+  return [...rows].sort((a, b) => index.names.get(a).position - index.names.get(b).position);
+}
+
+let chicagoDays = null;
+function chicagoDay(at) {
+  try {
+    chicagoDays ||= new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' });
+    const parts = Object.fromEntries(chicagoDays.formatToParts(new Date(at)).map(part => [part.type, part.value]));
+    return parts.year + '-' + parts.month + '-' + parts.day;
+  } catch { return null; }
+}
+
+const utcDay = at => new Date(at).toISOString().slice(0, 10);
 
 function scheduledTogether(snapshot, live) {
   const expected = Date.parse(snapshot.startDate || '');
   const actual = Date.parse(live.startDate || '');
   const dateOnly = validDate(snapshot.startDate) || snapshot.startTimeTBD === true;
+  if (live.kickoffTBD === true && validDate(live.date)) {
+    // The source declares only a day; its timestamp is a midnight placeholder.
+    // A TBD snapshot keeps its literal day. A known kickoff may fall on either
+    // its UTC or its Central day (night games cross UTC midnight).
+    if (dateOnly || !Number.isFinite(expected)) return String(snapshot.startDate || '').slice(0, 10) === live.date;
+    return utcDay(expected) === live.date || chicagoDay(expected) === live.date;
+  }
   if (!dateOnly && Number.isFinite(expected) && Number.isFinite(actual)) {
     // A modest kickoff shift is tolerated; a different-day meeting is not.
     return Math.abs(expected - actual) <= 6 * 60 * 60 * 1000;
@@ -184,15 +255,41 @@ function agreeingFinal(snapshot, candidates) {
   })[0];
 }
 
-/** Match one feed game, or duplicate UUIDs that agree on one precise final. */
+function independentSource(live) {
+  return String(live?.sourceProvider || '').toUpperCase() === 'ESPN';
+}
+
+// A scored final, or a live/suspended score the producer marked liveVerified
+// (0 is valid). An unflagged suspension is never trusted.
+function verifiedScore(live) {
+  if (!validScore(live?.homeScore) || !validScore(live?.awayScore)) return false;
+  if (live.status === 'final') return live.homeScore !== live.awayScore;
+  return ['live', 'suspended'].includes(live.status) && live.liveVerified === true;
+}
+
+// Rows from one source must identify one game or agree on one precise final.
+function resolveSource(snapshot, candidates) {
+  if (candidates.length <= 1) return { match: candidates[0] || null, ambiguous: false };
+  const match = agreeingFinal(snapshot, candidates);
+  return { match, ambiguous: !match };
+}
+
+function authoritative(live) {
+  return verifiedScore(live) && (live.status !== 'final' || live.liveVerified === true)
+    || ['canceled', 'postponed'].includes(live.status) && !live.stale;
+}
+
+/** Match one feed game per source, then prefer an independent ESPN result. */
 export function matchLiveGame(snapshot, state, model = null) {
   if (!snapshot || !state?.hasData || !Array.isArray(state.games)) return null;
   if (snapshot.canceled === true || snapshot.cancelled === true
     || ['canceled', 'cancelled'].includes(String(snapshot.status || '').toLowerCase())) return null;
   const candidates = [];
-  for (const live of state.games) {
-    const forward = sameNames(snapshot.homeTeam, live.home, model) && sameNames(snapshot.awayTeam, live.away, model);
-    const reversed = sameNames(snapshot.homeTeam, live.away, model) && sameNames(snapshot.awayTeam, live.home, model);
+  const index = feedIndex(state.games);
+  for (const live of nearbyRows(snapshot, index, model)) {
+    const names = index.names.get(live);
+    const forward = sameNames(snapshot.homeTeam, names.home, model) && sameNames(snapshot.awayTeam, names.away, model);
+    const reversed = sameNames(snapshot.homeTeam, names.away, model) && sameNames(snapshot.awayTeam, names.home, model);
     if ((!forward && !reversed) || !scheduledTogether(snapshot, live)) continue;
     // An authoritative snapshot final must not be downgraded by an older feed.
     if (snapshot.completed === true && live.status !== 'final') continue;
@@ -208,10 +305,28 @@ export function matchLiveGame(snapshot, state, model = null) {
       && (homeScore !== snapshot.homePoints || awayScore !== snapshot.awayPoints)
       && (stale || Number.isFinite(snapshotAt) && providerAt <= snapshotAt)) continue;
     candidates.push({ ...live, homeScore, awayScore, reversed,
-      provider: state.provider, refreshedAt: live.fetchedAt || state.refreshedAt,
+      provider: live.sourceProvider || state.provider, refreshedAt: live.fetchedAt || state.refreshedAt,
       stale, feedError: Boolean(state.error) });
   }
-  return candidates.length === 1 ? candidates[0] : candidates.length > 1 ? agreeingFinal(snapshot, candidates) : null;
+  // Source precedence: ESPN and the catalog feed are matched independently
+  // (their IDs are unrelated). A unique, verified ESPN score or a fresh ESPN
+  // cancellation/postponement wins over catalog rows, even conflicting ones;
+  // otherwise the catalog result is the fallback. Conflicts within one source
+  // are never resolved by recency.
+  const espn = resolveSource(snapshot, candidates.filter(independentSource));
+  const catalog = resolveSource(snapshot, candidates.filter(live => !independentSource(live)));
+  if (espn.ambiguous) {
+    return candidates.some(live => independentSource(live) && authoritative(live)) ? null : catalog.match;
+  }
+  const primary = espn.match;
+  if (primary && authoritative(primary)) {
+    // A stale ESPN in-game score yields only to a confirmed catalog final or
+    // to a fresh verified catalog score.
+    if (primary.stale && ['live', 'suspended'].includes(primary.status) && catalog.match
+      && verifiedScore(catalog.match) && (catalog.match.status === 'final' || !catalog.match.stale)) return catalog.match;
+    return primary;
+  }
+  return catalog.match || primary;
 }
 
 function overlayStatus(status, live) {
@@ -309,15 +424,41 @@ export function liveGameLabel(live, { timeZone } = {}) {
   return label + ' · fetched ' + timestampLabel(live.refreshedAt, timeZone) + (live.stale ? ' · stale' : '');
 }
 
+export const AWAITING_SCORE_LABEL = 'Awaiting score update';
+
+/**
+ * Honest current status for a schedule row. `status` is the row status after
+ * any live overlay. A passed kickoff never implies a final: without a trusted
+ * result the game is only awaiting a score update.
+ */
+export function currentGameStatus({ status, live = null, startDate = null, kickoffTBD = false } = {}, { now = Date.now(), timeZone } = {}) {
+  const resolved = live && !['scheduled', 'unknown'].includes(live.status);
+  if (resolved) return { kind: 'feed', awaiting: false, label: liveGameLabel(live, { timeZone }) };
+  if (status === 'final') return { kind: 'snapshot-final', awaiting: false, label: 'Final (snapshot)' };
+  if (status === 'canceled') return { kind: 'canceled', awaiting: false, label: 'Canceled' };
+  const kickoff = knownKickoff({ startDate, startTimeTBD: kickoffTBD === true });
+  if (kickoff !== null && Number.isFinite(now) && now >= kickoff) return { kind: 'awaiting', awaiting: true, label: AWAITING_SCORE_LABEL };
+  if (live) return { kind: 'feed', awaiting: false, label: liveGameLabel(live, { timeZone }) };
+  return { kind: 'snapshot', awaiting: false, label: status === 'unplayed' ? 'Not final in snapshot' : 'Scheduled (snapshot)' };
+}
+
 export function renderLiveGameStatus(live, options = {}) {
   if (!live) return '';
   return '<span class="live-score-badge' + (live.status === 'live' ? ' is-live' : '') + (live.stale ? ' is-stale' : '') + '">' + escapeHtml(liveGameLabel(live, options)) + '</span>';
 }
 
-export function renderLiveScoreStatus(state, { timeZone, matched } = {}) {
+function espnPresent(state) {
+  const source = state?.coverage?.bySource?.espn;
+  return (state?.games || []).some(independentSource)
+    || Boolean(source && typeof source === 'object' && (source.lastSuccessAt || ['fresh', 'stale'].includes(source.status)));
+}
+
+export function renderLiveScoreStatus(state,{ timeZone, matched } = {}) {
   if (!state?.hasData) return '<span class="live-scores-status is-unavailable">' + (state?.loading ? 'Checking live scores…' : 'Live scores unavailable; showing results from the model snapshot.') + '</span>';
   const stale = state.stale || state.error || Date.now() - Date.parse(state.refreshedAt) > (state.staleAfterMs || DEFAULT_STALE_MS);
-  const plan = state.pollSchedule;
+  // The BBS poll plan budgets only that provider. ESPN refreshes the shared
+  // cache on its own schedule, so the plan is not the page's next check.
+  const plan = espnPresent(state) ? null : state.pollSchedule;
   const cadence = plan ? ' · budget-aware updates'
     + (validTimestamp(plan.nextPollAt) ? ' · next score check ' + timestampLabel(plan.nextPollAt, timeZone) : ' · awaiting the next game window')
     + '; this page checks each minute'
@@ -327,6 +468,36 @@ export function renderLiveScoreStatus(state, { timeZone, matched } = {}) {
     (stale ? ' · updates delayed; showing last fetched scores' : escapeHtml(cadence)) +
     (finite(matched) ? ' · ' + matched + (matched === 1 ? ' matched game' : ' matched games') : '') +
     (state.partial ? ' · partial coverage' : '') + '. Records include matched finals; predictions and rankings use the model snapshot.</span>';
+}
+
+// The retained 35-day archive is normally under 1 MiB; its 3000-row worst case
+// is about 3.5 MiB. Normalization still caps the feed at 4096 rows.
+export const MAX_FEED_BYTES = 8 * 1024 * 1024;
+
+async function readLiveBody(response, maxBytes) {
+  const tooLarge = () => new Error('The live scoreboard response was too large.');
+  const declared = Number(response.headers?.get?.('content-length'));
+  if (Number.isFinite(declared) && declared > maxBytes) throw tooLarge();
+  const reader = response.body?.getReader?.();
+  if (!reader) {
+    const text = await response.text();
+    if (new TextEncoder().encode(text).byteLength > maxBytes) throw tooLarge();
+    return text;
+  }
+  const decoder = new TextDecoder();
+  let size = 0;
+  let text = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      try { await reader.cancel(); } catch { /* The download is abandoned either way. */ }
+      throw tooLarge();
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
 }
 
 /** One visible-tab request at a time, with cancellation and retained stale data. */
@@ -365,8 +536,7 @@ export function createLiveScoreController({ endpoint, getDates = () => [], isAct
         if (date !== 'all') url.searchParams.set('date', date);
         const response = await fetchImpl(url.href, { signal: controller.signal, credentials: 'omit', cache: 'no-store', headers: { Accept: 'application/json' } });
         if (!response.ok) throw new Error('Live scores could not be refreshed.');
-        const text = await response.text();
-        if (text.length > 2 * 1024 * 1024) throw new Error('The live scoreboard response was too large.');
+        const text = await readLiveBody(response, MAX_FEED_BYTES);
         const feed = normalizeLiveScores(JSON.parse(text), { staleMs });
         if (!feed.hasData) throw new Error('Live scores are temporarily unavailable.');
         const previous = feeds.get(date);

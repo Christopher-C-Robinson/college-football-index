@@ -1,7 +1,7 @@
 import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGameScoreboard, updateGameTeamRecords, updateGameTeamRanks } from './game-team-summary.js?v=fbd4a8e1faf4';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
+import { currentGameStatus } from './live-scores.js?v=a5ac8cbd7f91';
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const percent = value => (value * 100).toFixed(1) + '%';
@@ -35,11 +35,13 @@ function observedScores(row, actual) {
     label: latest ? 'Latest score' : 'Live score', markerLabel: latest ? 'Latest' : 'Live', final: false };
 }
 
+function rowStatus(row, options = {}) {
+  return currentGameStatus({ status: row.status, live: row.live, startDate: row.startDate ?? row.game?.startDate,
+    kickoffTBD: row.kickoffTBD }, { now: options.now ?? Date.now(), timeZone: options.timeZone });
+}
+
 function statusLabel(row, options = {}) {
-  if (row.live) return liveGameLabel(row.live, options);
-  if (row.status === 'final') return 'Final (snapshot)';
-  if (row.status === 'canceled') return 'Canceled';
-  return row.status === 'unplayed' ? 'Not final in snapshot' : 'Scheduled (snapshot)';
+  return rowStatus(row, options).label;
 }
 
 function kickoffLabel(row, timeZone) {
@@ -180,16 +182,19 @@ export function updateGameDayLiveElements(container, rows, options = {}) {
       updateGameTeamRecords(card, row[side]);
       updateGameTeamRanks(card, { ...row[side], rankingsStatus: row.rankingsStatus || options.rankingsStatus });
     }
-    const signature = JSON.stringify([row.status, row.live?.status, row.live?.homeScore, row.live?.awayScore, row.live?.refreshedAt, row.live?.stale]);
+    // The label is part of the signature: a passed kickoff changes it even
+    // when no score feed update arrived.
+    const label = statusLabel(row, options);
+    const signature = JSON.stringify([row.status, label, row.live?.status, row.live?.homeScore, row.live?.awayScore, row.live?.refreshedAt, row.live?.stale]);
     if (card.dataset.liveSignature === signature) continue;
     card.dataset.liveSignature = signature;
     for (const value of ['final', 'canceled', 'unplayed', 'upcoming']) card.classList.toggle('is-' + value, row.status === value);
-    card.setAttribute('aria-label', row.away.name + ' versus ' + row.home.name + '. ' + statusLabel(row, options) + '.');
+    card.setAttribute('aria-label', row.away.name + ' versus ' + row.home.name + '. ' + label + '. ' + kickoffLabel(row, options.timeZone).text + '.');
     const prediction = usableForecast(row);
     const actual = actualScores(row);
     const status = card.querySelector('.game-day-status');
     if (status) {
-      status.textContent = statusLabel(row, options);
+      status.textContent = label;
       status.classList.toggle('is-live', row.live?.status === 'live');
       status.classList.toggle('is-stale', Boolean(row.live?.stale));
     }

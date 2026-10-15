@@ -1,86 +1,122 @@
 # Shared live scores
 
-The site’s forecasts continue to use its CFBD snapshot. This optional backend supplies reported game status and actual scores, without replacing the forecast model or pretending a scheduled game is live because its kickoff time passed.
+The site's forecasts continue to use its CFBD snapshot. This optional backend supplies reported game status and actual scores. It doesn't replace the forecast model, and it never treats a scheduled game as live just because its kickoff time has passed.
 
-Matching uses both teams’ uniquely owned names/aliases and the scheduled kickoff window. Multiple provider IDs are accepted as one final only when their exact timed kickoff and any reported league agree, all valid finals give the same scores in the snapshot’s home/away order, and any remaining entries are unverified, scoreless scheduled/unknown stubs. A stub never supplies the result. Conflicting numeric scores, active/canceled statuses, differing kickoffs, and date-only candidates remain unmatched. The freshest agreeing final supplies its status and timestamp. Explicit aliases cover supported lower-division opponents whose mascot names are absent from CFBD team metadata; fuzzy name matching is not used.
+The website reads one public, cached endpoint, `GET /scores`, from the `cfi-live-scores` Cloudflare Worker. Two independent producers fill that cache: the public ESPN scoreboard, which is primary and needs no account or key, and Big Balls Sports Data (BBS), a fallback that uses a free account, a private key, and the existing conservative 240-call/day ledger. Either producer can fail without stopping the other. Neither source, alone or together, guarantees complete or continuous coverage.
 
-Displayed team records also incorporate uniquely matched, valid final scores. Each scheduled game contributes at most once, including when CFBD later imports the same result. Current overall/FBS/FCS records and season-record outlooks use those results; live or incomplete scores cannot create a win or loss. Forecast calculations and rankings retain their CFBD model snapshot until the next completed-game-day refresh.
+## Why there are two sources
 
-When an official school announcement confirms a cancellation missing from CFBD, `data/game-status-overrides.json` records the exact season, game ID, home/away identities, source URL, verification time, and reason. Synchronization applies these corrections before modeling or archiving, reports them in dataset metadata, and retains per-game provenance. Every correction for the active season must match its exact scheduled game or the refresh fails before replacing the public snapshot. A cancellation supplies no score or win/loss and is excluded from season projections. A valid played final takes precedence over a cancellation correction and is reported as superseding it. The October 10 West Florida–Northeastern State game is marked canceled from the schools’ weather announcement; no makeup game was scheduled.
+On October 14, 2026, WKU at Sam Houston finished 16–3 but stayed **Scheduled** on the site. BBS live retrieval had stalled since about 2026-10-13 23:56Z, and that day's BBS catalog contained duplicated and conflicting entries. The browser was already polling the score cache, but the cache had no usable result to give it. The page also loaded the public model snapshot only once and had no automatic way to catch up, so even after CFBD later published the result, the page needed a reload to show it. Earlier, a conflicting FIU–Jacksonville State catalog entry had hidden a final in the same way until CFBD published it and the page was reloaded.
 
-## Activation status
+The current design addresses each failure. ESPN is polled independently of BBS, with its own persistence, schedule, and backoff, so a missing key, exhausted quota, throttling, or a BBS outage can't stop it. A unique verified ESPN observation is preferred over ambiguous catalog rows. Confirmed finals are retained so that stale scheduled or live rows can't erase them. Open tabs now check for a newer public model snapshot periodically and when they become visible again.
 
-At the October 10 Chicago / October 11 UTC, 2026 verification checkpoint, the user-approved Big Balls Sports Data (BBS) free account is authenticated. It has the ordinary 250-call/day allowance, requires no payment card, and its key is stored privately as the Cloudflare Worker secret. The corrected cache is operational. The website endpoint is configured in `data/live-scores-config.json` for the local preview and the GitHub Pages release.
+## Architecture
 
-BBS advertises free current-season FBS and FCS score coverage, but the observed responses do not establish complete live coverage. The catalog’s `league` is a **display name**, not its query slug. The normalizer accepts `NCAAF` and `NCAAF FCS`, including punctuation variations. No provider UUID is treated as a CFBD ID.
+The public `GET /scores` URL is unchanged. Both producers use the existing SQLite-backed Durable Object binding, `LIVE_SCORE_CACHE` (class `LiveScoreCache`, object name `college-football-global-v1`). No D1 database, KV namespace, or paid plan is needed, and the account should stay on its Free plan.
 
-The cache service at `https://cfi-live-scores.bingoflow-support.workers.dev/scores` returned HTTP 200 with `scoreFeedVersion: 2`, fresh transport data, and a live retrieval time of **2026-10-11T02:52:28Z**. It includes the previous, current, and next Chicago catalog days, while keeping catalog metadata separate from genuine live observations. Website joins confirmed six genuine score observations. In the local browser, James Madison–Georgia Southern showed the separately reported 20–10 score alongside the explicitly labeled 31–23 CFBD snapshot forecast. This checkpoint demonstrates the working cached overlay; it does not guarantee full source coverage or continued freshness.
+A cron runs every minute. On each run, ESPN and BBS evaluate their own refresh plans, and a provider makes requests only when its plan says they're due, so cron frequency isn't polling frequency. Each producer keeps its own observations, retrieval times, failures, and backoff: a BBS backoff or exhausted budget doesn't delay ESPN, and an ESPN failure doesn't spend BBS calls. `GET /scores` reads only cached state, so page visits, date changes, sorting, and filters never contact ESPN or BBS.
 
-### Verified source and join coverage
+### ESPN producer
 
-Direct authenticated `/matches` samples returned `meta.source: "stored"` and the following **catalog** rows. These are stored schedule/identity data, not proof of live score updates or a claim that every row is a distinct scheduled game.
+The producer requests the public college-football scoreboard separately for group 80 (FBS) and group 81 (FCS), one calendar date per request, with `limit=100`. Discovery covers the previous, current, and next days as seen in Eastern, Chicago, and UTC time, requesting only the dates and groups that are due (at most 12 boards per run), so the number of requests per cycle varies. In direct testing, `limit=1000` silently returned 25 events and a date-range request returned HTTP 400, so neither form is used or treated as complete coverage. A game between an FBS and an FCS team can appear in both groups; the producer dedupes it into one game.
 
-| Chicago date | Total provider rows | `NCAAF` rows | `NCAAF FCS` rows |
-|---|---:|---:|---:|
-| October 10, 2026 | 109 | 48 | 61 |
-| October 9, 2026 | 11 | 7 | 4 |
+A response that reaches the requested limit, or otherwise looks incomplete, is treated as possibly incomplete. The producer never infers that a game ended or was removed because a response omitted it. Omitted games keep their earlier observations and timestamps and age normally.
 
-Against the October 10 snapshot schedule, safe catalog joins cover **83 of 95 games** after rejecting tied finals. Five lower-division matchup rows lack sufficient provider team metadata for a safe join. Catalog join coverage measures identity matching, not live-score coverage. Unmatched games retain their labeled CFBD snapshot information.
+Discovery runs every 10 minutes. From 10 minutes before kickoff, the boards holding an unresolved game are polled about every minute for its first 48 hours, including after its original Chicago date passes midnight; the game stays on that original date. After 48 hours, an unresolved game falls back to slower 10-minute recovery checks until ESPN explicitly reports a terminal state (final, canceled, or postponed). A TBD kickoff (ESPN `timeValid: false`) has no exact time, so planning uses its declared board date and treats the whole day conservatively rather than inventing a kickoff. Failures back off per board, and an ESPN rate limit pauses the ESPN source; that bounded backoff can stretch either cadence, so one minute is the normal pace, not a guarantee during an outage. When more boards are due than the 12-request cap allows, 4 slots stay reserved for discovery and recovery boards and the rest rotate by oldest attempt, so deferred boards are picked up on later runs and no unresolved game is abandoned. Elapsed time, estimated game length, and the game clock never create a final; only an explicit provider status does.
 
-Genuine live observations require BBS `/scores?league=…` **without `date` or `tz`**. Adding either parameter changes the response to the stored array route, so it cannot establish live freshness. Initial undated samples, before the cached checkpoint above, were:
+### BBS fallback
 
-| Query league | Score rows | Canonical IDs in the current catalog | Observed status and coverage |
-|---|---:|---:|---|
-| `ncaaf` | 13 | 7 | Six live games: four FBS and two FCS; one scheduled game. Six other source rows lack `match_id` and cannot be merged safely. |
-| `ncaaf-fcs` | 12 | 0 | Old scheduled UUIDs; none match the current catalog. |
+The BBS producer keeps its existing behavior and budget. It shares the Durable Object's SQLite budget ledger, where a synchronous transaction reserves calls before any fetch. The UTC-day total can't exceed 240 reserved calls, even if cron and an authorized manual refresh overlap, and failed or unused reservations aren't refunded. The producer also stops when the provider reports ten or fewer calls remaining and honors reset and backoff headers. Use a dedicated key, because the Worker can't account for calls made elsewhere.
 
-The two FCS games in the `ncaaf` live sample demonstrate some FCS live access. They do not establish complete FCS coverage, and the separate FCS sample supplied no matched live observations. Backend and frontend coverage remains explicitly partial. Source observations merge only through canonical provider UUIDs already present in the catalog; missing IDs and unmatched old IDs never become guessed team/date matches.
+Live observations come from the two undated league feeds, `ncaaf` and `ncaaf-fcs`, sent without `date` or `tz` parameters; adding either switches BBS to its stored-data route. Observations merge only through canonical provider UUIDs already present in the catalog. Catalog discovery makes three date-based `/matches` calls for the previous, current, and next Chicago days, every two hours and at Chicago midnight. These supply identity and schedule metadata, not live freshness. Catalog calls use `limit=200&offset=0`; a full page, or metadata showing more pages, rejects that discovery and keeps the previous catalog. A full 50-row live response is treated as possibly truncated, and no unreserved pagination follows.
 
-The catalog also contains duplicate or conflicting provider game entries. Ambiguous website matches are rejected rather than choosing a score arbitrarily. Joining the catalog to CFBD requires known team names/aliases, compatible kickoff/date, and a unique scheduled matchup; provider IDs never become CFBD IDs. The website rejects tied provider finals, including observed 0–0 placeholders. Catalog rows with unverified live claims remain unknown/stale, and retained observations keep their original source timestamps. The feed preserves the snapshot fallback for all coverage gaps.
+The planner spreads remaining calls across live and result windows until the next 00:00 UTC reset. A live window runs from kickoff through an estimated 3.5 hours plus a 15-minute final check, and named result checks cost one extra call per date rather than per game. Timers never mark a game final, and a stale catalog live claim can't extend a window. Requests time out after 20 seconds; authentication failures, throttling, malformed data, and fetch errors keep the last good BBS observations and start BBS backoff. The catalog's `league` field is a display name (`NCAAF`, `NCAAF FCS`), not a query slug. The catalog can contain duplicate or conflicting provider entries, and the site never picks one arbitrarily.
 
-The cached checkpoint preserves **18 unresolved source rows**: six without match IDs and twelve with old FCS IDs absent from the current catalog. Genuine FCS observations include Central Arkansas–Abilene Christian; the other verified FCS matchup, UTRGV–Southeastern Louisiana, had become final by this checkpoint. Coverage remains explicitly partial despite a successful fresh transport response. The counts above describe the recorded samples and can change on subsequent refreshes.
+## Matching and source precedence
 
-## Free architecture and quota
+A feed row matches a scheduled CFBD game only when both teams match uniquely owned names or explicit aliases and the row falls within the game's kickoff window. Explicit aliases cover supported lower-division opponents whose mascot names are missing from CFBD team metadata; fuzzy name matching isn't used. Home and away identity is normalized rather than required to be in one fixed order: if a provider lists the teams in the reverse order, the matcher accepts the row and swaps its scores into the snapshot's home/away order. For a timed kickoff, the window allows a modest shift on the same game; for a date-only or TBD kickoff, the row must fall on the same scheduled date. Provider IDs from either source never become CFBD IDs.
 
-- A Cloudflare Worker checks the refresh plan every minute. Provider requests happen only when the adaptive plan says they are due; cron frequency is not provider polling frequency.
-- One **SQLite-backed Durable Object** stores catalog metadata, separately timestamped live observations, and refresh reservations. The Free plan supports SQLite-backed Durable Objects; the legacy KV-backed variant is not used.
-- All requests use the same object name, `college-football-global-v1`. The existing SQLite budget ledger is preserved. A synchronous transaction reserves the planned call count before fetching; the UTC-day budget cannot exceed **240 reserved calls**, even if cron and authorized manual refresh overlap. Failed and unused reservations are not refunded.
-- Each active refresh requests the two undated live league feeds, `ncaaf` and `ncaaf-fcs`, without timezone parameters. It merges only live observations whose canonical provider UUIDs exist in the catalog.
-- Catalog discovery covers the previous, current, and next `America/Chicago` calendar days in three date-based `/matches` calls. These supply identity/schedule metadata and upcoming kickoff windows, not live freshness.
-- Discovery is due every two hours and at Chicago midnight, even when score polling is idle. The planner reserves three calls for each remaining discovery before allocating live polls. Chicago date changes are calculated with `Intl` in `America/Chicago`, so daylight-saving changes do not rely on a fixed UTC offset.
-- Live game windows run from kickoff through an estimated **3.5 hours plus a 15-minute final check**. For unresolved results, named date-catalog checks begin **15 minutes before the expected finish** and continue for up to **two hours afterward**. Each eligible date costs one additional `/matches` call in an adaptive refresh; many games on that date share the call. A full three-date discovery in the same cycle skips the redundant result check. Only a valid, non-tied final score ends a result window early; missing scores and 0–0 placeholders do not. The planner merges overlapping live/result windows and considers only their remaining time before the next **00:00 UTC quota reset**. Concurrent games share the two live-feed calls; they do not each receive a separate polling budget.
-- A date-only/TBD kickoff covers its entire declared Chicago day plus a possible late finish of 3.5 hours and the 15-minute final check. It is not treated as a known midnight kickoff. An exact time replaces that conservative window when available.
-- After holding the discovery reserve, the remaining calls determine the affordable number of adaptive refreshes. The conservative cost per refresh includes two live-feed calls plus one named-result call for every catalog date whose result window can occur before the UTC reset, including upcoming and overnight games. Actual cycles fetch only the dates eligible at that moment. The cadence is remaining combined window time divided by affordable refreshes, rounded up to a whole minute with a one-minute minimum. It is recalculated every minute and after each fetch, so new kickoffs, final results, and spending change the plan.
-- A verified live/suspended observation updated within the last hour can extend an overdue game's window by a rolling hour. A stale catalog live claim cannot extend it. Window estimates never mark a game final; only source results do. Previous/current/next Chicago catalogs let the next UTC-day plan retain overnight games and see upcoming kickoffs.
-- Use a dedicated key and avoid separate pollers: the Worker cannot account for other clients spending that key's quota. It also stops when the provider reports ten or fewer calls remaining and honors reset/backoff headers.
-- A public `GET /scores` only reads cached SQLite state. Page visits, date selection, sorting, and filters never fetch BBS.
-- Outside active live/result windows, scheduled score calls stop while two-hour catalog discovery continues. A minute tick with neither operation due makes no upstream requests. At UTC reset, reservations use the new day's ledger key; previous reservation rows are preserved rather than erased or reset.
-- Catalog calls ask for `limit=200&offset=0`. A full page or metadata indicating additional pages rejects discovery and flags partial coverage; the Worker retains the previous catalog. It never spends unreserved calls to follow pagination.
-- The undated live route uses the provider's default page. A full 50-row response is treated as possible truncation and rejected rather than silently claimed as complete; no unreserved pagination request follows.
-- Network requests have a 20-second timeout. Auth failures, throttling, malformed data, and fetch errors retain the last good board and back off. Manual requests cannot bypass the daily budget, slot, or backoff.
+ESPN and BBS rows are resolved separately, and conflicts inside one source are never settled by the newest timestamp. One matching row from a source is that source's candidate, including a unique date-only match. Several matching rows from one source resolve only when they describe the same final: every row must share one precise timed kickoff and any reported league, every final must give the same scores in the snapshot's home/away order, and any remaining rows must be unverified, scoreless scheduled or unknown stubs, which never supply the result. Because that check needs a precise timed kickoff, multiple candidates for a date-only game stay unresolved. Any other combination, such as two different finals, a final beside an active status, or different timed kickoffs, leaves the game unavailable from that source rather than taking a guessed score.
 
-The SQLite tables are created by the class constructor. No D1 database or KV namespace needs provisioning. Normal refreshes write far below the Free storage write allowance. Cloudflare’s Free request/CPU/storage limits still apply; reaching a limit can make scores temporarily unavailable, so do not upgrade the account automatically.
+Between sources, a unique verified ESPN scored observation is preferred over BBS, even when the BBS catalog is ambiguous. A verified ESPN final remains the answer when it's stale. A stale ESPN live or suspended score yields to a valid BBS final or to a fresh verified BBS score. ESPN's canceled or postponed status takes precedence only when that ESPN observation is fresh. If ESPN itself is ambiguous and any of its candidates is a verified score or a fresh cancellation or postponement, the game stays unavailable rather than falling back to BBS; otherwise BBS supplies the result if it resolves cleanly.
 
-At the recorded `2026-10-11T02:52:28Z` checkpoint, the existing ledger held 11 reserved calls and 229 remaining. The planner held 33 calls for catalog discovery, leaving 98 affordable score refreshes over 203 remaining combined active minutes. That produced a **180-second planned interval**, with the next poll around `02:55Z`. This is an example of the adaptive calculation, not a fixed polling frequency or a permanently current budget.
+Tied finals are rejected, including observed 0–0 placeholders, and missing scores never become zero. A final already in the CFBD snapshot isn't downgraded by a non-final row, or replaced by a contradictory row that is stale or no newer than the snapshot. A valid, fresh correction observed after the snapshot was generated can still overlay a snapshot final.
+
+### Records and forecasts
+
+Displayed overall, FBS, and FCS records and season-record outlooks include uniquely matched, valid final scores. Each scheduled game counts at most once, even after CFBD imports the same result, and live or incomplete scores can't create a win or loss. Corrections to cached displayed records follow the same source precedence as score matching: a verified ESPN final can replace a previously cached BBS result even when ESPN's retrieval is older, a later lower-priority BBS row can't revert it, and results from the same source still only move forward in time. Projected scores, win probabilities, rankings, and snapshot-fit statistics keep using the loaded model snapshot until the next completed-game-day refresh. Observed scores appear separately from projections, with their own labels.
+
+## Status, timing, and retention
+
+Status is one of `scheduled`, `live`, `final`, `postponed`, `canceled`, `suspended`, or `unknown`, and a catalog claim alone doesn't verify a live state. The site never invents a game clock, quarter, or final. After kickoff, a game with no verified score shows **Awaiting score update** instead of staying **Scheduled**, and it isn't shown as live or final.
+
+Retrieval time (`fetchedAt`) is reported separately from any upstream observation time (`scoreObservedAt`, `providerAsOf`); a retrieval time is never presented as a source update or upstream observation. ESPN's scoreboard carries no per-score timestamp, so ESPN rows report both observation fields as null and `fetchedAt` as the actual retrieval. BBS rows can carry a genuine upstream timestamp. Transport freshness and observation freshness are tracked separately, so a fresh response doesn't make an old score fresh, and the UI says when a score is stale.
+
+The ESPN producer normally keeps resolved games for 35 days, measured from the later of kickoff and final retrieval. If the cache reaches its 3,000-game cap, resolved games past 30 days on that same clock may be evicted early; resolved games within 30 days and all unresolved games are protected, and any excess beyond the cap is reported rather than deleting protected rows. A game first confirmed final long after kickoff (for example, 40 days later) therefore isn't pruned immediately and gets the full retention and cap protection from its final retrieval. That keeps confirmed finals visible in reopened tabs, Team Explorer schedules, and recent past dates on Today's games. A later stale scheduled or live row can't overwrite a cached final, and a confirmed final keeps its original retrieval times and stays usable, so the UI can show its age; providers aren't promised to recheck old games. Unresolved games never expire, and omission from a later response never finalizes or drops a game. The cache isn't a complete archive; older results come from the CFBD snapshot. A partial board is handled conservatively: a game missing from a partial response keeps its prior state rather than being dropped, expired early, or finalized.
+
+## Browser refresh
+
+The page polls the cached `/scores` endpoint, and a hidden or resumed tab refreshes scores immediately when it becomes visible again.
+
+The page also keeps the public model snapshot current. While the page is visible on a score-using view (Rankings, Today's games, Matchups, or Team Explorer with a selected team), it sends a cheap HTTP `HEAD` request at most every 60 seconds, and again on visibility or `pageshow` resume. A full `GET` follows when the `ETag` or `Last-Modified` validators change, with full downloads spaced at least 5 minutes apart. If `HEAD` fails or returns no comparable validators, a bounded slow fallback downloads the full file about every 30 minutes, even when it hasn't changed. Only a strictly newer, compatible snapshot is applied. Visitors on public data get it automatically, with selections and scroll position kept; the swap waits while someone is typing or a dropdown is open. A deliberately imported dataset stays selected; the page shows that a newer public snapshot exists, and "Return to public snapshot" switches to it. This model check is separate from the site release check, which offers a Refresh button when the site's code changes.
+
+## Failure matrix
+
+| Condition | ESPN producer | BBS producer | Website |
+|---|---|---|---|
+| BBS key missing | Runs normally | `unconfigured`; no calls | Uses ESPN observations |
+| BBS quota used, throttled, or in backoff | Runs normally | Waits; keeps last good data | Uses ESPN; BBS data ages |
+| ESPN omits a game or date, or looks incomplete | Keeps prior observations and timestamps; coverage partial | Runs normally | Unique verified observation, else labeled prior state or **Awaiting score update** |
+| ESPN requests fail | Own backoff; cached rows age | Runs normally | Cached ESPN finals stay; otherwise BBS when precedence allows |
+| Conflicting rows within ESPN | Unavailable from ESPN | Runs normally | Unavailable if any ESPN candidate is a verified score or fresh cancellation/postponement, even when BBS has a row; otherwise a clean BBS result, the snapshot result, or unavailable |
+| Conflicting rows within BBS | Runs normally | Unavailable from BBS | ESPN's result if unique, the snapshot result, or unavailable |
+| Game finishes after Chicago midnight | Normally polls about every minute until terminal | Existing overnight windows | Stays on its original date |
+| Game still unresolved 48 hours after kickoff | 10-minute recovery checks until terminal | Existing behavior | Labeled prior state or **Awaiting score update**; never a timer-made final |
+| Both providers fail | Backoff | Backoff | Retained finals and stale-labeled scores; else snapshot schedule |
+| No cache has ever succeeded | — | — | `/scores` returns 503 `unavailable`; snapshot site stays usable |
+
+## Regression checklist
+
+Changes to the producers or the frontend overlay should keep these cases working:
+
+1. Missing BBS key: ESPN finals appear and BBS reports `unconfigured`.
+2. BBS out of quota or in backoff: ESPN keeps updating active games at its normal one-minute cadence.
+3. Omitted or incomplete ESPN date: earlier observations keep their timestamps; nothing is marked final or removed.
+4. Same game in groups 80 and 81: counted once.
+5. Provider lists teams in reversed order: scores are swapped into snapshot order.
+6. Unique date-only match: shown. Several date-only candidates: unresolved.
+7. Conflicting finals within one source: unavailable from that source, never chosen by timestamp; an ambiguous verified ESPN result keeps the game unavailable even when BBS has a row.
+8. Verified ESPN final beside a duplicated or conflicting BBS catalog (the WKU–Sam Houston case): the ESPN final shows, including when stale.
+9. Stale ESPN live score beside a BBS final or fresh verified BBS score: BBS wins.
+10. Late kickoff finishing after Chicago midnight: polled until final and kept on its original date.
+11. Game unresolved 48 hours after kickoff: moves to 10-minute recovery checks and keeps them until an explicit terminal status; it isn't abandoned or finalized.
+12. TBD kickoff: planned from its declared board date without an invented kickoff time.
+13. Cached ESPN final, past day reloaded within the protected 30 days: still shown, including in the unfiltered `/scores` response; stale rows don't replace it. A final first confirmed 40 days after kickoff isn't pruned immediately; its retention and cap protection run from that final retrieval.
+14. Kickoff passed with no verified score: **Awaiting score update**, never a timer-made final.
+15. New public model while a score view is open: a `HEAD` validator change triggers a `GET`, which applies it while keeping selections and scroll (deferred while typing); an imported dataset stays selected with a notice. Without usable validators, only the bounded 30-minute fallback downloads.
+
+## Limitations
+
+Neither ESPN nor BBS guarantees availability, completeness, or timing. ESPN's scoreboard is a public endpoint, not a supported or contracted API, and the behavior described here comes from observation and could change. Actual FBS and FCS coverage from both sources is partial and hasn't been confirmed game by game. Two independent sources reduce the chance that one upstream failure hides a finished game, but scores can still be missing or late if both fail, or wrong if a provider reports wrong data. Cloudflare's Free request, CPU, and storage limits still apply and can make scores temporarily unavailable; don't upgrade the account automatically.
 
 ## Deploy and activate
 
-Run from the repository root with the intended Cloudflare account selected. The config is `worker/live-scores/wrangler.jsonc`; the Worker name is `cfi-live-scores`.
+Run these from the repository root with the intended Cloudflare account selected. The config is `worker/live-scores/wrangler.jsonc` and the Worker is `cfi-live-scores`.
 
 ```sh
 npx wrangler deploy --config worker/live-scores/wrangler.jsonc
 ```
 
-Deploying without a key is safe: cron returns `unconfigured`, and `/scores` returns an unavailable packet. Put the authorized BBS key into the interactive secret prompt; do not commit it, place it in browser JavaScript, or paste it into a shell command.
+The ESPN producer needs no secret, so deploying without a BBS key is safe; only BBS reports `unconfigured`. To enable the fallback and manual refresh, enter each secret at Wrangler's interactive prompt. Don't commit them, put them in browser JavaScript, or paste them into a shell command.
 
 ```sh
 npx wrangler secret put BBS_API_KEY --config worker/live-scores/wrangler.jsonc
 npx wrangler secret put REFRESH_TOKEN --config worker/live-scores/wrangler.jsonc
 ```
 
-`BBS_API_KEY` authenticates upstream using `Authorization: Bearer …`. `REFRESH_TOKEN` is a separate, random admin secret for `POST /refresh`; it is never sent to the website. Set it from a password manager or another secret source. Runtime logs are disabled, and the public output excludes both secrets, raw API errors, and raw provider payloads.
+`BBS_API_KEY` authenticates to BBS with `Authorization: Bearer …`. `REFRESH_TOKEN` is a separate random admin secret for `POST /refresh`, taken from a password manager or other secret source and never sent to the website. Runtime logs are disabled, and public output excludes both secrets, raw API errors, and raw provider payloads.
 
-Allow the next cron to load the first board, or make an authorized manual request. This Python command prompts for the admin token without echoing it or putting it in shell history:
+To load the first board, wait for the next cron run or make an authorized manual request. This command prompts for the token without echoing it or saving it to shell history:
 
 ```sh
 python3 - <<'PY'
@@ -91,124 +127,39 @@ request = urllib.request.Request(endpoint + '/refresh', data=b'', method='POST',
     headers={'Authorization': 'Bearer ' + token})
 with urllib.request.urlopen(request, timeout=120) as response:
     result = json.load(response)
-print({key: result.get(key) for key in ('status', 'reason', 'games', 'fetchedAt')})
+fields = ('status', 'reason', 'games', 'fetchedAt', 'boards', 'succeeded', 'failed')
+print('status:', result.get('status'))
+for name in ('espn', 'bbs'):
+    summary = result.get(name) or {}
+    print(name + ':', {key: summary.get(key) for key in fields if key in summary})
 PY
 ```
 
-Then inspect the public `/scores` response and confirm catalog dates, canonical game IDs, genuine live observation counts, partial league coverage, per-score update times, and website joins. A catalog row marked live is not enough: it needs a canonical-ID live observation. When cached retrieval and those checks succeed, configure the website with the deployed `/scores` URL. The frontend should request the unfiltered endpoint and use its own device timezone to place games on a day.
+Then read the public `/scores` response and check each source's coverage, retrieval times, conflicts, and any upstream score times. A catalog row marked live isn't enough; it needs a verified observation.
 
-Do not rename the Durable Object, remove its migration, recreate its namespace, or switch to multiple per-date objects during a UTC day: doing so would reset or split the provider budget. Keep the account on its Free plan.
+`data/live-scores-config.json` holds only the public `/scores` URL. The frontend requests the unfiltered endpoint and places games on a day using the device's timezone. Don't rename the Durable Object, remove its migration, recreate its namespace, or split it into per-date objects: any of these would reset or split the BBS budget and discard retained finals.
 
 ## Public endpoint contract
 
-`GET /scores` returns only the cached, normalized board. Optional `?date=YYYY-MM-DD` filters using the backend’s **Chicago** calendar and reports `dateCovered`; it does not cause a fetch. Invalid dates and other parameters return 400. Origin access allows the GitHub Pages origin and localhost/127.0.0.1 on port 8000. Direct read-only requests without an Origin header are allowed. CORS is not an upstream-fetch permission.
+`GET /scores` returns only the cached, normalized board. Without a date it returns the entire retained archive plus every pending game; only ESPN discovery is limited to the ±1-day window across Eastern, Chicago, and UTC. The optional `?date=YYYY-MM-DD` filters by the backend's Chicago calendar, including cached past dates, and never triggers a fetch; invalid dates and other parameters return 400. Its `dateCovered` means some source has identity or cached data for that date, not that every game is covered or final. Cross-origin reads are allowed from the GitHub Pages origin and from localhost and 127.0.0.1 on port 8000, and direct requests without an `Origin` header are allowed. CORS doesn't grant permission to fetch upstream.
 
-The example below illustrates the shared fields, not an assertion of complete live coverage. Catalog dates and counts describe metadata availability. Live observation coverage is separate, and a recently fetched response can still be partial or contain stale individual scores.
+The packet keeps `schemaVersion: 1` with `scoreFeedVersion: 2`. `coverage.bySource.espn` and `coverage.bySource.bbs` independently describe each producer's status, staleness, retrieval times, failures, and backoff. ESPN coverage also lists its boards (group, date, event and accepted counts, quarantined rows, `truncated`, completeness) and its polling schedule. A fresh top-level envelope means at least one producer is fresh; it doesn't freshen the other producer's rows, which keep their own `stale` flags.
 
-```json
-{
-  "schemaVersion": 1,
-  "scoreFeedVersion": 2,
-  "provider": "Big Balls Sports Data",
-  "refreshedAt": "ISO time of the last successful live-feed retrieval",
-  "fetchedAt": "same conservative live retrieval time",
-  "catalogFetchedAt": "conservative retrieval time of the last full three-date discovery",
-  "providerAsOf": null,
-  "status": "fresh",
-  "stale": false,
-  "reason": null,
-  "retryAt": null,
-  "staleAfterSeconds": 1800,
-  "coverage": {
-    "dates": ["previous Chicago day", "current Chicago day", "next Chicago day"],
-    "timeZone": "America/Chicago",
-    "partial": true,
-    "byDate": {
-      "YYYY-MM-DD": {
-        "date": "YYYY-MM-DD",
-        "fetchedAt": "ISO retrieval time for this date",
-        "providerAsOf": null,
-        "stale": false,
-        "partial": false,
-        "count": 0,
-        "source": null
-      }
-    },
-    "leagues": ["ncaaf", "ncaaf-fcs"]
-  },
-  "games": []
-}
-```
+Each game identifies the source of its score separately from catalog metadata. ESPN rows have `sourceProvider: "ESPN"`, `scoreSource: "scoreboard"`, and `liveVerified: true` for a valid live, final, or suspended score; their `providerAsOf` and `scoreObservedAt` are null and `fetchedAt` is the actual retrieval (see [status, timing, and retention](#status-timing-and-retention)). An ESPN row that a later board omitted is marked `retained: true` and keeps its original timestamps; older BBS rows use `retainedLiveScore` for the same idea. An active score that isn't confirmed again becomes stale. Scores are nonnegative integers or null, and valid zeros are kept. `coverage.partial` stays true whenever source or identity coverage is incomplete; a successful retrieval doesn't clear it. When present, `leagueClassification` describes the source feed or group (compact ESPN rows carry `leagueCode` instead); participants' classifications are never asserted and stay null because a game can cross subdivisions. With no successful cache from either source, `/scores` responds 503 with `status: "unavailable"`, `stale: true`, `games: []`, and a safe reason.
 
-Each game contains:
+`POST /refresh` requires the bearer admin secret and runs both producers independently. It returns a top-level `status` plus separate `espn` and `bbs` summaries. Each summary has its own status, such as `refreshed`, `partial`, `catalog_refreshed`, `waiting`, `backoff`, `refresh_too_soon`, `slot_or_daily_budget_used`, `refresh_in_progress`, `offseason`, or `failed`. `unconfigured` applies only to the BBS summary when its key is missing; ESPN still runs. Read the board itself from `/scores`.
 
-```json
-{
-  "id": "provider UUID",
-  "providerId": "same provider UUID",
-  "date": "Chicago calendar day",
-  "startDate": "ISO kickoff UTC",
-  "kickoffTBD": false,
-  "leagueCode": "ncaaf",
-  "leagueClassification": "fbs",
-  "home": {"id": "provider UUID", "name": "provider name", "aliases": [], "classification": null},
-  "away": {"id": "provider UUID", "name": "provider name", "aliases": [], "classification": null},
-  "status": "unknown",
-  "catalogStatus": "live",
-  "homeScore": null,
-  "awayScore": null,
-  "scoreSource": "catalog",
-  "liveVerified": false,
-  "scoreObservedAt": null,
-  "liveLeagueCode": null,
-  "retainedLiveScore": false,
-  "providerAsOf": null,
-  "fetchedAt": "ISO retrieval time for this row",
-  "catalogFetchedAt": "ISO retrieval time for the catalog metadata",
-  "stale": true,
-  "unavailableReason": "live_observation_missing"
-}
-```
+## Cancellation overrides
 
-- Game status is `scheduled`, `live`, `final`, `postponed`, `canceled`, `suspended`, or `unknown`. A stored catalog claim does not verify a live state; `liveVerified` requires a genuine canonical-ID observation. The example row has a catalog live claim without that observation, so its public status is unknown and its score remains unavailable.
-- Scores are nonnegative integers or null, including valid zero scores. Missing scores never become zero.
-- `aliases` contains an explicitly supplied provider short name, when different. Join by known names/aliases plus kickoff/date; never guess a CFBD team ID from a provider UUID or strip arbitrary mascot words.
-- `leagueClassification` describes the league feed. Both participants’ classifications remain null because a college game can cross subdivisions.
-- No reliable game clock or quarter is guaranteed; neither is invented. Genuine score observations retain their own `updatedAt` time, exposed as score observation/source time. A gateway or catalog retrieval timestamp is never substituted for it.
-- A successful live-feed retrieval updates the global refresh time. Catalog metadata has a separate retrieval time. Targeted result checks update only the fetched date and returned game timestamps; omitted known games retain their old timestamps. The global catalog time remains the last full three-date discovery, so partial checks cannot postpone tomorrow's schedule discovery. Old retained observations keep their original observation and retrieval times, even when another game or the catalog refreshes successfully.
-- Staleness applies separately to transport retrieval and individual observations. A fresh global response does not make an old per-score observation fresh. Unverified catalog live states remain unknown/stale rather than being displayed as current live scores.
-- `scoreSource` is `catalog` or `live-feed`. `scoreObservedAt` and `providerAsOf` identify the actual source update time; `fetchedAt` identifies retrieval. When a previously verified observation is absent from a later feed, it remains attached to its original timestamps with `retainedLiveScore: true`. An active retained score becomes stale with `unavailableReason: "live_observation_not_returned"`.
-- Catalog metadata ages separately at two hours; individual score observations age at 30 minutes. The adaptive refresh plan does not override these timestamp checks.
-- With no successful cache, `/scores` responds 503 with `status: "unavailable"`, `stale: true`, `games: []`, and a safe reason. The frontend should preserve its snapshot schedule and explain score availability.
-
-Coverage fields distinguish metadata from live evidence:
-
-| Field | Meaning |
-|---|---|
-| `coverage.byDate` | Catalog dates, counts, retrieval times, source and staleness. |
-| `coverage.byLeague` | Each live query's availability, source, retrieval/source times, `count`, `matchedRows`, `liveMatched`, missing/unknown IDs, conflicts and staleness. |
-| `coverage.matchedRows` | Canonical-ID observations matched to catalog games, including scheduled observations. |
-| `coverage.liveMatched` | Matched observations that actually verify live games. |
-| `coverage.missingMatchIds`, `unknownMatchIds` | Rows without canonical IDs or whose IDs are absent from the catalog. |
-| `coverage.conflictingMatchIds`, `unresolvedLiveRows` | Conflicting or otherwise unresolved live-source rows. |
-| `coverage.unverifiedLiveGames`, `retainedLiveScores` | Catalog live claims without verification and previously verified observations retained without a new matching row. |
-| `coverage.partial` | Incomplete source/identity coverage; it does not become false simply because retrieval succeeded. |
-
-A valid but unavailable league field produces `coverage.byLeague[league].available: false` with reason `provider_live_coverage_unavailable`. It does not discard valid observations from the other league. Transport can be fresh while coverage remains partial; when both live league fields are unavailable, transport is stale.
-
-`POST /refresh` requires the separate bearer admin secret. It returns a small result such as `refreshed`, `catalog_refreshed`, `waiting`, `backoff`, `slot_or_daily_budget_used`, `refresh_in_progress`, `offseason`, `unconfigured`, or `failed`; the actual board is read from `/scores`.
-
-## Source contracts
-
-- [BBS OpenAPI](https://bigballsdata.com/openapi.json): `/v1/matches` supplies date-based catalog arrays; the observed genuine `/v1/scores` contract uses `data.scores.value` only when date/timezone parameters are absent. Source documentation does not substitute for authenticated coverage checks.
-- [BBS league codes](https://bigballsdata.com/docs/league-codes): NCAAF and NCAAF FCS names and query codes.
-- [BBS rate limits](https://bigballsdata.com/docs/rate-limits): free quotas, UTC reset, authentication and throttle headers.
-- [BBS NCAAF scoreboard guide](https://bigballsdata.com/how-to-build-an-ncaaf-scoreboard): free score contract; the guide itself is not proof of this deployment’s authenticated coverage.
-- [BBS terms](https://bigballsdata.com/legal/terms): building products is permitted; raw-feed resale and key sharing are prohibited. This endpoint exposes a normalized score-only view for the website, not a raw provider feed.
-- [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/): SQLite-backed Free-plan availability and limits.
-- [Cloudflare SQLite storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/): strongly consistent storage and `transactionSync` for atomic reservations.
-- [Cloudflare Durable Objects setup](https://developers.cloudflare.com/durable-objects/get-started/): bindings, RPC and SQLite class configuration.
+When an official school announcement confirms a cancellation that CFBD is missing, `data/game-status-overrides.json` records it with the exact season and game ID, home and away identities, source URL, verification time, and reason. Synchronization applies these before modeling or archiving, reports them in dataset metadata, and keeps per-game provenance. Every active-season override must match its exact scheduled game, or the refresh fails before replacing the public snapshot. A cancellation supplies no score or win/loss and is excluded from season projections; a valid played final supersedes it and is reported as doing so. The current override marks the October 10 West Florida–Northeastern State game canceled, based on the schools' weather announcement, with no makeup scheduled.
 
 ## Model refresh after the last final
 
-The shared score cache also supplies evidence to the model-completion checker. It does not dispatch a refresh after each individual final. The checker waits for the scheduled game day to finish, confirms missing results with CFBD when needed, and publishes once with bounded delayed-statistics retries. Overnight games retain their original Chicago game day. See [completion tracking, quota, and publication recovery](game-day-refresh.md).
+The score cache supplies completion evidence to the model-completion checker, from either source. An ESPN final doesn't make model statistics ready or publish a model: CFBD must still explicitly confirm the day's finals, and collection waits for the reporting buffer. See [completion tracking, quota, and publication recovery](game-day-refresh.md).
+
+## Source contracts
+
+- [BBS OpenAPI](https://bigballsdata.com/openapi.json): `/v1/matches` returns date-based catalog arrays; the observed live `/v1/scores` contract uses `data.scores.value` only without date and timezone parameters.
+- [BBS league codes](https://bigballsdata.com/docs/league-codes), [rate limits](https://bigballsdata.com/docs/rate-limits), and [terms](https://bigballsdata.com/legal/terms): building products is permitted; reselling the raw feed and sharing keys are prohibited. This endpoint exposes a normalized, score-only view.
+- ESPN scoreboard: no supported API documentation is relied on. Groups 80 and 81, `limit=100`, the 25-event result at `limit=1000`, and HTTP 400 for date ranges are observed behavior that could change.
+- [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/) and [SQLite storage](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/): Free-plan availability, limits, and `transactionSync` for atomic reservations.

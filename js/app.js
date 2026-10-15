@@ -7,8 +7,8 @@ import { renderTeamLogo, installTeamLogoFallbacks } from './team-logo.js?v=23545
 import { renderRankingsMap } from './rankings-map.js?v=d3829ca19f61';
 import { rankBoardTeams, boardMatchup } from './board-order.js?v=07d78bb647f7';
 import { buildNeutralRankings, getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
-import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=3f437a6f176e';
-import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=81badf189e5b';
+import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonProjectionRanks } from './season-projections.js?v=da3a65c4e413';
+import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=6df08c04e263';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
 import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
@@ -18,11 +18,13 @@ import { loadChallengerStatus } from './challenger-status.js';
 import { loadConferenceStatus } from './conference-status.js';
 import { applyDeviceTheme } from './device-theme.js?v=fe5d644c7c45';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
-import { buildGameDay, completeGameDaySeasonRecords, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=21de554d8e79';
-import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=6005789fbb06';
+import { buildGameDay, completeGameDaySeasonRecords, filterGameDay, sortGameDay, refreshGameDayRanks, localDateKey, shiftedDateKey } from './game-day.js?v=279bb1143e85';
+import { renderGameDayRows, updateGameDayLiveElements } from './game-day-view.js?v=90e3ec3242bb';
 import { computeGameDayAccuracy, renderGameDayAccuracy } from './game-day-accuracy.js?v=97259e8d6505';
-import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, liveRecordForTeam, overlaySeasonRecord, renderLiveScoreStatus } from './live-scores.js?v=cea7490438a4';
+import { createLiveScoreController, overlayGameDayReport, overlaySeasonAnalysis, liveRecordForTeam, overlaySeasonRecord, renderLiveScoreStatus } from './live-scores.js?v=a5ac8cbd7f91';
 import { installSiteUpdates } from './site-updates.js?v=587277ecddba';
+import { createPublicSnapshotUpdater, createDeferredApply, readValidators, snapshotIsNewer, publicUpdateAction } from './public-snapshot-updates.js?v=ebe8d2d63ce6';
+import { createEditingGuard, createManualSelection } from './dataset-selection-guard.js?v=b5cf218d2820';
 
 const STARTER_URL = './data/current-season.json';
 const STORAGE_KEY = 'college-football-index-season-v1';
@@ -47,6 +49,7 @@ let gameDayController = null;
 let gameDayRecordRequest = 0;
 let gameDayRecordReport = null;
 let gameDayFollowToday = true;
+let gameDayKeepCards = false;
 let liveScoreController = null;
 let liveScoreState = { hasData: false, games: [], loading: false };
 
@@ -54,10 +57,74 @@ function liveScoreViewActive() {
   return Boolean(state.model && (['rankings', 'games', 'matchups'].includes(activeView) || (activeView === 'dossier' && currentFocus())));
 }
 
+// Public-data views keep checking for a newer snapshot even without a model,
+// so a failed startup fetch recovers while the page stays open.
+function publicViewActive() {
+  return ['rankings', 'games', 'matchups', 'dossier'].includes(activeView);
+}
+
 function syncLiveScorePolling() {
+  publicSnapshotUpdates.sync();
   if (!liveScoreController) return;
   if (liveScoreViewActive()) liveScoreController.start();
   else liveScoreController.stop();
+}
+
+// An open dropdown, IME composition, or recent typing defers an automatic
+// snapshot swap; the guard flushes it once that editing settles.
+const editingGuard = createEditingGuard({ onReady: () => pendingPublicSnapshot.flush() });
+const pendingPublicSnapshot = createDeferredApply({ isBlocked: editingGuard.isBlocked, apply: applyPublicSnapshot });
+// The latest deliberate import or Return to public wins, whatever order the
+// file reads and network requests finish in.
+const manualSelection = createManualSelection();
+const publicSnapshotUpdates = createPublicSnapshotUpdater({
+  url: new URL(STARTER_URL, location.href).href,
+  validate: validateDataset,
+  getCurrent: () => pendingPublicSnapshot.latest(state.publicDataset),
+  isActive: publicViewActive,
+  onSnapshot: receivePublicSnapshot
+});
+
+function publicAction(raw) {
+  return publicUpdateAction({ source: state.source, selected: state.raw, publicDataset: state.publicDataset, candidate: raw });
+}
+
+function receivePublicSnapshot(raw) {
+  const action = publicAction(raw);
+  // A deliberate import is never replaced; only its freshness notice changes.
+  if (action === 'notice') {
+    state.publicDataset = raw;
+    state.publicUnavailable = false;
+    renderDatasetStatus();
+  } else if (action === 'apply') pendingPublicSnapshot.offer(raw);
+}
+
+function applyPublicSnapshot(raw) {
+  // Re-check: the selection may have changed while this update was deferred.
+  const action = publicAction(raw);
+  if (action === 'ignore') return;
+  state.publicDataset = raw;
+  state.publicUnavailable = false;
+  if (action === 'notice') { renderDatasetStatus(); return; }
+  // Recovery after a failed startup fetch has no prior view state to keep.
+  const recovered = !state.model;
+  setDataset(raw, recovered ? 'Loaded the latest public snapshot.' : '', false, 'public', { preserveUi: !recovered });
+  announceDataUpdate(raw);
+}
+
+function announceDataUpdate(raw) {
+  let region = ids('public-data-update-status');
+  if (!region) {
+    region = document.createElement('p');
+    region.id = 'public-data-update-status';
+    region.className = 'sr-only';
+    region.setAttribute('role', 'status');
+    region.setAttribute('aria-live', 'polite');
+    document.body.append(region);
+  }
+  const generated = new Date(raw.meta?.generatedAt || '');
+  region.textContent = 'Model data updated' + (Number.isFinite(generated.getTime()) ? ' · snapshot ' + new Intl.DateTimeFormat(undefined, {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: gameDayTimeZone }).format(generated) : '') + '.';
 }
 
 function refreshLiveScoreViews() {
@@ -114,7 +181,7 @@ function showView({ focus = false } = {}) {
   if (activeView === 'rankings') centerMobileMap();
   if (activeView === 'games') startGameDay();
   else {
-    gameDayController?.abort(); gameDayController = null;
+    gameDayController?.abort(); gameDayController = null; gameDayKeepCards = false;
     gameDayRecordRequest += 1; gameDayRecordReport = null;
     ids('games-content').setAttribute('aria-busy', 'false');
   }
@@ -204,8 +271,11 @@ function renderGameDay({ liveOnly = false } = {}) {
     : 'Games where either team matches the selected subdivision, group, and conference. Mixed matchups stay included.';
   const accuracy = ids('games-accuracy');
   if (!gameDayReport || gameDayModel !== state.model || gameDayReport.date !== gameDayDate) {
-    accuracy.hidden = true;
-    accuracy.innerHTML = '';
+    // An automatic snapshot update keeps the previous board until it is rebuilt.
+    if (!gameDayKeepCards) {
+      accuracy.hidden = true;
+      accuracy.innerHTML = '';
+    }
     return;
   }
   const accuracyMarkup = renderGameDayAccuracy(computeGameDayAccuracy(display.rows));
@@ -224,12 +294,11 @@ function renderGameDay({ liveOnly = false } = {}) {
   if (liveOnly && cards.length === rows.length && cards.every((card, index) => card.dataset.gameDayId === String(rows[index].id))) {
     updateGameDayLiveElements(container, rows, options);
   } else {
-    const expanded = new Set(cards.filter(card => card.querySelector('details')?.open).map(card => card.dataset.gameDayId));
+    const expanded = captureOpenDetails(container);
+    const focused = captureFocus();
     container.innerHTML = renderGameDayRows(rows, options);
-    for (const card of container.querySelectorAll('[data-game-day-id]')) {
-      const details = card.querySelector('details');
-      if (details && expanded.has(card.dataset.gameDayId)) details.open = true;
-    }
+    restoreOpenDetails(container, expanded);
+    restoreFocus(focused);
   }
   if (!gameDayReport.rows.length) {
     const dates = gameDayReport.availableDates;
@@ -237,6 +306,104 @@ function renderGameDay({ liveOnly = false } = {}) {
     const next = dates.find(date => date > gameDayDate);
     ids('games-content').innerHTML = '<div class="game-day-empty"><h2>No games scheduled for ' + escapeHtml(gameDayLabel(gameDayDate)) + '</h2><p>The loaded snapshot has no FBS/FCS games on this date.</p>' +
       [previous, next].filter(Boolean).map(date => '<button class="button button-outline" type="button" data-games-date="' + date + '">' + escapeHtml(gameDayLabel(date, { month: 'short', day: 'numeric' })) + ' games</button>').join(' ') + '</div>';
+  }
+}
+
+// Rebuilt markup keeps keyboard focus and expanded details. Game cards are
+// found by stable game ID (never by list position); controls inside a card or
+// a static region are found by their identifying attributes, then DOM path.
+const STABLE_CARDS = ['data-season-game-id', 'data-game-day-id'];
+// Static containers whose markup an automatic snapshot update rebuilds.
+const PRESERVED_DETAIL_REGIONS = ['schedule-list', 'schedule-forecast-note', 'season-projection-summary', 'team-unit-profile',
+  'compare-content', 'compare-unit-matchup', 'simulation-result', 'simulation-unit-matchup', 'board-content'];
+const FOCUS_ATTRIBUTES = ['data-select-team', 'data-season-game-target', 'data-map-division', 'data-games-date', 'aria-controls', 'name', 'type'];
+
+function stableCard(element) {
+  for (const name of STABLE_CARDS) {
+    const card = element.closest('[' + name + ']');
+    if (card) return { card, name, key: card.getAttribute(name) };
+  }
+  return null;
+}
+
+function focusSignature(element) {
+  return element.tagName + FOCUS_ATTRIBUTES.map(name => '|' + (element.getAttribute(name) ?? '')).join('') + '|' + (element.classList?.[0] || '');
+}
+
+function matchingElements(scope, tag, signature) {
+  return [...scope.querySelectorAll(tag)].filter(element => focusSignature(element) === signature);
+}
+
+function domPath(scope, element) {
+  const path = [];
+  for (let node = element; node && node !== scope; node = node.parentElement) path.unshift([...node.parentElement.children].indexOf(node));
+  return path;
+}
+
+function captureFocus() {
+  const active = document.activeElement;
+  if (!active || active === document.body || active === document.documentElement) return null;
+  const card = stableCard(active);
+  const region = card ? null : active.parentElement?.closest('[id]');
+  const scope = card?.card || region;
+  if (!scope) return { element: active };
+  const signature = focusSignature(active);
+  return { element: active, id: active.id || null, card: card && { name: card.name, key: card.key }, regionId: region?.id || null,
+    self: active === scope, tag: active.tagName, signature, ordinal: matchingElements(scope, active.tagName, signature).indexOf(active),
+    path: domPath(scope, active) };
+}
+
+function restoreFocus(saved) {
+  if (!saved) return;
+  const active = document.activeElement;
+  const lost = !active || active === document.body;
+  if (saved.element.isConnected) {
+    if (lost && document.activeElement !== saved.element) saved.element.focus({ preventScroll: true });
+    return;
+  }
+  // Someone moved focus on purpose meanwhile; leave it there.
+  if (!lost) return;
+  const scope = saved.card
+    ? [...document.querySelectorAll('[' + saved.card.name + ']')].find(element => element.getAttribute(saved.card.name) === saved.card.key)
+    : saved.regionId && document.getElementById(saved.regionId);
+  if (!scope) return;
+  // IDs inside game cards can be position-based, so only region IDs are trusted.
+  let target = saved.self ? scope : null;
+  if (!target && saved.id && !saved.card) target = document.getElementById(saved.id);
+  if (!target && saved.signature) target = matchingElements(scope, saved.tag, saved.signature)[saved.ordinal] || null;
+  if (!target && saved.path) {
+    let node = scope;
+    for (const index of saved.path) node = node?.children[index];
+    if (node?.tagName === saved.tag) target = node;
+  }
+  // The same game's card is the nearest meaningful place for keyboard focus.
+  if (!target && saved.card) target = scope;
+  target?.focus({ preventScroll: true });
+}
+
+function preservingFocus(render) {
+  return function (...args) {
+    const saved = captureFocus();
+    try { return render.apply(this, args); }
+    finally { restoreFocus(saved); }
+  };
+}
+
+function detailsKey(details, region) {
+  const card = stableCard(details);
+  const scope = card && region.contains(card.card) ? card.card : region;
+  const same = [...scope.querySelectorAll('details')].filter(element => element.className === details.className);
+  return (scope === region ? '' : card.name + '=' + card.key) + '|' + details.className + '|' + same.indexOf(details);
+}
+
+function captureOpenDetails(region) {
+  return region ? new Set([...region.querySelectorAll('details[open]')].map(details => detailsKey(details, region))) : new Set();
+}
+
+function restoreOpenDetails(region, open) {
+  if (!region || !open.size) return;
+  for (const details of region.querySelectorAll('details')) {
+    if (open.has(detailsKey(details, region))) details.open = true;
   }
 }
 
@@ -279,8 +446,11 @@ async function startGameDay() {
   const current = () => !controller.signal.aborted && gameDayController === controller && state.model === model && gameDayDate === date && activeView === 'games';
   const content = ids('games-content');
   content.setAttribute('aria-busy', 'true');
-  content.innerHTML = '<div class="game-day-empty">Preparing the schedule and matchup forecasts…</div>';
-  ids('games-count').textContent = 'Preparing games…';
+  if (!gameDayKeepCards || !content.querySelector('[data-game-day-id]')) {
+    gameDayKeepCards = false;
+    content.innerHTML = '<div class="game-day-empty">Preparing the schedule and matchup forecasts…</div>';
+    ids('games-count').textContent = 'Preparing games…';
+  }
   try {
     const report = await buildGameDay(model, { date, timeZone: gameDayTimeZone, signal: controller.signal,
       onProgress: progress => {
@@ -302,6 +472,7 @@ async function startGameDay() {
   } finally {
     if (gameDayController === controller) {
       gameDayController = null;
+      gameDayKeepCards = false;
       content.setAttribute('aria-busy', 'false');
     }
   }
@@ -313,6 +484,7 @@ function selectGameDay(date) {
   if (date !== gameDayDate) {
     gameDayController?.abort();
     gameDayController = null;
+    gameDayKeepCards = false;
     gameDayReport = null;
     gameDayModel = null;
     gameDayDate = date;
@@ -873,7 +1045,12 @@ function centerMobileMap() {
   scroll.scrollLeft = Math.max(0, center - scroll.clientWidth / 2);
 }
 
+// The board is also replaced asynchronously when neutral ranks finish.
 function renderBoard(resetMatchups = false) {
+  preservingFocus(renderBoardContent)(resetMatchups);
+}
+
+function renderBoardContent(resetMatchups) {
   const board = ids('board-content');
   const modelReady = state.model.broadCoverage;
   const rankingReport = getNeutralRankings(state.model);
@@ -961,6 +1138,10 @@ function updateCompareRecordElements() {
 }
 
 function renderCompare() {
+  preservingFocus(renderCompareContent)();
+}
+
+function renderCompareContent() {
   const a = teamByKey(ids('compare-a').value || state.compareA);
   const b = teamByKey(ids('compare-b').value || state.compareB);
   ids('compare-unit-matchup').innerHTML = '';
@@ -984,6 +1165,10 @@ function renderCompare() {
 }
 
 function runMatchupSimulation() {
+  preservingFocus(renderMatchupSimulation)();
+}
+
+function renderMatchupSimulation() {
   const output = ids('simulation-result');
   if (!state.model) {
     ids('simulation-unit-matchup').innerHTML = '';
@@ -1062,7 +1247,7 @@ function runMatchupSimulation() {
     '</div>' + yardage + '<details class="simulation-method"><summary>How this forecast works</summary><p>Forecast v' + escapeHtml(prediction.modelVersion) + ' · ' + SIMULATION_RUNS.toLocaleString() + ' simulated outcomes. ' + escapeHtml(sampleLabel) + ' Team strength starts with opponent-adjusted results. The conference adjustment is the net change in this matchup after both teams’ ratings share information with their conferences. It can be nonzero within one conference because each team has a different schedule and set of opponents. The selected venue and historically fitted passing/rushing matchup effects complete the margin. The total uses team scoring and points allowed with the full-field average. These adjustments change the scoring split; they do not change the total. Injuries and weather are not modeled.</p><p>Experimental yardage estimates multiply opponent-adjusted yards per attempt by separately opponent-adjusted attempt volume with a four-game prior. They have not been validated for forecasting accuracy, omit venue and game-state effects, and do not change projected points or win chances. Totals add the rounded passing and rushing estimates.</p></details>';
 }
 
-async function updateNeutralRankings() {
+async function updateNeutralRankings({ resetMatchups = true } = {}) {
   neutralRankingController?.abort();
   const controller = new AbortController();
   neutralRankingController = controller;
@@ -1092,7 +1277,7 @@ async function updateNeutralRankings() {
     if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
     refreshGameDayRankingStatus();
     if (activeView === 'games') renderGameDay();
-    renderBoard(true);
+    renderBoard(resetMatchups);
   } catch (error) {
     if (!current()) return;
     neutralRankingError = error.message || 'The loaded snapshot could not rank the full neutral field.';
@@ -1105,7 +1290,7 @@ async function updateNeutralRankings() {
     if (selected) updateSeasonRankElements(ids('season-projection-summary'), ids('schedule-list'), selected);
     refreshGameDayRankingStatus();
     if (activeView === 'games') renderGameDay();
-    renderBoard(true);
+    renderBoard(resetMatchups);
   }
 }
 
@@ -1125,9 +1310,15 @@ function exportRankings() {
   link.href = url; link.download = 'college-football-neutral-rankings-' + (state.model.meta.season || 'season') + '.csv'; link.click(); URL.revokeObjectURL(url);
 }
 
-function setDataset(raw, message, persist, source = 'imported') {
+// preserveUi is the automatic public-update path: it keeps the selected team,
+// matchups and venue, filters, date, open details, focus, and scroll position.
+function setDataset(raw, message, persist, source = 'imported', { preserveUi = false } = {}) {
   validateDataset(raw);
   const previousFocus = state.focusTeam;
+  const kept = preserveUi ? { scrollX: window.scrollX, scrollY: window.scrollY, focus: captureFocus(),
+    open: PRESERVED_DETAIL_REGIONS.map(id => [id, captureOpenDetails(ids(id))]),
+    board: Boolean(ids('board-content').querySelector('.rank-table')) } : null;
+  gameDayKeepCards = Boolean(preserveUi && activeView === 'games');
   neutralRankingController?.abort();
   gameDayController?.abort();
   gameDayController = null;
@@ -1141,7 +1332,7 @@ function setDataset(raw, message, persist, source = 'imported') {
   seasonAnalysisCache.clear();
   state.source = source;
   state.focusTeam = teamByKey(previousFocus) ? teamByKey(previousFocus).name : null;
-  state.compareA = null; state.compareB = null;
+  if (!preserveUi) { state.compareA = null; state.compareB = null; }
   if (persist) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(raw)); }
     catch (error) { storageWarning = ' Loaded for this visit only; browser storage was unavailable, so upload it again on your next visit.'; }
@@ -1152,9 +1343,16 @@ function setDataset(raw, message, persist, source = 'imported') {
   setStatus();
   renderHero();
   renderDossier();
-  renderBoard(true);
+  if (kept) {
+    for (const id of ['compare-a', 'compare-b', 'sim-a', 'sim-b']) ids(id).dispatchEvent(new Event('searchable-select:refresh'));
+    renderCompare();
+    runMatchupSimulation();
+    // The ranked board stays until the new neutral ranks finish.
+    if (!(kept.board && model.broadCoverage)) renderBoard(false);
+    for (const [id, open] of kept.open) restoreOpenDetails(ids(id), open);
+  } else renderBoard(true);
   renderDatasetStatus();
-  updateNeutralRankings();
+  updateNeutralRankings({ resetMatchups: !preserveUi });
   if (activeView === 'games') startGameDay();
   syncLiveScorePolling();
   // Recompute whole-field fit
@@ -1164,6 +1362,10 @@ function setDataset(raw, message, persist, source = 'imported') {
   if (message || storageWarning) {
     ids('import-message').className = 'import-message';
     ids('import-message').textContent = (message || '') + storageWarning;
+  }
+  if (kept) {
+    restoreFocus(kept.focus);
+    if (window.scrollX !== kept.scrollX || window.scrollY !== kept.scrollY) window.scrollTo(kept.scrollX, kept.scrollY);
   }
 }
 
@@ -1185,7 +1387,7 @@ function selectFocusTeam(name, scrollToProfile) {
 async function loadBundled() {
   const response = await fetch(STARTER_URL, { cache: 'no-store' });
   if (!response.ok) throw new Error('Could not load the bundled snapshot. Open the site through a local web server.');
-  return response.json();
+  return { raw: await response.json(), validators: readValidators(response) };
 }
 
 async function initialize() {
@@ -1199,7 +1401,9 @@ async function initialize() {
     try { localStorage.removeItem(STORAGE_KEY); } catch (storageError) { /* Storage may be unavailable. */ }
   }
   try {
-    state.publicDataset = validateDataset(await loadBundled());
+    const bundled = await loadBundled();
+    state.publicDataset = validateDataset(bundled.raw);
+    publicSnapshotUpdates.recordRetrieval(bundled.validators);
   } catch (error) {
     state.publicUnavailable = true;
     if (!imported && !state.raw) throw error;
@@ -1238,15 +1442,17 @@ document.addEventListener('change', async function (event) {
   } else if (event.target.id === 'conference-filter') {
     renderBoard(true);
   } else if (event.target.id === 'data-file' && event.target.files && event.target.files[0]) {
-    const file = event.target.files[0];
-    try {
-      const raw = JSON.parse(await file.text());
-      setDataset(raw, 'Loaded ' + file.name + '.', true);
-    } catch (error) {
-      ids('import-message').className = 'import-message is-error';
-      ids('import-message').textContent = error && error.message ? error.message : 'Could not read this file.';
-    }
-    event.target.value = '';
+    const input = event.target;
+    const file = input.files[0];
+    await manualSelection.run({
+      load: async () => JSON.parse(await file.text()),
+      apply: raw => setDataset(raw, 'Loaded ' + file.name + '.', true),
+      fail: error => {
+        ids('import-message').className = 'import-message is-error';
+        ids('import-message').textContent = error && error.message ? error.message : 'Could not read this file.';
+      },
+      settle: () => { input.value = ''; }
+    });
   }
 });
 
@@ -1332,20 +1538,24 @@ document.addEventListener('click', async function (event) {
     return;
   }
   if (event.target.id === 'reset-data' || event.target.closest('[data-return-public]')) {
-    const selectionAtRequest = state.raw;
-    try {
-      const bundled = validateDataset(await loadBundled());
-      if (state.raw !== selectionAtRequest) return;
-      state.publicDataset = bundled;
+    await manualSelection.run({ load: loadBundled, apply: response => {
+      const bundled = validateDataset(response.raw);
+      // An automatic update may already hold a newer copy than a lagging CDN edge.
+      const latest = state.publicDataset && snapshotIsNewer(bundled, state.publicDataset) ? state.publicDataset : bundled;
+      // The retrieval time always counts; an older edge copy's validators do not.
+      publicSnapshotUpdates.recordRetrieval(latest === bundled ? response.validators : null);
+      state.publicDataset = latest;
       state.publicUnavailable = false;
       let message = 'Using the latest public snapshot.';
       try { localStorage.removeItem(STORAGE_KEY); } catch (storageError) { message += ' Browser storage could not be cleared; the saved import may return on your next visit.'; }
-      setDataset(bundled, message, false, 'public');
-    } catch (error) {
-      if (state.raw !== selectionAtRequest) return;
+      setDataset(latest, message, false, 'public');
+      // An earlier import's file no longer describes the selection.
+      if (ids('data-file')) ids('data-file').value = '';
+      pendingPublicSnapshot.flush();
+    }, fail: error => {
       ids('import-message').className = 'import-message is-error';
       ids('import-message').textContent = error.message;
-    }
+    } });
   }
   if (event.target.id === 'export-rankings') exportRankings();
 });
@@ -1356,7 +1566,12 @@ window.addEventListener('popstate', () => showView({ focus: true }));
 setInterval(() => {
   const today = localDateKey(new Date(), gameDayTimeZone);
   if (gameDayFollowToday && today !== gameDayDate) selectGameDay(today);
+  if (document.visibilityState === 'hidden') return;
+  pendingPublicSnapshot.flush();
+  // Kickoff-dependent status labels advance even without a score-feed update.
+  if (state.model && ['games', 'dossier'].includes(activeView)) refreshLiveScoreViews();
 }, 60000);
+editingGuard.install();
 showView();
 installSiteUpdates();
 installTeamLogoFallbacks();
@@ -1364,7 +1579,7 @@ enhanceSearchableSelects();
 loadChallengerStatus();
 loadConferenceStatus();
 initializeLiveScores();
-initialize().catch(function (error) {
+initialize().finally(() => publicSnapshotUpdates.start()).catch(function (error) {
   const message = ids('import-message');
   if (message) { message.className = 'import-message is-error'; message.textContent = error.message; }
   const status = ids('data-status');

@@ -2,7 +2,7 @@ import { isCompletedGame } from './model.js';
 import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { getNeutralRankings } from './neutral-rankings.js?v=6132c7df9490';
 import { matchesTeamFilters } from './team-filters.js?v=922d251eab00';
-import { cachedSeasonRecord, completeOpponentSeasonRecords } from './season-projections.js?v=3f437a6f176e';
+import { cachedSeasonRecord, completeOpponentSeasonRecords } from './season-projections.js?v=da3a65c4e413';
 
 const snapshotCaches = new WeakMap();
 const dateFormatters = new Map();
