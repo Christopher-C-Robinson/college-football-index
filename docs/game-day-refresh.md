@@ -4,11 +4,17 @@ The model refresh is driven by completed game days, not an unconditional daily C
 
 ## Completion and midnight
 
-`Refresh model after the last final` checks every 15 minutes during August–January, offset from the top of the hour. Most checks read only the repository snapshot, completion ledger, and the already-cached score service. Reading that service makes no new BBS request. GitHub scheduling can be delayed; this is a readiness checker, not an exact-time service.
+`Refresh model after the last final` checks every 15 minutes during August–January, offset from the top of the hour. GitHub can delay scheduled runs, so this is a readiness checker, not an exact-time service.
+
+Most checks read only the repository snapshot, the completion ledger, and the already-cached score service, which makes no ESPN or BBS request when read. The cache's evidence can come from the public ESPN scoreboard or the independent BBS fallback; see [shared live scores](live-scores.md). If the cache is unavailable, known pending days can still use bounded CFBD confirmation.
 
 Expected games come from the deduplicated CFBD schedule. Each day is keyed by football season and its scheduled calendar date in `America/Chicago`. A late Saturday game finishing Sunday stays in Saturday's batch. Provider quota resets in UTC do not reset completion tracking. The checker retains unfinished days across missed runs and midnight.
 
-A final requires an identified game, an explicit completed/final state, and valid non-tied scores. Canceled or postponed games are terminal only when confirmed by the source; rescheduled games move to their authoritative new scheduled day. Missing live rows and elapsed game-duration estimates never establish completion. Recent verified live or suspended activity prevents a completion refresh.
+A final requires an identified game, an explicit completed/final state, and valid non-tied scores. Canceled or postponed games are terminal only when confirmed by the source; rescheduled games move to their authoritative new scheduled day. Missing live rows and elapsed game-duration estimates never establish completion.
+
+Recent verified live or suspended activity blocks a completion refresh. Readiness uses the same preferred-source match as the website, so a ghost BBS live row can't override a preferred ESPN final for the same game. When that shared match is ambiguous, any current, fresh, verified live candidate still blocks. Freshness must come from a real time: an ESPN live or suspended row retrieved directly by the producer can show current activity through its fresh `fetchedAt` even when ESPN omits a score timestamp, but a BBS row needs a genuine upstream timestamp. The checker never fabricates an observation time.
+
+A final from either score source counts as completion evidence only. An ESPN final alone doesn't make model statistics ready or publish a model. CFBD must explicitly confirm the day's finals, and the 20-minute reporting buffer must pass, before model collection begins. The gating, buffer, and retry rules below apply unchanged.
 
 The normal model refresh waits 20 minutes after the day is observed complete. If the score provider omits a final, a bounded CFBD schedule check becomes eligible after the last plausible finish plus the reporting buffer. This timer permits confirmation; it does not invent a final. Confirmed schedules are reused in the model collection instead of downloaded twice.
 
@@ -20,7 +26,9 @@ The first refresh imports confirmed results and available team box scores. Missi
 
 Retries use persisted backoff and a finite attempt limit rather than downloading indefinitely on every checker tick. Delayed data can therefore be collected the following morning without restoring an unrelated daily refresh. An unavailable field remains explicitly missing when retry limits are reached; the model does not fabricate it.
 
-Automatic collection checks the authenticated CFBD quota and reserves at least 50 calls, increasing the reserve for remaining scheduled game days in the month. Collection pauses through the monthly reset when the reserve cannot be protected. Failed requests count conservatively. The BBS daily quota remains independently controlled by the existing Worker ledger.
+Automatic collection checks the authenticated CFBD quota and reserves at least 50 calls, increasing the reserve for remaining scheduled game days in the month. Collection pauses through the monthly reset when the reserve cannot be protected. Failed requests count conservatively.
+
+The checker doesn't affect live-score provider quotas. The BBS daily quota is still controlled separately by the existing Worker ledger, and the ESPN producer uses its own schedule and backoff.
 
 An ordinary warm-cache day in one statistics week typically costs five CFBD requests: usage, two schedules, and two box-score batches. Weekly metadata refresh, additional weeks, transient retries, or cold historical caches increase that count. A statistics-only retry normally costs three: usage plus the two subdivision box requests. The checker does not require a paid provider plan.
 
@@ -34,7 +42,9 @@ Changed model data, forecast archives, and a staged publication marker are commi
 
 A newer manual refresh can supersede an interrupted publication. Recovery verifies the newer public snapshot, retires the obsolete marker, and marks only days whose confirmed identities and final results still match. Changed schedules return to normal reconciliation.
 
-The saved pregame forecast archive retains its existing policy. Explorer and game-day predictions continue to use the loaded current snapshot.
+The saved pregame forecast archive keeps its existing policy. Explorer and game-day predictions continue to use the loaded current snapshot.
+
+An open tab on a score-using view checks the public model with a cheap HTTP `HEAD` validator request at most every 60 seconds and on visibility resume, and downloads it with `GET` when the validators change. Without usable validators, a bounded fallback downloads the full file about every 30 minutes. Visitors on public data get a newer snapshot automatically, with selections and scroll position kept, deferred while they are typing. A deliberately imported dataset stays selected, and the page shows that a newer public snapshot exists. See [browser refresh](live-scores.md#browser-refresh).
 
 ## Operations
 

@@ -1,15 +1,14 @@
 import { DurableObject } from 'cloudflare:workers';
-import { buildPollPlan, DAILY_CALL_LIMIT, LIVE_CALL_COST, CATALOG_CALL_COST, RESULT_DAY_CALL_COST,
-  DISCOVERY_MS } from './poll-plan.js';
+import { buildPollPlan, DAILY_CALL_LIMIT, LIVE_CALL_COST, CATALOG_CALL_COST, RESULT_DAY_CALL_COST } from './poll-plan.js';
+import { TIME_ZONE, iso, utcDay, calendarDay, shiftDay, validDay } from './time.js';
+import { PROVIDER, INTERVAL_SECONDS, STALE_SECONDS, DISCOVERY_SECONDS, servePacket, unavailablePacket,
+  composeScoreFeed, runProducers } from './score-feed.js';
+import { runEspnRefresh, serveEspn } from './espn-scoreboard.js';
+import { createEspnStore } from './espn-store.js';
 
-const PROVIDER = 'Big Balls Sports Data';
 const PROVIDER_URL = 'https://api.bigballsdata.com/v1/matches';
 const LIVE_PROVIDER_URL = 'https://api.bigballsdata.com/v1/scores';
 const LIVE_LEAGUES = ['ncaaf', 'ncaaf-fcs'];
-const TIME_ZONE = 'America/Chicago';
-const INTERVAL_SECONDS = 60;
-const STALE_SECONDS = 1800;
-const DISCOVERY_SECONDS = DISCOVERY_MS / 1000;
 const SLOT_MS = INTERVAL_SECONDS * 1000;
 const FETCH_TIMEOUT_MS = 20000;
 const PAGE_LIMIT = 200;
@@ -19,36 +18,8 @@ const KNOWN_STATUSES = new Map([
   ['finished', 'final'], ['postponed', 'postponed'], ['cancelled', 'canceled'],
   ['suspended', 'suspended']
 ]);
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'
-});
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-const iso = value => {
-  const parsed = typeof value === 'string' ? Date.parse(value) : NaN;
-  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
-};
-const utcDay = value => new Date(value).toISOString().slice(0, 10);
 const score = value => Number.isInteger(value) && value >= 0 && value <= 1000 ? value : null;
-
-function calendarDay(value) {
-  const date = value instanceof Date ? value : new Date(value);
-  if (!Number.isFinite(date.getTime())) return null;
-  const parts = Object.fromEntries(dateFormatter.formatToParts(date)
-    .filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
-  return parts.year + '-' + parts.month + '-' + parts.day;
-}
-
-function shiftDay(day, delta) {
-  const date = new Date(day + 'T12:00:00.000Z');
-  date.setUTCDate(date.getUTCDate() + delta);
-  return date.toISOString().slice(0, 10);
-}
-
-function validDay(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
-  const parsed = Date.parse(value + 'T12:00:00.000Z');
-  return Number.isFinite(parsed) && utcDay(parsed) === value;
-}
 
 function sourceError(code, { retryAfter = 0, partial = false } = {}) {
   const error = new Error(code);
@@ -450,7 +421,7 @@ function preserveFailure(cache, state, error) {
 
 async function refreshScores(cache, { forceDiscovery = false } = {}) {
   const env = cache.env;
-  if (!env.BBS_API_KEY) return { status: 'unconfigured', scope: 'score-cache' };
+  if (!env.BBS_API_KEY) return { status: 'unconfigured', scope: 'bbs' };
   const now = Date.now();
   const utcMonth = new Date(now).getUTCMonth() + 1;
   if (![1, 8, 9, 10, 11, 12].includes(utcMonth)) return { status: 'offseason' };
@@ -561,45 +532,14 @@ async function refreshScores(cache, { forceDiscovery = false } = {}) {
   }
 }
 
-function unavailablePacket(reason = 'scores_unavailable') {
-  return {
-    schemaVersion: 1, provider: PROVIDER, refreshedAt: null, fetchedAt: null, providerAsOf: null,
-    status: 'unavailable', stale: true, reason, refreshIntervalSeconds: INTERVAL_SECONDS,
-    staleAfterSeconds: STALE_SECONDS, coverage: { dates: [], timeZone: TIME_ZONE, partial: true, byDate: {} }, games: []
-  };
-}
-
-function servePacket(state, now, pollSchedule = null) {
-  if (!state.packet) return unavailablePacket(state.last_error_code || 'scores_not_loaded');
-  const packet = state.packet;
-  const legacyCatalog = packet.scoreFeedVersion !== 2;
-  const age = now - Date.parse(packet.fetchedAt || '');
-  const failed = Boolean(state.last_error_code);
-  const stale = legacyCatalog || packet.stale || failed || !Number.isFinite(age) || age >= STALE_SECONDS * 1000;
-  return {
-    ...packet, stale, status: stale ? 'stale' : 'fresh',
-    pollSchedule,
-    refreshIntervalSeconds: pollSchedule?.intervalSeconds || packet.refreshIntervalSeconds,
-    reason: state.last_error_code || (legacyCatalog ? 'live_feed_not_loaded' : null),
-    retryAt: state.backoff_until || null,
-    coverage: { ...packet.coverage, partial: legacyCatalog || packet.coverage.partial
-      || /pagination|invalid|unrecognized|mismatch|coverage/.test(state.last_error_code || ''),
-      byDate: Object.fromEntries(Object.entries(packet.coverage.byDate).map(([date, coverage]) => [date,
-        { ...coverage, stale: coverage.stale || now - Date.parse(coverage.fetchedAt) >= DISCOVERY_SECONDS * 1000 }])),
-      byLeague: Object.fromEntries(Object.entries(packet.coverage.byLeague || {}).map(([league, coverage]) => [league,
-        { ...coverage, stale: coverage.stale || failed || now - Date.parse(coverage.fetchedAt) >= STALE_SECONDS * 1000 }])) },
-    games: packet.games.map(game => {
-      const unverifiedLive = game.scoreSource !== 'live-feed' && ['live', 'suspended'].includes(game.status);
-      return { ...game,
-        status: unverifiedLive ? 'unknown' : game.status,
-        homeScore: unverifiedLive ? null : game.homeScore, awayScore: unverifiedLive ? null : game.awayScore,
-        scoreSource: game.scoreSource || 'catalog', liveVerified: game.liveVerified === true,
-        unavailableReason: unverifiedLive ? 'live_observation_missing' : game.unavailableReason,
-        stale: unverifiedLive || game.stale || failed || now - Date.parse(game.fetchedAt) >= STALE_SECONDS * 1000
-          || Boolean(game.scoreObservedAt && now - Date.parse(game.scoreObservedAt) >= STALE_SECONDS * 1000)
-      };
-    })
-  };
+function readEspnView(store, now, date) {
+  // Cache-only. Unfiltered: the whole retained archive plus pending games.
+  // A requested date reads its stored rows, archived or current.
+  if (!date) return serveEspn({ now, source: store.readSource(), boards: store.readAllBoards(), rows: store.readAllGames() });
+  const rows = store.readGamesForDates([date]);
+  const boards = store.readBoardsForDates([date, shiftDay(date, 1)]);
+  for (const [item, meta] of store.readBoardsForKeys(rows.flatMap(row => row.boardKeys || []))) boards.set(item, meta);
+  return serveEspn({ now, source: store.readSource(), boards, rows, dates: [date] });
 }
 
 function allowedOrigin(request, env) {
@@ -635,7 +575,10 @@ export class LiveScoreCache extends DurableObject {
     ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS poll_schedule (
       id INTEGER PRIMARY KEY CHECK (id = 1), body TEXT)`);
     ctx.storage.sql.exec('INSERT OR IGNORE INTO poll_schedule (id) VALUES (1)');
+    // Additive ESPN tables; BBS tables and quota ledger above are unchanged.
+    this.espnStore = createEspnStore(ctx.storage);
     this.inFlight = null;
+    this.espnInFlight = null;
   }
 
   async refresh(options = {}) {
@@ -645,9 +588,29 @@ export class LiveScoreCache extends DurableObject {
     finally { this.inFlight = null; }
   }
 
-  readScores() {
-    const row = this.ctx.storage.sql.exec('SELECT body FROM poll_schedule WHERE id = 1').one();
-    return servePacket(readState(this), Date.now(), row.body ? JSON.parse(row.body) : null);
+  async refreshEspn({ force = false } = {}) {
+    // Independent of BBS credentials, quota and backoff. Plain fetch only: the
+    // BBS requestProvider (and its bearer secret) is never used for ESPN.
+    if (this.espnInFlight) return { status: 'refresh_in_progress' };
+    this.espnInFlight = runEspnRefresh({ store: this.espnStore, fetchImpl: (url, init) => fetch(url, init),
+      now: Date.now(), force });
+    try { return await this.espnInFlight; }
+    finally { this.espnInFlight = null; }
+  }
+
+  readScores(date = null) {
+    // Cache reads only; each source degrades independently.
+    const now = Date.now();
+    let bbs;
+    try {
+      const row = this.ctx.storage.sql.exec('SELECT body FROM poll_schedule WHERE id = 1').one();
+      bbs = servePacket(readState(this), now, row.body ? JSON.parse(row.body) : null);
+    } catch {
+      bbs = unavailablePacket('scores_storage_unavailable');
+    }
+    let espn = null;
+    try { espn = readEspnView(this.espnStore, now, date); } catch { espn = null; }
+    return composeScoreFeed({ now, bbs, espn, requestedDate: date, bbsConfigured: Boolean(this.env.BBS_API_KEY) });
   }
 }
 
@@ -657,9 +620,10 @@ function scoreCache(env) {
 
 export default {
   async scheduled(_controller, env) {
-    // The public handler never calls the provider. Cron is the only automatic
-    // producer and shares its atomic quota/slot with authenticated manual work.
-    await scoreCache(env).refresh();
+    // The public handler never calls a provider. Cron runs both producers;
+    // BBS quota/slot/backoff and ESPN state are isolated from each other.
+    const cache = scoreCache(env);
+    await runProducers({ espn: () => cache.refreshEspn(), bbs: () => cache.refresh() });
   },
   async fetch(request, env) {
     if (!allowedOrigin(request, env)) return new Response('Origin not allowed.', { status: 403 });
@@ -674,9 +638,16 @@ export default {
       if (!env.REFRESH_TOKEN || request.headers.get('Authorization') !== 'Bearer ' + String(env.REFRESH_TOKEN).trim()) {
         return jsonResponse(request, { status: 'unauthorized' }, 401);
       }
-      if (!env.BBS_API_KEY) return jsonResponse(request, { status: 'unconfigured', scope: 'worker' });
-      try { return jsonResponse(request, await scoreCache(env).refresh({ forceDiscovery: true })); }
-      catch { return jsonResponse(request, { status: 'failed', reason: 'refresh_storage_unavailable' }, 503); }
+      if (!env.LIVE_SCORE_CACHE) return jsonResponse(request, { status: 'failed', reason: 'refresh_storage_unavailable' }, 503);
+      const cache = scoreCache(env);
+      // ESPN refreshes even when BBS is unconfigured.
+      const results = await runProducers({
+        espn: () => cache.refreshEspn({ force: true }),
+        bbs: env.BBS_API_KEY ? () => cache.refresh({ forceDiscovery: true }) : () => ({ status: 'unconfigured', scope: 'bbs' })
+      });
+      const ok = Object.values(results).some(result => ['refreshed', 'partial', 'catalog_refreshed'].includes(result.status));
+      return jsonResponse(request, { status: ok ? 'refreshed' : results.espn.status, ...results },
+        Object.values(results).every(result => result.reason === 'producer_failed') ? 503 : 200);
     }
     if (url.pathname !== '/scores') return jsonResponse(request, { error: 'not_found' }, 404);
     if (request.method !== 'GET') return jsonResponse(request, { error: 'method_not_allowed' }, 405);
@@ -685,12 +656,7 @@ export default {
     if ([...url.searchParams.keys()].some(name => name !== 'date')) return jsonResponse(request, { error: 'unsupported_parameter' }, 400);
     try {
       if (!env.LIVE_SCORE_CACHE) return jsonResponse(request, unavailablePacket('scores_unconfigured'), 503);
-      const packet = await scoreCache(env).readScores();
-      if (date) {
-        packet.games = packet.games.filter(game => game.date === date);
-        packet.requestedDate = date;
-        packet.dateCovered = packet.coverage.dates.includes(date);
-      }
+      const packet = await scoreCache(env).readScores(date || null);
       return jsonResponse(request, packet, packet.status === 'unavailable' ? 503 : 200);
     } catch {
       return jsonResponse(request, unavailablePacket('scores_storage_unavailable'), 503);

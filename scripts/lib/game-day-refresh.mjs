@@ -239,15 +239,29 @@ function liveMatches(game, state, model) {
   const matchState = { ...state, staleAfterMs: Number.MAX_SAFE_INTEGER };
   const snapshot = { ...game, completed: false };
   const result = matchLiveGame(snapshot, matchState, model);
-  const candidates = state.games.map(live => matchLiveGame(snapshot, { ...matchState, games: [live] }, model)).filter(Boolean);
+  // The shared source preference decides the game. Only an unresolved match
+  // inspects each row, so real source ambiguity still blocks completion.
+  const candidates = result ? [result]
+    : state.games.map(live => matchLiveGame(snapshot, { ...matchState, games: [live] }, model)).filter(Boolean);
   return { result, candidates };
 }
 
+// ESPN's public scoreboard is retrieved directly, so a fresh retrieval proves
+// the provider is actively reporting the game. Its fetch time is only a
+// retrieval time, not an upstream observation time; never fabricate one.
+function directlyRetrieved(game) {
+  return String(game.sourceProvider || '').toUpperCase() === 'ESPN' && game.scoreSource === 'scoreboard'
+    && game.liveVerified === true && Number.isFinite(stamp(game.fetchedAt));
+}
+
 function activeLive(candidates, state, now) {
-  return !state?.error && candidates.some(game => game.liveVerified === true
-    && ['live', 'suspended'].includes(game.status)
-    && fresh(game.scoreObservedAt || game.providerAsOf, now, LIVE_FRESH_MS)
-    && fresh(game.fetchedAt || state.refreshedAt, now, FEED_FRESH_MS));
+  return !state?.error && candidates.some(game => {
+    const upstream = game.scoreObservedAt || game.providerAsOf;
+    return game.liveVerified === true && !game.feedError
+      && ['live', 'suspended'].includes(game.status)
+      && (upstream ? fresh(upstream, now, LIVE_FRESH_MS) : directlyRetrieved(game))
+      && fresh(game.fetchedAt || state.refreshedAt, now, FEED_FRESH_MS);
+  });
 }
 
 function plausibleFinish(game) {

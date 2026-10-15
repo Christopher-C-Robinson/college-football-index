@@ -33,6 +33,24 @@ function countResult(record, margin, opponentDivision) {
   if (['fbs', 'fcs'].includes(opponentDivision)) record[opponentDivision + result] += 1;
 }
 
+const sourceOf = result => typeof result?.sourceProvider === 'string' && result.sourceProvider.trim()
+  ? result.sourceProvider.trim().toUpperCase() : null;
+
+// Mirrors the shared matcher's precedence: a verified ESPN final outranks the
+// catalog feed. Timestamps only order results from one source.
+function verifiedEspnFinal(result) {
+  return sourceOf(result) === 'ESPN' && result.status === 'final' && result.liveVerified === true
+    && validScore(result.homeScore) && validScore(result.awayScore) && result.homeScore !== result.awayScore;
+}
+
+// 1: the new result outranks the cached one; -1: it may not replace it; 0:
+// same source (or no provenance on either), so the recency guards decide.
+function sourcePrecedence(live, previous) {
+  if (sourceOf(live) === sourceOf(previous)) return 0;
+  const verified = verifiedEspnFinal(live), previousVerified = verifiedEspnFinal(previous);
+  return verified === previousVerified ? 0 : verified ? 1 : -1;
+}
+
 // Narrow the schedule by date before the shared name/alias matcher runs.
 function candidateDays(state) {
   const days = new Set();
@@ -83,15 +101,22 @@ export function buildLiveRecordIndex(model, state, matchGame) {
       const at = Date.parse(live.providerAsOf || live.refreshedAt || '');
       const previousAt = Date.parse(previous?.providerAsOf || previous?.refreshedAt || '');
       const changed = previous && (previous.status !== live.status || previous.homeScore !== live.homeScore || previous.awayScore !== live.awayScore);
-      // Keep a confirmed result if a delayed response offers an older correction.
-      if (previous && (changed && live.stale || Number.isFinite(previousAt) && (!Number.isFinite(at) || at < previousAt))) continue;
+      const precedence = previous ? sourcePrecedence(live, previous) : 0;
+      // A retained verified ESPN final is not overwritten by a lower-priority source.
+      if (precedence < 0) continue;
+      // Keep a confirmed result if a delayed response offers an older correction
+      // from the same source. A verified ESPN final may correct the catalog
+      // even when its own retrieval is older or archived.
+      if (previous && precedence === 0 && (changed && live.stale
+        || Number.isFinite(previousAt) && (!Number.isFinite(at) || at < previousAt))) continue;
       if (previous?.status === 'canceled' && live.status !== 'canceled' && live.status !== 'final') {
         // A newer fresh status can restore a postponed/rescheduled game.
         if (!live.stale && Number.isFinite(at) && Number.isFinite(previousAt) && at > previousAt) cache.results.delete(id);
         continue;
       }
       cache.results.set(id, { status: live.status, homeScore: live.homeScore, awayScore: live.awayScore,
-        providerAsOf: live.providerAsOf, refreshedAt: live.refreshedAt });
+        providerAsOf: live.providerAsOf, refreshedAt: live.refreshedAt,
+        sourceProvider: sourceOf(live), liveVerified: live.liveVerified === true });
     }
   }
   const records = new Map([...model.teams.keys()].map(name => [name, emptyRecord()]));

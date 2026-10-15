@@ -4,7 +4,7 @@ import { renderGameTeamSummary, renderGameTeamNames, renderGameWinner, updateGam
 import { renderSeasonChart, seasonGameAnchor } from './season-chart.js?v=43ec3f39844c';
 import { barDividerColor, yardageBarColors } from './chart-colors.js?v=f10d34843840';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
-import { liveGameLabel } from './live-scores.js?v=cea7490438a4';
+import { liveGameLabel, currentGameStatus } from './live-scores.js?v=a5ac8cbd7f91';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -39,7 +39,14 @@ function scheduleDate(value) {
   return '<time datetime="' + escapeHtml(value) + '" title="' + escapeHtml(dateText(value)) + '" aria-label="' + escapeHtml(dateText(value)) + '">' + escapeHtml(label) + '</time>';
 }
 
-function scheduleLiveStatus(live) {
+function rowStatus(row, now = Date.now()) {
+  return currentGameStatus({ status: row.status, live: row.live, startDate: row.date, kickoffTBD: row.timeTBD === true }, { now });
+}
+
+function scheduleLiveStatus(row, now) {
+  const live = row.live;
+  const current = rowStatus(row, now);
+  if (current.awaiting) return '<span class="live-score-badge forecast-compact-status is-stale" title="' + escapeHtml(current.label) + '">' + escapeHtml(current.label) + '</span>';
   if (!live) return '';
   const label = ({ live: 'Live', final: 'Final', scheduled: 'Scheduled', postponed: 'Postponed',
     canceled: 'Canceled', suspended: 'Suspended', unknown: 'Unavailable' })[live.status] || 'Unavailable';
@@ -300,16 +307,18 @@ function renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) 
     teamBlock(selectedOnLeft ? opponent : selected, false) + '</div>';
 }
 
-function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) {
+function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index, now = Date.now()) {
   const forecast = usableForecast(row);
   const actual = row.actual && finite(row.actual.for) && finite(row.actual.against) ? row.actual : null;
   const winner = winnerPresentation(row, teamName, forecast, actual);
   const winnerClass = winner.color ? ' is-winner-' + winner.kind : '';
   const winnerStyle = winner.color ? ' style="--game-winner-rgb:' + winner.color + '"' : '';
   const cardLabel = teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label;
-  return '<article id="' + seasonGameAnchor(index) + '" data-season-game-index="' + index + '" class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
+  // The index pairs a card with its row; the game ID survives schedule changes.
+  const gameId = row.gameId === null || row.gameId === undefined || row.gameId === '' ? '' : ' data-season-game-id="' + escapeHtml(row.gameId) + '"';
+  return '<article id="' + seasonGameAnchor(index) + '" data-season-game-index="' + index + '"' + gameId + ' class="forecast-game is-compact-game' + (row.status === 'canceled' ? ' is-canceled' : '') + winnerClass + '"' + winnerStyle + ' role="listitem" tabindex="-1" aria-label="' + escapeHtml(cardLabel) + '">' +
     '<div class="forecast-game-heading"><div class="forecast-date">' + scheduleDate(row.date) + '<span>WK ' + escapeHtml(row.week ?? '—') + '</span></div>' +
-    '<span class="forecast-status-meta">' + scheduleLiveStatus(row.live) + '</span><span class="forecast-venue-meta">' + escapeHtml(scheduleVenue(row)) + '</span></div>' +
+    '<span class="forecast-status-meta">' + scheduleLiveStatus(row, now) + '</span><span class="forecast-venue-meta">' + escapeHtml(scheduleVenue(row)) + '</span></div>' +
     renderMatchupHeader(row, teamName, forecast, actual, winner, analysis) +
     '<div class="forecast-game-body forecast-analytics-grid">' + matchupOutlook(row, teamName, forecast, actual) + marginPanel(row, teamName, forecast, actual) + '</div>' +
     renderYardagePanel(row, teamName, forecast, actual) +
@@ -320,14 +329,14 @@ function renderRow(row, teamName, rankingsReady, unitProfiles, analysis, index) 
     forecastSource(forecast, analysis, row) + '</div></details></article>';
 }
 
-export function renderSeasonProjections(analysis) {
+export function renderSeasonProjections(analysis, { now = Date.now() } = {}) {
   if (!analysis || !Array.isArray(analysis.rows) || !analysis.rows.length) return '<div class="schedule-empty">No games are listed in this season snapshot.</div>';
   return '<div class="forecast-ledger" role="list" aria-label="' + escapeHtml(analysis.teamName + ' current projections and actual results') + '">' +
-    analysis.rows.map((row, index) => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis, index)).join('') + '</div>';
+    analysis.rows.map((row, index) => renderRow(row, analysis.teamName, analysis.rankingsReady, analysis.unitProfiles, analysis, index, now)).join('') + '</div>';
 }
 
 /** Patch score displays and comparison graphics; keep cards/details mounted. */
-export function updateSeasonLiveElements(container, analysis) {
+export function updateSeasonLiveElements(container, analysis, { now = Date.now() } = {}) {
   if (!container?.querySelectorAll || !Array.isArray(analysis?.rows)) return;
   for (const card of container.querySelectorAll('[data-season-game-index]')) {
     const row = analysis.rows[Number(card.dataset.seasonGameIndex)];
@@ -337,7 +346,9 @@ export function updateSeasonLiveElements(container, analysis) {
     for (const team of [row.matchup?.team, row.matchup?.opponent]) {
       if (team?.name) updateSeasonRecordElements(card, team);
     }
-    const signature = JSON.stringify([row.status, row.actual?.for, row.actual?.against, row.live?.status, row.live?.for, row.live?.against, row.live?.refreshedAt, row.live?.stale]);
+    // Include the current label so a passed kickoff patches without a feed update.
+    const current = rowStatus(row, now);
+    const signature = JSON.stringify([row.status, current.label, row.actual?.for, row.actual?.against, row.live?.status, row.live?.for, row.live?.against, row.live?.refreshedAt, row.live?.stale]);
     if (card.dataset.liveSignature === signature) continue;
     card.dataset.liveSignature = signature;
     const forecast = usableForecast(row);
@@ -347,7 +358,7 @@ export function updateSeasonLiveElements(container, analysis) {
     card.classList.toggle('is-canceled', row.status === 'canceled');
     if (winner.color) card.style.setProperty('--game-winner-rgb', winner.color);
     else card.style.removeProperty('--game-winner-rgb');
-    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label + '. ' + (row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
+    card.setAttribute('aria-label', analysis.teamName + ' versus ' + row.opponentName + ', week ' + (row.week ?? 'unknown') + ', ' + dateText(row.date) + ', ' + row.site + '. ' + winner.label + '. ' + (current.awaiting ? current.label + '.' : row.live ? liveGameStatusText(row.live) : 'Snapshot result.'));
     const template = container.ownerDocument.createElement('template');
     template.innerHTML = renderMatchupHeader(row, analysis.teamName, forecast, actual, winner, analysis);
     const center = card.querySelector('.forecast-matchup-center');
@@ -356,7 +367,7 @@ export function updateSeasonLiveElements(container, analysis) {
     const venue = card.querySelector('.forecast-venue-meta');
     if (venue) venue.textContent = scheduleVenue(row);
     const status = card.querySelector('.forecast-status-meta');
-    if (status) status.innerHTML = scheduleLiveStatus(row.live);
+    if (status) status.innerHTML = scheduleLiveStatus(row, now);
     const sections = [
       ['.forecast-matchup-outlook', matchupOutlook(row, analysis.teamName, forecast, actual)],
       ['.forecast-margin-panel', marginPanel(row, analysis.teamName, forecast, actual)],
