@@ -1601,11 +1601,11 @@
       "inputFingerprint": "9ac223d9cbd1cc92521679377c3ba6bce87b4732fffe36e79d727d93bb517d2a"
     },
     "2026:2026-10-14": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-15T04:27:39.645Z",
       "nextStatsAt": null,
-      "firstAllFinalSeenAt": null,
+      "firstAllFinalSeenAt": "2026-10-15T03:57:39.645Z",
       "publishedAt": null,
       "baseline": false,
       "season": 2026,
@@ -1623,9 +1623,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 21
         },
         {
           "id": 401871068,
@@ -1639,15 +1639,19 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 3,
+          "awayPoints": 16
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [
+        "401871054",
+        "401871068"
+      ],
+      "lastReadinessAttemptAt": "2026-10-15T03:57:39.645Z"
     }
   },
   "pendingPublication": null,
@@ -1656,11 +1660,126 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-14T04:48:45.904Z",
+  "confirmedScheduleOverrides": {
+    "401858496": {
+      "game": {
+        "id": 401858496,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Michigan",
+        "awayTeam": "Indiana",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    },
+    "401858498": {
+      "game": {
+        "id": 401858498,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Northwestern",
+        "awayTeam": "Rutgers",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    },
+    "401858500": {
+      "game": {
+        "id": 401858500,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Wisconsin",
+        "awayTeam": "USC",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    },
+    "401864526": {
+      "game": {
+        "id": 401864526,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Northern Illinois",
+        "awayTeam": "Hawai'i",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    },
+    "401871054": {
+      "game": {
+        "id": 401871054,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-14T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Missouri State",
+        "awayTeam": "Kennesaw State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    },
+    "401871068": {
+      "game": {
+        "id": 401871068,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-15T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Sam Houston",
+        "awayTeam": "Western Kentucky",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 3,
+        "awayPoints": 16
+      },
+      "checkedAt": "2026-10-15T03:57:39.645Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-15T03:57:39.645Z",
   "quota": {
-    "checkedAt": "2026-10-14T04:48:45.904Z",
-    "remainingCalls": 674,
-    "reserve": 146
+    "checkedAt": "2026-10-15T03:57:39.645Z",
+    "remainingCalls": 672,
+    "reserve": 137
   }
 }
