@@ -1654,9 +1654,9 @@
       "inputFingerprint": "100f377cb878fa9927334e82ea2ba2d9c867fc2cc4449884b3e9741c4c72ccb8"
     },
     "2026:2026-10-15": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-16T04:54:54.374Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-16T03:48:33.904Z",
       "publishedAt": null,
@@ -1676,9 +1676,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 30,
+          "awayPoints": 17
         },
         {
           "id": 401869950,
@@ -1692,9 +1692,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 15,
+          "awayPoints": 23
         },
         {
           "id": 401860923,
@@ -1708,28 +1708,118 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 66,
+          "awayPoints": 27
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-10-16T04:24:54.374Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-16T04:24:54.374Z",
+    "inputFingerprint": "63dcb9c49d1b482325d0bd998f18f4eb058c9dea270a9f38c8154e605422d0f5",
+    "dayKeys": [
+      "2026:2026-10-15"
+    ],
+    "dayKinds": {
+      "2026:2026-10-15": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-16T04:24:54.374Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-15T04:46:36.355Z",
+  "confirmedScheduleOverrides": {
+    "401860923": {
+      "game": {
+        "id": 401860923,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-16T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas State",
+        "awayTeam": "Colorado State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 66,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-16T04:24:54.374Z"
+    },
+    "401862800": {
+      "game": {
+        "id": 401862800,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-15T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UAB",
+        "awayTeam": "East Carolina",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 30,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-16T04:24:54.374Z"
+    },
+    "401869950": {
+      "game": {
+        "id": 401869950,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-15T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Old Dominion",
+        "awayTeam": "Georgia Southern",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 15,
+        "awayPoints": 23
+      },
+      "checkedAt": "2026-10-16T04:24:54.374Z"
+    },
+    "401874037": {
+      "game": {
+        "id": 401874037,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Florida",
+        "awayTeam": "West Alabama",
+        "homeClassification": "fcs",
+        "awayClassification": "ii",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-16T04:24:54.374Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-16T04:24:54.374Z",
   "quota": {
-    "checkedAt": "2026-10-15T04:46:36.355Z",
-    "remainingCalls": 668,
-    "reserve": 137
+    "checkedAt": "2026-10-16T04:24:54.374Z",
+    "remainingCalls": 663,
+    "reserve": 128
   }
 }
