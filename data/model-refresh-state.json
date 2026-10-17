@@ -1723,9 +1723,9 @@
       "inputFingerprint": "63dcb9c49d1b482325d0bd998f18f4eb058c9dea270a9f38c8154e605422d0f5"
     },
     "2026:2026-10-16": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-17T05:15:14.310Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-17T04:23:30.962Z",
       "publishedAt": null,
@@ -1745,9 +1745,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 28
         },
         {
           "id": 401862801,
@@ -1761,9 +1761,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 17
         },
         {
           "id": 401858493,
@@ -1777,9 +1777,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 26,
+          "awayPoints": 38
         },
         {
           "id": 401869844,
@@ -1793,28 +1793,156 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 32,
+          "awayPoints": 35
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-10-17T04:45:14.310Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-17T04:45:14.310Z",
+    "inputFingerprint": "04232b188146448fc70d6a58dd6c74404de09a0050e6a82b694941f7b0d878a5",
+    "dayKeys": [
+      "2026:2026-10-16"
+    ],
+    "dayKinds": {
+      "2026:2026-10-16": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-17T04:45:14.310Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-16T04:24:54.374Z",
+  "confirmedScheduleOverrides": {
+    "401858493": {
+      "game": {
+        "id": 401858493,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Purdue",
+        "awayTeam": "Washington",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 26,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    },
+    "401862801": {
+      "game": {
+        "id": 401862801,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-16T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tulane",
+        "awayTeam": "Memphis",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    },
+    "401867821": {
+      "game": {
+        "id": 401867821,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-16T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Pennsylvania",
+        "awayTeam": "Columbia",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 28
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    },
+    "401868319": {
+      "game": {
+        "id": 401868319,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "SE Louisiana",
+        "awayTeam": "Lamar",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    },
+    "401869844": {
+      "game": {
+        "id": 401869844,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Coastal Carolina",
+        "awayTeam": "App State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 32,
+        "awayPoints": 35
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    },
+    "401874037": {
+      "game": {
+        "id": 401874037,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Florida",
+        "awayTeam": "West Alabama",
+        "homeClassification": "fcs",
+        "awayClassification": "ii",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-17T04:45:14.310Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-17T04:45:14.310Z",
   "quota": {
-    "checkedAt": "2026-10-16T04:24:54.374Z",
-    "remainingCalls": 663,
-    "reserve": 128
+    "checkedAt": "2026-10-17T04:45:14.310Z",
+    "remainingCalls": 659,
+    "reserve": 119
   }
 }
