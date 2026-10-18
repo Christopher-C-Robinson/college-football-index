@@ -1808,9 +1808,9 @@
       "inputFingerprint": "04232b188146448fc70d6a58dd6c74404de09a0050e6a82b694941f7b0d878a5"
     },
     "2026:2026-10-17": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-18T08:14:31.711Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-18T07:21:52.294Z",
       "publishedAt": null,
@@ -2331,22 +2331,6 @@
           "awayPoints": 24
         },
         {
-          "id": 401874037,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 7,
-          "startDate": "2026-10-17T18:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "West Alabama",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": true,
-          "homePoints": 37,
-          "awayPoints": 3
-        },
-        {
           "id": 401866443,
           "season": 2026,
           "seasonType": "regular",
@@ -2441,6 +2425,22 @@
           "completed": true,
           "homePoints": 43,
           "awayPoints": 47
+        },
+        {
+          "id": 401874037,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 7,
+          "startDate": "2026-10-17T18:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "West Alabama",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 37,
+          "awayPoints": 3
         },
         {
           "id": 401866666,
@@ -3535,117 +3535,27 @@
       "missingGameIds": [],
       "scheduleChanged": false,
       "missingRequiredBoxIds": [
-        "401856719",
-        "401856720",
-        "401856721",
-        "401856722",
-        "401856723",
-        "401856724",
-        "401856725",
-        "401856726",
-        "401856809",
-        "401856828",
-        "401856829",
-        "401856830",
-        "401856831",
-        "401856832",
-        "401856833",
-        "401858261",
-        "401858262",
-        "401858263",
-        "401858264",
-        "401858265",
-        "401858266",
-        "401858267",
-        "401858268",
-        "401858269",
-        "401858488",
-        "401858489",
-        "401858490",
-        "401858491",
-        "401858492",
-        "401858494",
-        "401860903",
-        "401860904",
-        "401862802",
-        "401862803",
-        "401862804",
-        "401862805",
-        "401862806",
-        "401864520",
-        "401864521",
-        "401864522",
-        "401864523",
-        "401864524",
-        "401866441",
-        "401866442",
-        "401866443",
-        "401866444",
-        "401866445",
-        "401866478",
-        "401866663",
-        "401866664",
-        "401866665",
-        "401866666",
-        "401866667",
-        "401866668",
-        "401866669",
-        "401867807",
-        "401867830",
-        "401867837",
-        "401867841",
-        "401867849",
-        "401867870",
-        "401867878",
-        "401867897",
-        "401867901",
-        "401867912",
-        "401867920",
-        "401867925",
-        "401867968",
-        "401867993",
-        "401868002",
-        "401868012",
-        "401868055",
-        "401868066",
-        "401868079",
-        "401868088",
-        "401868096",
-        "401868105",
-        "401868125",
-        "401868134",
-        "401868145",
-        "401868161",
-        "401868181",
-        "401868189",
-        "401868207",
-        "401868213",
-        "401868222",
-        "401868250",
-        "401868257",
-        "401868277",
-        "401868289",
-        "401868301",
-        "401868310",
-        "401868319",
-        "401868330",
-        "401868361",
-        "401868383",
-        "401868398",
-        "401868943",
-        "401868949",
-        "401869132",
-        "401869152",
-        "401869934",
-        "401869957",
-        "401869966",
-        "401871091"
+        "401868943"
       ],
-      "lastReadinessAttemptAt": "2026-10-18T07:21:52.294Z",
-      "completedWithoutGamesAt": null
+      "lastReadinessAttemptAt": "2026-10-18T07:44:31.711Z",
+      "completedWithoutGamesAt": null,
+      "stagedMissingRequiredBoxIds": [
+        "401868943"
+      ]
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-18T07:44:31.711Z",
+    "inputFingerprint": "92de53f9693b5da057d1a749224cc9defdba4e00e772142b8a5e1f68b81548c2",
+    "dayKeys": [
+      "2026:2026-10-17"
+    ],
+    "dayKinds": {
+      "2026:2026-10-17": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-18T07:44:31.711Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -3669,7 +3579,7 @@
         "homePoints": 24,
         "awayPoints": 27
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856720": {
       "game": {
@@ -3688,7 +3598,7 @@
         "homePoints": 31,
         "awayPoints": 0
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856721": {
       "game": {
@@ -3707,7 +3617,7 @@
         "homePoints": 31,
         "awayPoints": 3
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856722": {
       "game": {
@@ -3726,7 +3636,7 @@
         "homePoints": 13,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856723": {
       "game": {
@@ -3745,7 +3655,7 @@
         "homePoints": 26,
         "awayPoints": 10
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856724": {
       "game": {
@@ -3764,7 +3674,7 @@
         "homePoints": 24,
         "awayPoints": 27
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856725": {
       "game": {
@@ -3783,7 +3693,7 @@
         "homePoints": 41,
         "awayPoints": 0
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856726": {
       "game": {
@@ -3802,7 +3712,7 @@
         "homePoints": 21,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856809": {
       "game": {
@@ -3821,7 +3731,7 @@
         "homePoints": 28,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856828": {
       "game": {
@@ -3840,7 +3750,7 @@
         "homePoints": 53,
         "awayPoints": 25
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856829": {
       "game": {
@@ -3859,7 +3769,7 @@
         "homePoints": 45,
         "awayPoints": 42
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856830": {
       "game": {
@@ -3878,7 +3788,7 @@
         "homePoints": 35,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856831": {
       "game": {
@@ -3897,7 +3807,7 @@
         "homePoints": 35,
         "awayPoints": 32
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856832": {
       "game": {
@@ -3916,7 +3826,7 @@
         "homePoints": 6,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401856833": {
       "game": {
@@ -3935,7 +3845,7 @@
         "homePoints": 24,
         "awayPoints": 27
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858261": {
       "game": {
@@ -3954,7 +3864,7 @@
         "homePoints": 37,
         "awayPoints": 0
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858262": {
       "game": {
@@ -3973,7 +3883,7 @@
         "homePoints": 34,
         "awayPoints": 7
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858263": {
       "game": {
@@ -3992,7 +3902,7 @@
         "homePoints": 43,
         "awayPoints": 35
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858264": {
       "game": {
@@ -4011,7 +3921,7 @@
         "homePoints": 34,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858265": {
       "game": {
@@ -4030,7 +3940,7 @@
         "homePoints": 26,
         "awayPoints": 34
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858266": {
       "game": {
@@ -4049,7 +3959,7 @@
         "homePoints": 20,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858267": {
       "game": {
@@ -4068,7 +3978,7 @@
         "homePoints": 27,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858268": {
       "game": {
@@ -4087,7 +3997,7 @@
         "homePoints": 23,
         "awayPoints": 13
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858269": {
       "game": {
@@ -4106,7 +4016,7 @@
         "homePoints": 7,
         "awayPoints": 41
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858488": {
       "game": {
@@ -4125,7 +4035,7 @@
         "homePoints": 15,
         "awayPoints": 19
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858489": {
       "game": {
@@ -4144,7 +4054,7 @@
         "homePoints": 30,
         "awayPoints": 37
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858490": {
       "game": {
@@ -4163,7 +4073,7 @@
         "homePoints": 21,
         "awayPoints": 18
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858491": {
       "game": {
@@ -4182,7 +4092,7 @@
         "homePoints": 21,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858492": {
       "game": {
@@ -4201,7 +4111,7 @@
         "homePoints": 17,
         "awayPoints": 14
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401858494": {
       "game": {
@@ -4220,7 +4130,7 @@
         "homePoints": 17,
         "awayPoints": 7
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401860903": {
       "game": {
@@ -4239,7 +4149,7 @@
         "homePoints": 48,
         "awayPoints": 30
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401860904": {
       "game": {
@@ -4258,7 +4168,7 @@
         "homePoints": 26,
         "awayPoints": 23
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401862802": {
       "game": {
@@ -4277,7 +4187,7 @@
         "homePoints": 56,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401862803": {
       "game": {
@@ -4296,7 +4206,7 @@
         "homePoints": 31,
         "awayPoints": 38
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401862804": {
       "game": {
@@ -4315,7 +4225,7 @@
         "homePoints": 38,
         "awayPoints": 34
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401862805": {
       "game": {
@@ -4334,7 +4244,7 @@
         "homePoints": 17,
         "awayPoints": 38
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401862806": {
       "game": {
@@ -4353,7 +4263,7 @@
         "homePoints": 29,
         "awayPoints": 2
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401864520": {
       "game": {
@@ -4372,7 +4282,7 @@
         "homePoints": 31,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401864521": {
       "game": {
@@ -4391,7 +4301,7 @@
         "homePoints": 10,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401864522": {
       "game": {
@@ -4410,7 +4320,7 @@
         "homePoints": 41,
         "awayPoints": 23
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401864523": {
       "game": {
@@ -4429,7 +4339,7 @@
         "homePoints": 11,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401864524": {
       "game": {
@@ -4448,7 +4358,7 @@
         "homePoints": 41,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866441": {
       "game": {
@@ -4467,7 +4377,7 @@
         "homePoints": 31,
         "awayPoints": 32
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866442": {
       "game": {
@@ -4486,7 +4396,7 @@
         "homePoints": 25,
         "awayPoints": 18
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866443": {
       "game": {
@@ -4505,7 +4415,7 @@
         "homePoints": 14,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866444": {
       "game": {
@@ -4524,7 +4434,7 @@
         "homePoints": 14,
         "awayPoints": 34
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866445": {
       "game": {
@@ -4543,7 +4453,7 @@
         "homePoints": 7,
         "awayPoints": 48
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866478": {
       "game": {
@@ -4562,7 +4472,7 @@
         "homePoints": 34,
         "awayPoints": 14
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866663": {
       "game": {
@@ -4581,7 +4491,7 @@
         "homePoints": 35,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866664": {
       "game": {
@@ -4600,7 +4510,7 @@
         "homePoints": 14,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866665": {
       "game": {
@@ -4619,7 +4529,7 @@
         "homePoints": 21,
         "awayPoints": 42
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866666": {
       "game": {
@@ -4638,7 +4548,7 @@
         "homePoints": 31,
         "awayPoints": 48
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866667": {
       "game": {
@@ -4657,7 +4567,7 @@
         "homePoints": 24,
         "awayPoints": 20
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866668": {
       "game": {
@@ -4676,7 +4586,7 @@
         "homePoints": 27,
         "awayPoints": 12
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401866669": {
       "game": {
@@ -4695,7 +4605,7 @@
         "homePoints": 23,
         "awayPoints": 41
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867807": {
       "game": {
@@ -4714,7 +4624,7 @@
         "homePoints": 16,
         "awayPoints": 10
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867830": {
       "game": {
@@ -4733,7 +4643,7 @@
         "homePoints": 48,
         "awayPoints": 38
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867837": {
       "game": {
@@ -4752,7 +4662,7 @@
         "homePoints": 27,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867841": {
       "game": {
@@ -4771,7 +4681,7 @@
         "homePoints": 30,
         "awayPoints": 7
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867849": {
       "game": {
@@ -4790,7 +4700,7 @@
         "homePoints": 14,
         "awayPoints": 35
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867870": {
       "game": {
@@ -4809,7 +4719,7 @@
         "homePoints": 20,
         "awayPoints": 48
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867878": {
       "game": {
@@ -4828,7 +4738,7 @@
         "homePoints": 21,
         "awayPoints": 10
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867897": {
       "game": {
@@ -4847,7 +4757,7 @@
         "homePoints": 35,
         "awayPoints": 22
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867901": {
       "game": {
@@ -4866,7 +4776,7 @@
         "homePoints": 40,
         "awayPoints": 43
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867912": {
       "game": {
@@ -4885,7 +4795,7 @@
         "homePoints": 9,
         "awayPoints": 14
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867920": {
       "game": {
@@ -4904,7 +4814,7 @@
         "homePoints": 15,
         "awayPoints": 26
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867925": {
       "game": {
@@ -4923,7 +4833,7 @@
         "homePoints": 7,
         "awayPoints": 14
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867961": {
       "game": {
@@ -4942,7 +4852,7 @@
         "homePoints": 31,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867968": {
       "game": {
@@ -4961,7 +4871,7 @@
         "homePoints": 25,
         "awayPoints": 16
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401867993": {
       "game": {
@@ -4980,7 +4890,7 @@
         "homePoints": 7,
         "awayPoints": 20
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868002": {
       "game": {
@@ -4999,7 +4909,7 @@
         "homePoints": 17,
         "awayPoints": 27
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868012": {
       "game": {
@@ -5018,7 +4928,7 @@
         "homePoints": 17,
         "awayPoints": 38
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868055": {
       "game": {
@@ -5037,7 +4947,7 @@
         "homePoints": 28,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868066": {
       "game": {
@@ -5056,7 +4966,7 @@
         "homePoints": 10,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868079": {
       "game": {
@@ -5075,7 +4985,7 @@
         "homePoints": 28,
         "awayPoints": 18
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868088": {
       "game": {
@@ -5094,7 +5004,7 @@
         "homePoints": 20,
         "awayPoints": 56
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868096": {
       "game": {
@@ -5113,7 +5023,7 @@
         "homePoints": 35,
         "awayPoints": 42
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868105": {
       "game": {
@@ -5132,7 +5042,7 @@
         "homePoints": 27,
         "awayPoints": 20
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868125": {
       "game": {
@@ -5151,7 +5061,7 @@
         "homePoints": 38,
         "awayPoints": 25
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868134": {
       "game": {
@@ -5170,7 +5080,7 @@
         "homePoints": 49,
         "awayPoints": 35
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868145": {
       "game": {
@@ -5189,7 +5099,7 @@
         "homePoints": 49,
         "awayPoints": 20
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868161": {
       "game": {
@@ -5208,7 +5118,7 @@
         "homePoints": 38,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868181": {
       "game": {
@@ -5227,7 +5137,7 @@
         "homePoints": 13,
         "awayPoints": 20
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868189": {
       "game": {
@@ -5246,7 +5156,7 @@
         "homePoints": 17,
         "awayPoints": 6
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868207": {
       "game": {
@@ -5265,7 +5175,7 @@
         "homePoints": 40,
         "awayPoints": 30
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868213": {
       "game": {
@@ -5284,7 +5194,7 @@
         "homePoints": 9,
         "awayPoints": 19
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868222": {
       "game": {
@@ -5303,7 +5213,7 @@
         "homePoints": 34,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868250": {
       "game": {
@@ -5322,7 +5232,7 @@
         "homePoints": 41,
         "awayPoints": 16
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868257": {
       "game": {
@@ -5341,7 +5251,7 @@
         "homePoints": 22,
         "awayPoints": 27
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868277": {
       "game": {
@@ -5360,7 +5270,7 @@
         "homePoints": 43,
         "awayPoints": 47
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868289": {
       "game": {
@@ -5379,7 +5289,7 @@
         "homePoints": 38,
         "awayPoints": 13
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868301": {
       "game": {
@@ -5398,7 +5308,7 @@
         "homePoints": 61,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868310": {
       "game": {
@@ -5417,7 +5327,7 @@
         "homePoints": 0,
         "awayPoints": 56
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868319": {
       "game": {
@@ -5436,7 +5346,7 @@
         "homePoints": 34,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868330": {
       "game": {
@@ -5455,7 +5365,7 @@
         "homePoints": 15,
         "awayPoints": 21
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868361": {
       "game": {
@@ -5474,7 +5384,7 @@
         "homePoints": 41,
         "awayPoints": 38
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868383": {
       "game": {
@@ -5493,7 +5403,7 @@
         "homePoints": 21,
         "awayPoints": 31
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868398": {
       "game": {
@@ -5512,7 +5422,7 @@
         "homePoints": 41,
         "awayPoints": 14
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868943": {
       "game": {
@@ -5531,7 +5441,7 @@
         "homePoints": 14,
         "awayPoints": 34
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401868949": {
       "game": {
@@ -5550,7 +5460,7 @@
         "homePoints": 27,
         "awayPoints": 17
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401869132": {
       "game": {
@@ -5569,7 +5479,7 @@
         "homePoints": 21,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401869152": {
       "game": {
@@ -5588,7 +5498,7 @@
         "homePoints": 43,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401869934": {
       "game": {
@@ -5607,7 +5517,7 @@
         "homePoints": 13,
         "awayPoints": 23
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401869957": {
       "game": {
@@ -5626,7 +5536,7 @@
         "homePoints": 49,
         "awayPoints": 22
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401869966": {
       "game": {
@@ -5645,7 +5555,7 @@
         "homePoints": 33,
         "awayPoints": 6
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401871091": {
       "game": {
@@ -5664,7 +5574,7 @@
         "homePoints": 0,
         "awayPoints": 24
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     },
     "401874037": {
       "game": {
@@ -5683,13 +5593,13 @@
         "homePoints": 37,
         "awayPoints": 3
       },
-      "checkedAt": "2026-10-18T07:21:52.294Z"
+      "checkedAt": "2026-10-18T07:44:31.711Z"
     }
   },
-  "lastScheduleConfirmationAt": "2026-10-18T07:21:52.294Z",
+  "lastScheduleConfirmationAt": "2026-10-18T07:44:31.711Z",
   "quota": {
-    "checkedAt": "2026-10-18T07:21:52.294Z",
-    "remainingCalls": 657,
+    "checkedAt": "2026-10-18T07:44:31.711Z",
+    "remainingCalls": 653,
     "reserve": 110
   }
 }
