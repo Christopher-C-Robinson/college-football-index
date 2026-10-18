@@ -1,4 +1,4 @@
-import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION, MODEL_PARAMETERS } from './model.js';
+import { buildModel, recordText, shortDate, formatNumber, isCompletedGame, isRatedGame, MODEL_VERSION, MODEL_PARAMETERS } from './model.js?v=hfa-guard-20261018';
 import { simulateMatchup } from './prediction.js?v=a0351f68ab30';
 import { FORECAST_VERSION } from './config.js';
 import { datasetStatus, validateDataset } from './dataset-status.js';
@@ -11,7 +11,7 @@ import { buildSeasonProjections, completeOpponentSeasonRecords, refreshSeasonPro
 import { renderSeasonProjections, renderProjectionSummary, renderProjectionNote, renderYardagePanel, updateSeasonRecordElements, updateSeasonRankElements, updateSeasonLiveElements } from './season-projections-view.js?v=6df08c04e263';
 import { renderMarginGraphic } from './margin-graphic.js?v=fd868194892f';
 import { estimateYardage } from './yardage.js?v=42582ef8534f';
-import { buildModelFit } from './model-fit.js?v=2a573a4af9e2';
+import { buildModelFit } from './model-fit.js?v=hfa-guard-20261018';
 import { renderModelFit, renderModelFitProgress, renderModelFitError } from './model-fit-view.js';
 import { renderTeamUnitProfile, renderUnitMatchup } from './unit-profile-view.js';
 import { loadChallengerStatus } from './challenger-status.js';

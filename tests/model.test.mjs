@@ -4,6 +4,7 @@ import {
   buildModel, estimateHomeField, isCompletedGame, isRatedGame,
   MODEL_VERSION, SCHEMA_VERSION, MODEL_PARAMETERS, standardWinProbability
 } from '../js/model.js';
+import { predictMatchup, simulateMatchup } from '../js/prediction.js';
 
 function game(id, homeTeam, awayTeam, homePoints, awayPoints, extra = {}) {
   return {
@@ -49,6 +50,71 @@ test('live scores and invalid finals never enter power, records, or venue histor
   delete noFlag.completed;
   assert.equal(buildModel({ games: [noFlag] }).ratedGameCount, 1);
   assert.equal(estimateHomeField([noFlag], 2025).gamesUsed, 1);
+});
+
+test('negative legacy home-field fit falls back once and keeps neutral forecasts venue-free', () => {
+  const raw = {
+    games: [
+      game(1, 'Alpha', 'Beta', 28, 21, { neutralSite: false }),
+      game(2, 'Beta', 'Alpha', 17, 20, { neutralSite: true })
+    ],
+    homeField: {
+      method: 'five-season opponent-adjusted home and road effects with partial pooling',
+      leaguePoints: -5.357,
+      teams: [{ name: 'Alpha', homeAdjustment: -0.569, roadAdjustment: 0.28, homeFieldPoints: -11.564 }]
+    }
+  };
+  const model = buildModel(raw);
+  const noVenueModel = buildModel({ games: raw.games });
+  const convergedNegativeModel = buildModel({ ...raw, homeField: { ...raw.homeField, fitStatus: 'converged' } });
+
+  assert.equal(model.homeField.leaguePoints, MODEL_PARAMETERS.homeFieldBaseline);
+  assert.equal(model.homeField.rawLeaguePoints, -5.357);
+  assert.equal(model.homeField.fallbackReason, 'negative-legacy-estimate');
+  assert.deepEqual(model.homeField.teams, []);
+  assert.equal(model.homeEdge('Alpha', 'Beta'), MODEL_PARAMETERS.homeFieldBaseline);
+  assert.equal(model.homeEdge('Beta', 'Alpha'), MODEL_PARAMETERS.homeFieldBaseline);
+  near(model.teams.get('alpha').power, noVenueModel.teams.get('alpha').power);
+  near(model.teams.get('beta').power, noVenueModel.teams.get('beta').power);
+  assert.notEqual(model.teams.get('alpha').power, convergedNegativeModel.teams.get('alpha').power);
+
+  assert.equal(convergedNegativeModel.homeField.leaguePoints, -5.357);
+  assert.equal(convergedNegativeModel.homeField.fallbackReason, undefined);
+  assert.equal(convergedNegativeModel.homeEdge('Alpha', 'Beta'), MODEL_PARAMETERS.venueMinPoints);
+
+  const neutral = predictMatchup(model, { homeTeam: 'Alpha', awayTeam: 'Beta', neutralSite: true }, { forecastModel: 'baseline' });
+  const reversedNeutral = predictMatchup(model, { homeTeam: 'Beta', awayTeam: 'Alpha', neutralSite: true }, { forecastModel: 'baseline' });
+  const alphaHome = predictMatchup(model, { homeTeam: 'Alpha', awayTeam: 'Beta', neutralSite: false }, { forecastModel: 'baseline' });
+  const betaHome = predictMatchup(model, { homeTeam: 'Beta', awayTeam: 'Alpha', neutralSite: false }, { forecastModel: 'baseline' });
+  assert.equal(neutral.venuePoints, 0);
+  near(neutral.predictedMargin, -reversedNeutral.predictedMargin);
+  near(alphaHome.predictedMargin - neutral.predictedMargin, MODEL_PARAMETERS.homeFieldBaseline);
+  near(betaHome.predictedMargin - reversedNeutral.predictedMargin, MODEL_PARAMETERS.homeFieldBaseline);
+
+  const simulated = simulateMatchup(model, { homeTeam: 'Alpha', awayTeam: 'Beta', neutralSite: false }, {
+    forecastModel: 'baseline', runs: 1000, seed: 'negative-legacy-hfa-regression'
+  });
+  assert.equal(simulated.venuePoints, MODEL_PARAMETERS.homeFieldBaseline);
+  near(simulated.predictedMargin, alphaHome.predictedMargin);
+});
+
+test('positive legacy home-field fits and incomplete estimates keep their original inputs', () => {
+  const positive = {
+    games: [game(1, 'Alpha', 'Beta', 28, 21, { neutralSite: false })],
+    homeField: { leaguePoints: 1.25, teams: [{ name: 'Alpha', homeAdjustment: 0.4, homeFieldPoints: 2.9 }] }
+  };
+  const positiveModel = buildModel(positive);
+  assert.deepEqual(positiveModel.homeField, positive.homeField);
+  assert.equal(positiveModel.homeEdge('Alpha', 'Beta'), 1.65);
+
+  const incomplete = {
+    games: [game(1, 'Alpha', 'Beta', 28, 21, { neutralSite: false })],
+    homeField: { teams: [{ name: 'Alpha', homeAdjustment: 0.4, homeFieldPoints: 2.9 }] }
+  };
+  const overridden = buildModel(incomplete, null, { homeFieldBaseline: -1 });
+  assert.deepEqual(overridden.homeField, incomplete.homeField);
+  assert.equal(overridden.homeField.fallbackReason, undefined);
+  assert.equal(overridden.homeEdge('Alpha', 'Beta'), -0.6);
 });
 
 test('modern completed 0-0 cancellation sentinels do not enter results or venue history', () => {
