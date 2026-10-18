@@ -7,6 +7,8 @@
 .ranking-map-selected-metrics span { display: flex; flex-direction: column; gap: 3px; }
 .ranking-map-selected-metrics strong { color: var(--ink); font: 500 14px var(--mono); }
 .ranking-map-selected-open { margin-left: auto; }
+/* The ranking disclosure exists only for the phone row layout below. */
+.rank-toggle-cell { display: none; }
 
 @media (max-width: 680px) {
   html { scroll-padding-top: 120px; }
@@ -52,6 +54,31 @@
   .rank-team { font-size: 14px; line-height: 1.4; }
   .rank-coverage { white-space: normal; font-size: 11px; }
   .rank-index { font-size: 16px !important; }
+
+  /* Rated rows: one line of rank, team, and neutral win chance; the
+     disclosure button reveals the remaining metrics in a compact grid. */
+  .rank-table tbody tr.rank-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; padding: 4px 6px 4px 10px; touch-action: pan-y; }
+  .rank-table tr.rank-row > td:first-child { grid-row: 1; grid-column: 1 / 3; padding-bottom: 0; border-bottom: 0; }
+  .rank-table tr.rank-row .rank-team-button { flex: 1 1 auto; overflow: hidden; }
+  .rank-table tr.rank-row .rank-team { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .rank-table tr.rank-row > .rank-index { grid-row: 1; grid-column: 3; text-align: right; white-space: nowrap; font-size: 15px !important; }
+  .rank-table tr.rank-row > .rank-index::before { content: 'Neutral win'; margin-bottom: 1px; font-size: 10px; font-weight: 400; }
+  .rank-table tr.rank-row:not(.is-expanded) > .rank-index .rank-coverage { display: none; }
+  .rank-table tr.rank-row > .rank-toggle-cell { display: block; grid-row: 1; grid-column: 4; }
+  .rank-table tr.rank-row > td:nth-child(2), .rank-table tr.rank-row > td:nth-child(3),
+  .rank-table tr.rank-row > td:nth-child(4), .rank-table tr.rank-row > td:nth-child(6) { display: none; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(2), .rank-table tr.rank-row.is-expanded > td:nth-child(3),
+  .rank-table tr.rank-row.is-expanded > td:nth-child(4), .rank-table tr.rank-row.is-expanded > td:nth-child(6) { display: block; padding: 6px 0 4px; font-size: 13px; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(2) { grid-row: 2; grid-column: 1; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(3) { grid-row: 2; grid-column: 2 / -1; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(4) { grid-row: 3; grid-column: 1; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(6) { grid-row: 3; grid-column: 2 / -1; padding-bottom: 8px; }
+  .rank-table tr.rank-row.is-expanded > td:nth-child(2), .rank-table tr.rank-row.is-expanded > td:nth-child(3) { border-top: 1px solid var(--line); }
+  .rank-toggle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--ink-soft); cursor: pointer; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+  .rank-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .rank-toggle[aria-expanded="true"] { border-color: var(--blue); color: var(--blue); }
+  .rank-toggle-icon { width: 9px; height: 9px; margin-top: -4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .15s ease; }
+  .rank-toggle[aria-expanded="true"] .rank-toggle-icon { margin-top: 4px; transform: rotate(225deg); }
 
   .ranking-map-scroll { max-width: 100%; overflow: auto; overscroll-behavior-x: contain; }
   .ranking-map-stage { width: 900px; min-width: 900px; }

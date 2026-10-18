@@ -316,7 +316,7 @@ const STABLE_CARDS = ['data-season-game-id', 'data-game-day-id'];
 // Static containers whose markup an automatic snapshot update rebuilds.
 const PRESERVED_DETAIL_REGIONS = ['schedule-list', 'schedule-forecast-note', 'season-projection-summary', 'team-unit-profile',
   'compare-content', 'compare-unit-matchup', 'simulation-result', 'simulation-unit-matchup', 'board-content'];
-const FOCUS_ATTRIBUTES = ['data-select-team', 'data-season-game-target', 'data-map-division', 'data-games-date', 'aria-controls', 'name', 'type'];
+const FOCUS_ATTRIBUTES = ['data-select-team', 'data-rank-toggle', 'data-season-game-target', 'data-map-division', 'data-games-date', 'aria-controls', 'name', 'type'];
 
 function stableCard(element) {
   for (const name of STABLE_CARDS) {
@@ -1045,6 +1045,33 @@ function centerMobileMap() {
   scroll.scrollLeft = Math.max(0, center - scroll.clientWidth / 2);
 }
 
+// Phone rows open their secondary metrics only from the row's disclosure
+// button; the state survives asynchronous board rebuilds.
+const expandedRankRows = new Set();
+const RANK_TOGGLE_SLOP = 10;
+let rankTogglePointer = null;
+
+function toggleRankRow(toggle) {
+  const row = toggle.closest('.rank-row');
+  const key = toggle.dataset.rankToggle;
+  const expanded = !expandedRankRows.has(key);
+  if (expanded) expandedRankRows.add(key);
+  else expandedRankRows.delete(key);
+  row?.classList.toggle('is-expanded', expanded);
+  toggle.setAttribute('aria-expanded', String(expanded));
+  toggle.setAttribute('aria-label', toggle.getAttribute('aria-label').replace(/^(Show|Hide)/, expanded ? 'Hide' : 'Show'));
+}
+
+document.addEventListener('pointerdown', event => {
+  const toggle = event.target.closest?.('[data-rank-toggle]');
+  rankTogglePointer = toggle ? { toggle, x: event.clientX, y: event.clientY, moved: false } : null;
+});
+document.addEventListener('pointermove', event => {
+  if (rankTogglePointer && Math.hypot(event.clientX - rankTogglePointer.x, event.clientY - rankTogglePointer.y) > RANK_TOGGLE_SLOP) rankTogglePointer.moved = true;
+}, { passive: true });
+// A browser-claimed scroll cancels the pointer; never treat it as a tap.
+document.addEventListener('pointercancel', () => { if (rankTogglePointer) rankTogglePointer.moved = true; });
+
 // The board is also replaced asynchronously when neutral ranks finish.
 function renderBoard(resetMatchups = false) {
   preservingFocus(renderBoardContent)(resetMatchups);
@@ -1091,7 +1118,8 @@ function renderBoardContent(resetMatchups) {
     const rank = ranked ? String(team.neutralRank) : '—';
     if (ranked) rankedCount += 1;
     const modelLabel = ranked ? formatNumber(team.neutralScore * 100, 1) + '%' : rankingsReady ? 'NOT RANKED' : '—';
-    return '<tr><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td>' + renderRecordCell(team, 'Record', 'overall', true) + '<td data-label="Results power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="Avg. neutral win chance" class="rank-index">' + modelLabel + (team.neutralPriorSeason ? '<span class="rank-coverage">Uses ' + team.neutralPriorSeason + ' data</span>' : '') + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td></tr>';
+    const expanded = expandedRankRows.has(teamKey(team.name));
+    return '<tr class="rank-row' + (expanded ? ' is-expanded' : '') + '"><td><span class="rank-number">' + rank + '</span><button class="rank-team-button" type="button" data-select-team="' + escapeHtml(team.name) + '" aria-label="View ' + escapeHtml(team.name) + ' team profile">' + renderTeamLogo(team, { size: 32 }) + '<span class="rank-team' + focusClass + '">' + escapeHtml(team.name) + '</span></button></td>' + renderRecordCell(team, 'Record', 'overall', true) + '<td data-label="Results power" class="rank-power">' + (team.power === null ? '—' : (team.power >= 0 ? '+' : '') + formatNumber(team.power, 1)) + '</td><td data-label="Schedule">' + (team.opponentPower === null ? '—' : (team.opponentPower >= 0 ? '+' : '') + formatNumber(team.opponentPower, 1)) + '</td><td data-label="Avg. neutral win chance" class="rank-index">' + modelLabel + (team.neutralPriorSeason ? '<span class="rank-coverage">Uses ' + team.neutralPriorSeason + ' data</span>' : '') + '</td><td data-label="Data coverage">' + team.coverage.results + ' results<span class="rank-coverage">' + team.coverage.boxScores + '/' + team.coverage.results + ' box scores · ' + team.coverage.boxScorePercent + '%</span></td><td class="rank-toggle-cell"><button class="rank-toggle" type="button" data-rank-toggle="' + escapeHtml(teamKey(team.name)) + '" aria-expanded="' + expanded + '" aria-label="' + (expanded ? 'Hide' : 'Show') + ' ranking details for ' + escapeHtml(team.name) + '"><span class="rank-toggle-icon" aria-hidden="true"></span></button></td></tr>';
   }).join('');
   const filters = selectedBoardFilters();
   const divisionLabel = filters.division === 'all' ? 'FBS + FCS' : filters.division.toUpperCase();
@@ -1526,6 +1554,17 @@ document.addEventListener('click', async function (event) {
   }
   if (event.target.closest('#clear-team')) {
     selectFocusTeam(null, false);
+    return;
+  }
+  const rankToggle = event.target.closest('[data-rank-toggle]');
+  if (rankToggle) {
+    const pointer = rankTogglePointer;
+    rankTogglePointer = null;
+    // Keyboard activation has detail 0 and no pointer; pointer taps must stay put.
+    const moved = pointer && (pointer.moved || pointer.toggle !== rankToggle
+      || Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) > RANK_TOGGLE_SLOP);
+    if (event.detail && moved) return;
+    toggleRankRow(rankToggle);
     return;
   }
   const teamButton = event.target.closest('[data-select-team]');
