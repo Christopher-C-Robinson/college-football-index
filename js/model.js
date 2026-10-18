@@ -452,9 +452,24 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
     team.logos = Array.isArray(metadata.logos) ? metadata.logos.filter(logo => typeof logo === 'string').slice() : [];
   });
 
-  const homeFieldEstimate = data.homeField && typeof data.homeField === 'object' ? data.homeField : null;
-  const leagueHomeField = homeFieldEstimate && number(homeFieldEstimate.leaguePoints) !== null
-    ? number(homeFieldEstimate.leaguePoints) : parameters.homeFieldBaseline;
+  const sourceHomeFieldEstimate = data.homeField && typeof data.homeField === 'object' ? data.homeField : null;
+  const sourceLeagueHomeField = sourceHomeFieldEstimate && number(sourceHomeFieldEstimate.leaguePoints) !== null
+    ? number(sourceHomeFieldEstimate.leaguePoints) : parameters.homeFieldBaseline;
+  const fittedVenueEstimate = sourceHomeFieldEstimate?.fitStatus === 'converged'
+    || sourceHomeFieldEstimate?.converged === true;
+  // Legacy fits have no convergence diagnostics. A negative league estimate
+  // from that estimator reverses the venue effect, so discard its team effects
+  // and use the configured baseline. Future converged fits may retain a
+  // negative effect when the evidence supports one.
+  const legacyNegativeHomeField = Boolean(sourceHomeFieldEstimate && !fittedVenueEstimate
+    && number(sourceHomeFieldEstimate.leaguePoints) !== null
+    && number(sourceHomeFieldEstimate.leaguePoints) < 0);
+  const homeFieldEstimate = legacyNegativeHomeField
+    ? { ...sourceHomeFieldEstimate, leaguePoints: parameters.homeFieldBaseline,
+      rawLeaguePoints: sourceLeagueHomeField, fitStatus: 'baseline-fallback',
+      fallbackReason: 'negative-legacy-estimate', teams: [] }
+    : sourceHomeFieldEstimate;
+  const leagueHomeField = legacyNegativeHomeField ? parameters.homeFieldBaseline : sourceLeagueHomeField;
   const homeFieldByTeam = new Map();
   (homeFieldEstimate && Array.isArray(homeFieldEstimate.teams) ? homeFieldEstimate.teams : []).forEach(function (entry) {
     const teamKey = key(entry.name || entry.school);
