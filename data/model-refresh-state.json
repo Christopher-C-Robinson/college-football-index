@@ -1812,7 +1812,7 @@
       "statsAttempts": 0,
       "nextReadinessAt": null,
       "nextStatsAt": null,
-      "firstAllFinalSeenAt": "2026-10-18T06:53:21.971Z",
+      "firstAllFinalSeenAt": "2026-10-18T07:21:52.294Z",
       "publishedAt": null,
       "baseline": false,
       "season": 2026,
@@ -1830,9 +1830,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 0
         },
         {
           "id": 401856724,
@@ -1846,9 +1846,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 27
         },
         {
           "id": 401856829,
@@ -1862,9 +1862,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 45,
+          "awayPoints": 42
         },
         {
           "id": 401856830,
@@ -1878,9 +1878,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 24
         },
         {
           "id": 401858261,
@@ -1894,9 +1894,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 37,
+          "awayPoints": 0
         },
         {
           "id": 401858267,
@@ -1910,9 +1910,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 21
         },
         {
           "id": 401858268,
@@ -1926,9 +1926,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 23,
+          "awayPoints": 13
         },
         {
           "id": 401858488,
@@ -1942,9 +1942,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 15,
+          "awayPoints": 19
         },
         {
           "id": 401858491,
@@ -1958,9 +1958,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 24
         },
         {
           "id": 401862802,
@@ -1974,9 +1974,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 56,
+          "awayPoints": 24
         },
         {
           "id": 401866441,
@@ -1990,9 +1990,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 32
         },
         {
           "id": 401866663,
@@ -2006,9 +2006,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 21
         },
         {
           "id": 401866668,
@@ -2022,9 +2022,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 12
         },
         {
           "id": 401866669,
@@ -2038,9 +2038,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 23,
+          "awayPoints": 41
         },
         {
           "id": 401867807,
@@ -2054,9 +2054,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 16,
+          "awayPoints": 10
         },
         {
           "id": 401867901,
@@ -2070,9 +2070,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 40,
+          "awayPoints": 43
         },
         {
           "id": 401867920,
@@ -2086,9 +2086,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 15,
+          "awayPoints": 26
         },
         {
           "id": 401867925,
@@ -2102,9 +2102,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 7,
+          "awayPoints": 14
         },
         {
           "id": 401869957,
@@ -2118,9 +2118,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 49,
+          "awayPoints": 22
         },
         {
           "id": 401858489,
@@ -2134,9 +2134,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 30,
+          "awayPoints": 37
         },
         {
           "id": 401856725,
@@ -2150,9 +2150,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 0
         },
         {
           "id": 401862803,
@@ -2166,9 +2166,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 38
         },
         {
           "id": 401866442,
@@ -2182,9 +2182,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 25,
+          "awayPoints": 18
         },
         {
           "id": 401866664,
@@ -2198,9 +2198,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 17
         },
         {
           "id": 401866665,
@@ -2214,9 +2214,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 42
         },
         {
           "id": 401867837,
@@ -2230,9 +2230,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 21
         },
         {
           "id": 401867841,
@@ -2246,9 +2246,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 30,
+          "awayPoints": 7
         },
         {
           "id": 401868002,
@@ -2262,9 +2262,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 27
         },
         {
           "id": 401868213,
@@ -2278,9 +2278,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 9,
+          "awayPoints": 19
         },
         {
           "id": 401868222,
@@ -2294,9 +2294,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 31
         },
         {
           "id": 401868257,
@@ -2310,9 +2310,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 22,
+          "awayPoints": 27
         },
         {
           "id": 401869132,
@@ -2326,25 +2326,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
-        },
-        {
-          "id": 401874037,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 7,
-          "startDate": "2026-10-17T17:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "West Alabama",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 24
         },
         {
           "id": 401866443,
@@ -2358,9 +2342,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 21
         },
         {
           "id": 401868398,
@@ -2374,9 +2358,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 14
         },
         {
           "id": 401867830,
@@ -2390,9 +2374,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 48,
+          "awayPoints": 38
         },
         {
           "id": 401867878,
@@ -2406,9 +2390,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 10
         },
         {
           "id": 401868066,
@@ -2422,9 +2406,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 10,
+          "awayPoints": 24
         },
         {
           "id": 401868277,
@@ -2438,9 +2422,25 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 43,
+          "awayPoints": 47
+        },
+        {
+          "id": 401874037,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 7,
+          "startDate": "2026-10-17T18:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "West Alabama",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 37,
+          "awayPoints": 3
         },
         {
           "id": 401866666,
@@ -2454,9 +2454,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 48
         },
         {
           "id": 401868145,
@@ -2470,9 +2470,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 49,
+          "awayPoints": 20
         },
         {
           "id": 401867993,
@@ -2486,9 +2486,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 7,
+          "awayPoints": 20
         },
         {
           "id": 401868096,
@@ -2502,9 +2502,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 42
         },
         {
           "id": 401868105,
@@ -2518,9 +2518,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 20
         },
         {
           "id": 401868181,
@@ -2534,9 +2534,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 13,
+          "awayPoints": 20
         },
         {
           "id": 401868189,
@@ -2550,9 +2550,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 6
         },
         {
           "id": 401868207,
@@ -2566,9 +2566,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 40,
+          "awayPoints": 30
         },
         {
           "id": 401868301,
@@ -2582,9 +2582,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 61,
+          "awayPoints": 31
         },
         {
           "id": 401868330,
@@ -2598,9 +2598,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 15,
+          "awayPoints": 21
         },
         {
           "id": 401868361,
@@ -2614,9 +2614,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 38
         },
         {
           "id": 401868943,
@@ -2630,9 +2630,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 34
         },
         {
           "id": 401868949,
@@ -2646,9 +2646,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 17
         },
         {
           "id": 401856719,
@@ -2662,9 +2662,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 27
         },
         {
           "id": 401856721,
@@ -2678,9 +2678,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 3
         },
         {
           "id": 401856723,
@@ -2694,9 +2694,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 26,
+          "awayPoints": 10
         },
         {
           "id": 401856828,
@@ -2710,9 +2710,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 53,
+          "awayPoints": 25
         },
         {
           "id": 401858264,
@@ -2726,9 +2726,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 24
         },
         {
           "id": 401858266,
@@ -2742,9 +2742,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 20,
+          "awayPoints": 24
         },
         {
           "id": 401858490,
@@ -2758,9 +2758,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 18
         },
         {
           "id": 401864522,
@@ -2774,9 +2774,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 23
         },
         {
           "id": 401864524,
@@ -2790,9 +2790,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 31
         },
         {
           "id": 401866444,
@@ -2806,9 +2806,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 34
         },
         {
           "id": 401866478,
@@ -2822,9 +2822,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 14
         },
         {
           "id": 401866667,
@@ -2838,9 +2838,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 20
         },
         {
           "id": 401867961,
@@ -2854,9 +2854,9 @@
           "homeClassification": "fcs",
           "awayClassification": "ii",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 17
         },
         {
           "id": 401868012,
@@ -2870,9 +2870,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 38
         },
         {
           "id": 401867849,
@@ -2886,9 +2886,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 35
         },
         {
           "id": 401868289,
@@ -2902,9 +2902,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 38,
+          "awayPoints": 13
         },
         {
           "id": 401868310,
@@ -2918,9 +2918,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 0,
+          "awayPoints": 56
         },
         {
           "id": 401862805,
@@ -2934,9 +2934,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 38
         },
         {
           "id": 401867870,
@@ -2950,9 +2950,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 20,
+          "awayPoints": 48
         },
         {
           "id": 401867912,
@@ -2966,9 +2966,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 9,
+          "awayPoints": 14
         },
         {
           "id": 401868319,
@@ -2982,9 +2982,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 31
         },
         {
           "id": 401869966,
@@ -2998,9 +2998,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 33,
+          "awayPoints": 6
         },
         {
           "id": 401860903,
@@ -3014,9 +3014,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 48,
+          "awayPoints": 30
         },
         {
           "id": 401867897,
@@ -3030,9 +3030,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 22
         },
         {
           "id": 401867968,
@@ -3046,9 +3046,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 25,
+          "awayPoints": 16
         },
         {
           "id": 401856726,
@@ -3062,9 +3062,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 31
         },
         {
           "id": 401856832,
@@ -3078,9 +3078,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 6,
+          "awayPoints": 17
         },
         {
           "id": 401858263,
@@ -3094,9 +3094,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 43,
+          "awayPoints": 35
         },
         {
           "id": 401862806,
@@ -3110,9 +3110,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 29,
+          "awayPoints": 2
         },
         {
           "id": 401864520,
@@ -3126,9 +3126,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 17
         },
         {
           "id": 401868055,
@@ -3142,9 +3142,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 31
         },
         {
           "id": 401868088,
@@ -3158,9 +3158,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 20,
+          "awayPoints": 56
         },
         {
           "id": 401868125,
@@ -3174,9 +3174,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 38,
+          "awayPoints": 25
         },
         {
           "id": 401868134,
@@ -3190,9 +3190,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 49,
+          "awayPoints": 35
         },
         {
           "id": 401868250,
@@ -3206,9 +3206,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 16
         },
         {
           "id": 401868383,
@@ -3222,9 +3222,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 31
         },
         {
           "id": 401869152,
@@ -3238,9 +3238,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 43,
+          "awayPoints": 24
         },
         {
           "id": 401869934,
@@ -3254,9 +3254,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 13,
+          "awayPoints": 23
         },
         {
           "id": 401856722,
@@ -3270,9 +3270,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 13,
+          "awayPoints": 21
         },
         {
           "id": 401856809,
@@ -3286,9 +3286,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 24
         },
         {
           "id": 401856831,
@@ -3302,9 +3302,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 32
         },
         {
           "id": 401858262,
@@ -3318,9 +3318,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 7
         },
         {
           "id": 401858265,
@@ -3334,9 +3334,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 26,
+          "awayPoints": 34
         },
         {
           "id": 401858494,
@@ -3350,9 +3350,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 7
         },
         {
           "id": 401862804,
@@ -3366,9 +3366,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 38,
+          "awayPoints": 34
         },
         {
           "id": 401868079,
@@ -3382,9 +3382,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 18
         },
         {
           "id": 401868161,
@@ -3398,9 +3398,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 38,
+          "awayPoints": 17
         },
         {
           "id": 401871091,
@@ -3414,9 +3414,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 0,
+          "awayPoints": 24
         },
         {
           "id": 401864523,
@@ -3430,9 +3430,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 11,
+          "awayPoints": 24
         },
         {
           "id": 401866445,
@@ -3446,9 +3446,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 7,
+          "awayPoints": 48
         },
         {
           "id": 401856833,
@@ -3462,9 +3462,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 27
         },
         {
           "id": 401858269,
@@ -3478,9 +3478,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 7,
+          "awayPoints": 41
         },
         {
           "id": 401860904,
@@ -3494,9 +3494,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 26,
+          "awayPoints": 23
         },
         {
           "id": 401864521,
@@ -3510,9 +3510,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 10,
+          "awayPoints": 21
         },
         {
           "id": 401858492,
@@ -3526,15 +3526,123 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 17,
+          "awayPoints": 14
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
-      "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "scheduleChanged": true,
+      "missingRequiredBoxIds": [
+        "401856719",
+        "401856720",
+        "401856721",
+        "401856722",
+        "401856723",
+        "401856724",
+        "401856725",
+        "401856726",
+        "401856809",
+        "401856828",
+        "401856829",
+        "401856830",
+        "401856831",
+        "401856832",
+        "401856833",
+        "401858261",
+        "401858262",
+        "401858263",
+        "401858264",
+        "401858265",
+        "401858266",
+        "401858267",
+        "401858268",
+        "401858269",
+        "401858488",
+        "401858489",
+        "401858490",
+        "401858491",
+        "401858492",
+        "401858494",
+        "401860903",
+        "401860904",
+        "401862802",
+        "401862803",
+        "401862804",
+        "401862805",
+        "401862806",
+        "401864520",
+        "401864521",
+        "401864522",
+        "401864523",
+        "401864524",
+        "401866441",
+        "401866442",
+        "401866443",
+        "401866444",
+        "401866445",
+        "401866478",
+        "401866663",
+        "401866664",
+        "401866665",
+        "401866666",
+        "401866667",
+        "401866668",
+        "401866669",
+        "401867807",
+        "401867830",
+        "401867837",
+        "401867841",
+        "401867849",
+        "401867870",
+        "401867878",
+        "401867897",
+        "401867901",
+        "401867912",
+        "401867920",
+        "401867925",
+        "401867968",
+        "401867993",
+        "401868002",
+        "401868012",
+        "401868055",
+        "401868066",
+        "401868079",
+        "401868088",
+        "401868096",
+        "401868105",
+        "401868125",
+        "401868134",
+        "401868145",
+        "401868161",
+        "401868181",
+        "401868189",
+        "401868207",
+        "401868213",
+        "401868222",
+        "401868250",
+        "401868257",
+        "401868277",
+        "401868289",
+        "401868301",
+        "401868310",
+        "401868319",
+        "401868330",
+        "401868361",
+        "401868383",
+        "401868398",
+        "401868943",
+        "401868949",
+        "401869132",
+        "401869152",
+        "401869934",
+        "401869957",
+        "401869966",
+        "401871091"
+      ],
+      "lastReadinessAttemptAt": "2026-10-18T07:21:52.294Z",
+      "completedWithoutGamesAt": null
     }
   },
   "pendingPublication": null,
@@ -3543,11 +3651,2045 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-17T04:45:14.310Z",
+  "confirmedScheduleOverrides": {
+    "401856719": {
+      "game": {
+        "id": 401856719,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Georgia",
+        "awayTeam": "Auburn",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856720": {
+      "game": {
+        "id": 401856720,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "LSU",
+        "awayTeam": "Mississippi State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856721": {
+      "game": {
+        "id": 401856721,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Ole Miss",
+        "awayTeam": "Missouri",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 3
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856722": {
+      "game": {
+        "id": 401856722,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oklahoma",
+        "awayTeam": "Kentucky",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 13,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856723": {
+      "game": {
+        "id": 401856723,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tennessee",
+        "awayTeam": "Alabama",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 26,
+        "awayPoints": 10
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856724": {
+      "game": {
+        "id": 401856724,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas",
+        "awayTeam": "Florida",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856725": {
+      "game": {
+        "id": 401856725,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas A&M",
+        "awayTeam": "The Citadel",
+        "homeClassification": "fbs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856726": {
+      "game": {
+        "id": 401856726,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Vanderbilt",
+        "awayTeam": "Arkansas",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856809": {
+      "game": {
+        "id": 401856809,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "BYU",
+        "awayTeam": "Notre Dame",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856828": {
+      "game": {
+        "id": 401856828,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas Tech",
+        "awayTeam": "Arizona State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 53,
+        "awayPoints": 25
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856829": {
+      "game": {
+        "id": 401856829,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Virginia",
+        "awayTeam": "Cincinnati",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 45,
+        "awayPoints": 42
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856830": {
+      "game": {
+        "id": 401856830,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Kansas State",
+        "awayTeam": "Kansas",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856831": {
+      "game": {
+        "id": 401856831,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Houston",
+        "awayTeam": "Oklahoma State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 32
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856832": {
+      "game": {
+        "id": 401856832,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Baylor",
+        "awayTeam": "TCU",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 6,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401856833": {
+      "game": {
+        "id": 401856833,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T02:15:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Colorado",
+        "awayTeam": "Utah",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858261": {
+      "game": {
+        "id": 401858261,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Clemson",
+        "awayTeam": "Charleston Southern",
+        "homeClassification": "fbs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 37,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858262": {
+      "game": {
+        "id": 401858262,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stanford",
+        "awayTeam": "Elon",
+        "homeClassification": "fbs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 7
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858263": {
+      "game": {
+        "id": 401858263,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Miami",
+        "awayTeam": "Florida State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 43,
+        "awayPoints": 35
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858264": {
+      "game": {
+        "id": 401858264,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Virginia Tech",
+        "awayTeam": "Georgia Tech",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858265": {
+      "game": {
+        "id": 401858265,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Syracuse",
+        "awayTeam": "Louisville",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 26,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858266": {
+      "game": {
+        "id": 401858266,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Duke",
+        "awayTeam": "North Carolina",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 20,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858267": {
+      "game": {
+        "id": 401858267,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Boston College",
+        "awayTeam": "Pittsburgh",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858268": {
+      "game": {
+        "id": 401858268,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "SMU",
+        "awayTeam": "Virginia",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 23,
+        "awayPoints": 13
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858269": {
+      "game": {
+        "id": 401858269,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "California",
+        "awayTeam": "Wake Forest",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 7,
+        "awayPoints": 41
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858488": {
+      "game": {
+        "id": 401858488,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Indiana",
+        "awayTeam": "Ohio State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 15,
+        "awayPoints": 19
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858489": {
+      "game": {
+        "id": 401858489,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Maryland",
+        "awayTeam": "Rutgers",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 30,
+        "awayPoints": 37
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858490": {
+      "game": {
+        "id": 401858490,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Michigan",
+        "awayTeam": "Penn State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 18
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858491": {
+      "game": {
+        "id": 401858491,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Michigan State",
+        "awayTeam": "Northwestern",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858492": {
+      "game": {
+        "id": 401858492,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T03:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oregon",
+        "awayTeam": "Nebraska",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401858494": {
+      "game": {
+        "id": 401858494,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UCLA",
+        "awayTeam": "Wisconsin",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 7
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401860903": {
+      "game": {
+        "id": 401860903,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T22:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oregon State",
+        "awayTeam": "Washington State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 48,
+        "awayPoints": 30
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401860904": {
+      "game": {
+        "id": 401860904,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "San Diego State",
+        "awayTeam": "Fresno State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 26,
+        "awayPoints": 23
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401862802": {
+      "game": {
+        "id": 401862802,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Army",
+        "awayTeam": "Florida Atlantic",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 56,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401862803": {
+      "game": {
+        "id": 401862803,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Temple",
+        "awayTeam": "Charlotte",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401862804": {
+      "game": {
+        "id": 401862804,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UTSA",
+        "awayTeam": "Navy",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 38,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401862805": {
+      "game": {
+        "id": 401862805,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Rice",
+        "awayTeam": "Tulsa",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401862806": {
+      "game": {
+        "id": 401862806,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "South Florida",
+        "awayTeam": "Kent State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 29,
+        "awayPoints": 2
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401864520": {
+      "game": {
+        "id": 401864520,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Dakota State",
+        "awayTeam": "Nevada",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401864521": {
+      "game": {
+        "id": 401864521,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Hawai'i",
+        "awayTeam": "New Mexico",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 10,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401864522": {
+      "game": {
+        "id": 401864522,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Wyoming",
+        "awayTeam": "Northern Illinois",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 23
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401864523": {
+      "game": {
+        "id": 401864523,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T01:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UTEP",
+        "awayTeam": "San José State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 11,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401864524": {
+      "game": {
+        "id": 401864524,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Air Force",
+        "awayTeam": "UNLV",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866441": {
+      "game": {
+        "id": 401866441,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Bowling Green",
+        "awayTeam": "Ball State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 32
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866442": {
+      "game": {
+        "id": 401866442,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Buffalo",
+        "awayTeam": "Massachusetts",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 25,
+        "awayPoints": 18
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866443": {
+      "game": {
+        "id": 401866443,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Central Michigan",
+        "awayTeam": "Western Michigan",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866444": {
+      "game": {
+        "id": 401866444,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Eastern Michigan",
+        "awayTeam": "Toledo",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866445": {
+      "game": {
+        "id": 401866445,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T02:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Sacramento State",
+        "awayTeam": "Ohio",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 7,
+        "awayPoints": 48
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866478": {
+      "game": {
+        "id": 401866478,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Miami (OH)",
+        "awayTeam": "Akron",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866663": {
+      "game": {
+        "id": 401866663,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Sacred Heart",
+        "awayTeam": "Hampton",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866664": {
+      "game": {
+        "id": 401866664,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Maine",
+        "awayTeam": "Bryant",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866665": {
+      "game": {
+        "id": 401866665,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "New Hampshire",
+        "awayTeam": "Monmouth",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 42
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866666": {
+      "game": {
+        "id": 401866666,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stony Brook",
+        "awayTeam": "UAlbany",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 48
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866667": {
+      "game": {
+        "id": 401866667,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Campbell",
+        "awayTeam": "Towson",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 20
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866668": {
+      "game": {
+        "id": 401866668,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Carolina A&T",
+        "awayTeam": "Chicago State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 12
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401866669": {
+      "game": {
+        "id": 401866669,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Yale",
+        "awayTeam": "Rhode Island",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 23,
+        "awayPoints": 41
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867807": {
+      "game": {
+        "id": 401867807,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Princeton",
+        "awayTeam": "Brown",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 16,
+        "awayPoints": 10
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867830": {
+      "game": {
+        "id": 401867830,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Cornell",
+        "awayTeam": "Lehigh",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 48,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867837": {
+      "game": {
+        "id": 401867837,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Dartmouth",
+        "awayTeam": "Merrimack",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867841": {
+      "game": {
+        "id": 401867841,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Harvard",
+        "awayTeam": "Holy Cross",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 30,
+        "awayPoints": 7
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867849": {
+      "game": {
+        "id": 401867849,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southern Illinois",
+        "awayTeam": "Illinois State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 35
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867870": {
+      "game": {
+        "id": 401867870,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Murray State",
+        "awayTeam": "South Dakota",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 20,
+        "awayPoints": 48
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867878": {
+      "game": {
+        "id": 401867878,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Dakota",
+        "awayTeam": "South Dakota State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 10
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867897": {
+      "game": {
+        "id": 401867897,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T22:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Youngstown State",
+        "awayTeam": "Northern Iowa",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 22
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867901": {
+      "game": {
+        "id": 401867901,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Mercyhurst",
+        "awayTeam": "Central Connecticut",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 40,
+        "awayPoints": 43
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867912": {
+      "game": {
+        "id": 401867912,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Wagner",
+        "awayTeam": "Long Island University",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 9,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867920": {
+      "game": {
+        "id": 401867920,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Robert Morris",
+        "awayTeam": "New Haven",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 15,
+        "awayPoints": 26
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867925": {
+      "game": {
+        "id": 401867925,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stonehill",
+        "awayTeam": "Duquesne",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 7,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867961": {
+      "game": {
+        "id": 401867961,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Howard",
+        "awayTeam": "Morehouse",
+        "homeClassification": "fcs",
+        "awayClassification": "ii",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867968": {
+      "game": {
+        "id": 401867968,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T22:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tennessee State",
+        "awayTeam": "Morgan State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 25,
+        "awayPoints": 16
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401867993": {
+      "game": {
+        "id": 401867993,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Bucknell",
+        "awayTeam": "Lafayette",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 7,
+        "awayPoints": 20
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868002": {
+      "game": {
+        "id": 401868002,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Colgate",
+        "awayTeam": "Georgetown",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868012": {
+      "game": {
+        "id": 401868012,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Fordham",
+        "awayTeam": "Villanova",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868055": {
+      "game": {
+        "id": 401868055,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Alabama",
+        "awayTeam": "Abilene Christian",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868066": {
+      "game": {
+        "id": 401868066,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Georgia",
+        "awayTeam": "Austin Peay",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 10,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868079": {
+      "game": {
+        "id": 401868079,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Northern Colorado",
+        "awayTeam": "Cal Poly",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 18
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868088": {
+      "game": {
+        "id": 401868088,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Eastern Washington",
+        "awayTeam": "Montana State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 20,
+        "awayPoints": 56
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868096": {
+      "game": {
+        "id": 401868096,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Montana",
+        "awayTeam": "Idaho",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 42
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868105": {
+      "game": {
+        "id": 401868105,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Weber State",
+        "awayTeam": "Idaho State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 20
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868125": {
+      "game": {
+        "id": 401868125,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Northern Arizona",
+        "awayTeam": "Portland State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 38,
+        "awayPoints": 25
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868134": {
+      "game": {
+        "id": 401868134,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tarleton State",
+        "awayTeam": "Central Arkansas",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 49,
+        "awayPoints": 35
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868145": {
+      "game": {
+        "id": 401868145,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tennessee Tech",
+        "awayTeam": "Eastern Kentucky",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 49,
+        "awayPoints": 20
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868161": {
+      "game": {
+        "id": 401868161,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southern Utah",
+        "awayTeam": "UC Davis",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 38,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868181": {
+      "game": {
+        "id": 401868181,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Eastern Illinois",
+        "awayTeam": "Lindenwood",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 13,
+        "awayPoints": 20
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868189": {
+      "game": {
+        "id": 401868189,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UT Martin",
+        "awayTeam": "Gardner-Webb",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 17,
+        "awayPoints": 6
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868207": {
+      "game": {
+        "id": 401868207,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southeast Missouri State",
+        "awayTeam": "Western Illinois",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 40,
+        "awayPoints": 30
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868213": {
+      "game": {
+        "id": 401868213,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Butler",
+        "awayTeam": "Dayton",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 9,
+        "awayPoints": 19
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868222": {
+      "game": {
+        "id": 401868222,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Davidson",
+        "awayTeam": "Morehead State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868250": {
+      "game": {
+        "id": 401868250,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Incarnate Word",
+        "awayTeam": "UT Rio Grande Valley",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 16
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868257": {
+      "game": {
+        "id": 401868257,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Drake",
+        "awayTeam": "Marist",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 22,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868277": {
+      "game": {
+        "id": 401868277,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stetson",
+        "awayTeam": "Presbyterian",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 43,
+        "awayPoints": 47
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868289": {
+      "game": {
+        "id": 401868289,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "San Diego",
+        "awayTeam": "Valparaiso",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 38,
+        "awayPoints": 13
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868301": {
+      "game": {
+        "id": 401868301,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Alabama A&M",
+        "awayTeam": "Grambling",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 61,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868310": {
+      "game": {
+        "id": 401868310,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Nicholls",
+        "awayTeam": "Stephen F. Austin",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 0,
+        "awayPoints": 56
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868319": {
+      "game": {
+        "id": 401868319,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "SE Louisiana",
+        "awayTeam": "Lamar",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868330": {
+      "game": {
+        "id": 401868330,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Arkansas-Pine Bluff",
+        "awayTeam": "Alabama State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 15,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868361": {
+      "game": {
+        "id": 401868361,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Prairie View A&M",
+        "awayTeam": "Alcorn State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868383": {
+      "game": {
+        "id": 401868383,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Samford",
+        "awayTeam": "Mercer",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868398": {
+      "game": {
+        "id": 401868398,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Wofford",
+        "awayTeam": "VMI",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868943": {
+      "game": {
+        "id": 401868943,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Mississippi Valley State",
+        "awayTeam": "Bethune-Cookman",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401868949": {
+      "game": {
+        "id": 401868949,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Jackson State",
+        "awayTeam": "Florida A&M",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401869132": {
+      "game": {
+        "id": 401869132,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Northwestern State",
+        "awayTeam": "McNeese",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401869152": {
+      "game": {
+        "id": 401869152,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Houston Christian",
+        "awayTeam": "East Texas A&M",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 43,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401869934": {
+      "game": {
+        "id": 401869934,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southern Miss",
+        "awayTeam": "Arkansas State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 13,
+        "awayPoints": 23
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401869957": {
+      "game": {
+        "id": 401869957,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T16:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "James Madison",
+        "awayTeam": "Georgia State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 49,
+        "awayPoints": 22
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401869966": {
+      "game": {
+        "id": 401869966,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Louisiana",
+        "awayTeam": "Troy",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 33,
+        "awayPoints": 6
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401871091": {
+      "game": {
+        "id": 401871091,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-18T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UL Monroe",
+        "awayTeam": "Louisiana Tech",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 0,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    },
+    "401874037": {
+      "game": {
+        "id": 401874037,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 7,
+        "startDate": "2026-10-17T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Florida",
+        "awayTeam": "West Alabama",
+        "homeClassification": "fcs",
+        "awayClassification": "ii",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 37,
+        "awayPoints": 3
+      },
+      "checkedAt": "2026-10-18T07:21:52.294Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-18T07:21:52.294Z",
   "quota": {
-    "checkedAt": "2026-10-17T04:45:14.310Z",
-    "remainingCalls": 659,
-    "reserve": 119
+    "checkedAt": "2026-10-18T07:21:52.294Z",
+    "remainingCalls": 657,
+    "reserve": 110
   }
 }
