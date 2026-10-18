@@ -2331,6 +2331,22 @@
           "awayPoints": 24
         },
         {
+          "id": 401874037,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 7,
+          "startDate": "2026-10-17T18:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "West Alabama",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 37,
+          "awayPoints": 3
+        },
+        {
           "id": 401866443,
           "season": 2026,
           "seasonType": "regular",
@@ -2425,22 +2441,6 @@
           "completed": true,
           "homePoints": 43,
           "awayPoints": 47
-        },
-        {
-          "id": 401874037,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 7,
-          "startDate": "2026-10-17T18:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "West Alabama",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": true,
-          "homePoints": 37,
-          "awayPoints": 3
         },
         {
           "id": 401866666,
@@ -3533,7 +3533,7 @@
       ],
       "movedGameIds": [],
       "missingGameIds": [],
-      "scheduleChanged": true,
+      "scheduleChanged": false,
       "missingRequiredBoxIds": [
         "401856719",
         "401856720",
