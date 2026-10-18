@@ -1809,9 +1809,9 @@
     },
     "2026:2026-10-17": {
       "readinessAttempts": 1,
-      "statsAttempts": 1,
+      "statsAttempts": 2,
       "nextReadinessAt": "2026-10-18T08:14:31.711Z",
-      "nextStatsAt": "2026-10-18T08:55:45.928Z",
+      "nextStatsAt": "2026-10-18T10:25:47.974Z",
       "firstAllFinalSeenAt": "2026-10-18T07:21:52.294Z",
       "publishedAt": "2026-10-18T07:45:26.259Z",
       "baseline": false,
@@ -3542,7 +3542,7 @@
       "lastPublishedAt": "2026-10-18T07:45:26.259Z",
       "snapshotGeneratedAt": "2026-10-18T07:44:31.711Z",
       "inputFingerprint": "92de53f9693b5da057d1a749224cc9defdba4e00e772142b8a5e1f68b81548c2",
-      "lastStatsAttemptAt": "2026-10-18T08:25:45.928Z"
+      "lastStatsAttemptAt": "2026-10-18T08:55:47.974Z"
     }
   },
   "pendingPublication": null,
@@ -3554,8 +3554,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-10-18T07:44:31.711Z",
   "quota": {
-    "checkedAt": "2026-10-18T08:25:45.928Z",
-    "remainingCalls": 651,
+    "checkedAt": "2026-10-18T08:55:47.974Z",
+    "remainingCalls": 649,
     "reserve": 110
   }
 }
