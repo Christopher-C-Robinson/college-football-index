@@ -3543,9 +3543,9 @@
       "lastStatsAttemptAt": "2026-10-19T01:58:01.206Z"
     },
     "2026:2026-10-20": {
-      "readinessAttempts": 1,
+      "readinessAttempts": 2,
       "statsAttempts": 0,
-      "nextReadinessAt": "2026-10-21T04:19:42.951Z",
+      "nextReadinessAt": "2026-10-21T05:56:00.738Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-21T03:26:37.546Z",
       "publishedAt": null,
@@ -3606,7 +3606,7 @@
       "missingGameIds": [],
       "scheduleChanged": false,
       "missingRequiredBoxIds": [],
-      "lastReadinessAttemptAt": "2026-10-21T03:49:42.951Z"
+      "lastReadinessAttemptAt": "2026-10-21T04:26:00.738Z"
     }
   },
   "pendingPublication": null,
@@ -3623,7 +3623,7 @@
     "reserve": 110
   },
   "lastError": {
-    "at": "2026-10-21T03:49:42.951Z",
+    "at": "2026-10-21T04:26:00.738Z",
     "message": "Sourced game-status correction no longer matches the season schedule: 2026:401874036 (Northeastern State at West Florida). Refresh stopped to preserve the verified status."
   }
 }
