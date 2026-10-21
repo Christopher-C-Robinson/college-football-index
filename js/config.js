@@ -40,6 +40,14 @@ export const MODEL_PARAMETERS = Object.freeze({
   venuePriorGames: 12,
   leagueVenuePriorGames: 24,
   venueIterations: 80,
+  // Calculated fallback when the legacy venue fit is out of range: a converged
+  // joint fit of season team strength, league HFA and team home deviations
+  // (pooled with venuePriorGames). The tiny strength ridge only identifies
+  // disconnected schedule components; the league HFA has no prior.
+  calculatedVenueStrengthPriorGames: 0.001,
+  calculatedVenueRelaxation: 1.8,
+  calculatedVenueMaxIterations: 5000,
+  calculatedVenueTolerance: 1e-6,
   venueMinPoints: -5,
   venueMaxPoints: 12,
   simulationRuns: 10000,

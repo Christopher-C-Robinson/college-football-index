@@ -115,8 +115,7 @@ function marginForGame(game, parameters) {
   return clamp(score(game, 'home') - score(game, 'away'), -parameters.marginCap, parameters.marginCap);
 }
 
-export function estimateHomeField(historyGames, referenceSeason, parameterOverrides) {
-  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
+function venueHistoryRows(historyGames, referenceSeason, parameters) {
   const source = Array.isArray(historyGames) ? historyGames : [];
   const requestedSeason = number(referenceSeason);
   const knownSeasons = source.map(function (game) {
@@ -149,6 +148,9 @@ export function estimateHomeField(historyGames, referenceSeason, parameterOverri
       awayTeam: awayTeam,
       homeKey: homeKey,
       awayKey: awayKey,
+      homeId: text(game.homeId),
+      awayId: text(game.awayId),
+      startDate: text(game.startDate),
       neutral: game.neutralSite === true,
       margin: clamp(homePoints - awayPoints, -parameters.marginCap, parameters.marginCap),
       weight: Math.pow(parameters.venueRecencyFactor, latestSeason - season)
@@ -168,7 +170,15 @@ export function estimateHomeField(historyGames, referenceSeason, parameterOverri
     leaguePoints: parameters.homeFieldBaseline,
     teams: []
   };
+  return { rows: rows, emptyResult: emptyResult };
+}
+
+export function estimateHomeField(historyGames, referenceSeason, parameterOverrides) {
+  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
+  const { rows, emptyResult } = venueHistoryRows(historyGames, referenceSeason, parameters);
   if (!rows.length) return emptyResult;
+  const seasons = emptyResult.seasons;
+  const firstSeason = emptyResult.firstSeason;
 
   const rating = new Map();
   const seasonKeys = new Map();
@@ -284,6 +294,308 @@ export function estimateHomeField(historyGames, referenceSeason, parameterOverri
       };
     }).sort(function (a, b) { return a.name.localeCompare(b.name); })
   };
+}
+
+export const CALCULATED_HOME_FIELD_METHOD = 'joint five-season season strength, league home field, and partially pooled team home effects';
+
+// Season ratings in separate schedule components have no common level; center
+// each component (this lowers only the ridge penalty, not any residual).
+function ratingComponents(rows) {
+  const parent = new Map();
+  function find(value) {
+    if (!parent.has(value)) parent.set(value, value);
+    if (parent.get(value) !== value) parent.set(value, find(parent.get(value)));
+    return parent.get(value);
+  }
+  rows.forEach(function (game) {
+    const homeRoot = find(game.homeRatingKey);
+    const awayRoot = find(game.awayRatingKey);
+    if (homeRoot !== awayRoot) parent.set(awayRoot, homeRoot);
+  });
+  const components = new Map();
+  parent.forEach(function (_, ratingKey) {
+    const root = find(ratingKey);
+    if (!components.has(root)) components.set(root, []);
+    components.get(root).push(ratingKey);
+  });
+  return Array.from(components.values());
+}
+
+// Keys calculated venue teams by stable CFBD ID so a renamed program keeps one
+// identity. A row without an ID inherits one only when its display name maps to
+// exactly one ID in the window; ambiguous or ID-less names stay keyed by name.
+function venueIdentityRows(rows) {
+  const idsByName = new Map();
+  rows.forEach(function (game) {
+    ['home', 'away'].forEach(function (side) {
+      const id = game[side + 'Id'];
+      if (!id) return;
+      const nameKey = game[side + 'Key'];
+      if (!idsByName.has(nameKey)) idsByName.set(nameKey, new Set());
+      idsByName.get(nameKey).add(id);
+    });
+  });
+  function identity(game, side) {
+    const ids = idsByName.get(game[side + 'Key']);
+    const id = game[side + 'Id'] || (ids && ids.size === 1 ? ids.values().next().value : '');
+    return { id: id, key: id ? 'id:' + id : 'name:' + game[side + 'Key'] };
+  }
+  return rows.map(function (game) {
+    const home = identity(game, 'home');
+    const away = identity(game, 'away');
+    return { ...game, homeId: home.id, awayId: away.id, homeKey: home.key, awayKey: away.key };
+  });
+}
+
+// Minimizes, over completed FBS/FCS games in the five-season window,
+//   sum w * (margin - s[season, home] + s[season, away] - venue)^2
+//     + venuePriorGames * sum h[team]^2 + strengthPrior * sum s^2
+// with venue = L + h[home] at a true home site and exactly 0 at neutral sites.
+// s is a season-specific neutral strength, L the league home edge and h the
+// host's deviation, shrunk toward L. Home/road comparisons identify h against s;
+// no separate visitor effect is fitted because it is not separable from s.
+export function estimateCalculatedHomeField(historyGames, referenceSeason, parameterOverrides) {
+  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
+  const { rows: nameRows, emptyResult } = venueHistoryRows(historyGames, referenceSeason, parameters);
+  const rows = venueIdentityRows(nameRows);
+  const ratings = new Map();
+  const ratingRows = new Map();
+  const teamNames = new Map();
+  const homeRows = new Map();
+  const homeGames = new Map();
+  const roadGames = new Map();
+  const homeWeights = new Map();
+  const roadWeights = new Map();
+  rows.forEach(function (game) {
+    ['home', 'away'].forEach(function (side) {
+      const teamKey = game[side + 'Key'];
+      const ratingKey = game.season + '|' + teamKey;
+      game[side + 'RatingKey'] = ratingKey;
+      ratings.set(ratingKey, 0);
+      if (!ratingRows.has(ratingKey)) ratingRows.set(ratingKey, []);
+      ratingRows.get(ratingKey).push({ game: game, side: side });
+      if (!teamNames.has(teamKey)) {
+        homeRows.set(teamKey, []);
+        [homeGames, roadGames, homeWeights, roadWeights].forEach(function (map) { map.set(teamKey, 0); });
+      }
+      // Report each identity under its most recent display name.
+      const latest = teamNames.get(teamKey);
+      if (!latest || game.season > latest.season || (game.season === latest.season && game.startDate > latest.startDate)) {
+        teamNames.set(teamKey, { name: game[side + 'Team'], id: game[side + 'Id'], season: game.season, startDate: game.startDate });
+      }
+      if (game.neutral) return;
+      const games = side === 'home' ? homeGames : roadGames;
+      const weights = side === 'home' ? homeWeights : roadWeights;
+      games.set(teamKey, games.get(teamKey) + 1);
+      weights.set(teamKey, weights.get(teamKey) + game.weight);
+      if (side === 'home') homeRows.get(teamKey).push(game);
+    });
+  });
+
+  const teamKeys = Array.from(teamNames.keys());
+  const components = ratingComponents(rows);
+  const homeEffect = new Map(teamKeys.map(function (teamKey) { return [teamKey, 0]; }));
+  const strengthPrior = Math.max(1e-9, parameters.calculatedVenueStrengthPriorGames);
+  const sitePrior = parameters.venuePriorGames;
+  const relaxation = parameters.calculatedVenueRelaxation;
+  const tolerance = parameters.calculatedVenueTolerance;
+  const gradientTolerance = Math.max(1e-6, 10 * tolerance);
+  const maxIterations = parameters.calculatedVenueMaxIterations;
+  const nonNeutralWeight = rows.reduce(function (sum, game) { return sum + (game.neutral ? 0 : game.weight); }, 0);
+  let leaguePoints = parameters.homeFieldBaseline;
+
+  function residual(game) {
+    const venue = game.neutral ? 0 : leaguePoints + homeEffect.get(game.homeKey);
+    return game.margin - ratings.get(game.homeRatingKey) + ratings.get(game.awayRatingKey) - venue;
+  }
+  function objective() {
+    let value = 0;
+    ratings.forEach(function (rating) { value += strengthPrior * rating * rating; });
+    homeEffect.forEach(function (effect) { value += sitePrior * effect * effect; });
+    rows.forEach(function (game) { value += game.weight * Math.pow(residual(game), 2); });
+    return value;
+  }
+  // Largest Newton-scaled gradient component: how far any single coordinate
+  // would still move. Small steps alone do not prove a weakly identified fit
+  // has reached its optimum.
+  function maxScaledGradient() {
+    const ratingGradient = new Map(Array.from(ratings, function (entry) { return [entry[0], strengthPrior * entry[1]]; }));
+    const ratingCurvature = new Map(Array.from(ratings.keys(), function (ratingKey) { return [ratingKey, strengthPrior]; }));
+    const homeGradient = new Map(teamKeys.map(function (teamKey) { return [teamKey, sitePrior * homeEffect.get(teamKey)]; }));
+    let leagueGradient = 0;
+    rows.forEach(function (game) {
+      const weighted = game.weight * residual(game);
+      ratingGradient.set(game.homeRatingKey, ratingGradient.get(game.homeRatingKey) - weighted);
+      ratingGradient.set(game.awayRatingKey, ratingGradient.get(game.awayRatingKey) + weighted);
+      ratingCurvature.set(game.homeRatingKey, ratingCurvature.get(game.homeRatingKey) + game.weight);
+      ratingCurvature.set(game.awayRatingKey, ratingCurvature.get(game.awayRatingKey) + game.weight);
+      if (game.neutral) return;
+      homeGradient.set(game.homeKey, homeGradient.get(game.homeKey) - weighted);
+      leagueGradient -= weighted;
+    });
+    let value = Math.abs(leagueGradient) / nonNeutralWeight;
+    ratingGradient.forEach(function (gradient, ratingKey) { value = Math.max(value, Math.abs(gradient) / ratingCurvature.get(ratingKey)); });
+    teamKeys.forEach(function (teamKey) {
+      value = Math.max(value, Math.abs(homeGradient.get(teamKey)) / (homeWeights.get(teamKey) + sitePrior));
+    });
+    return value;
+  }
+
+  let failureReason = nonNeutralWeight > 0 ? null : 'no-home-games';
+  let previousObjective = objective();
+  let finalObjective = previousObjective;
+  let maxParameterChange = Infinity;
+  let iterations = 0;
+  let stableIterations = 0;
+  // Over-relaxed exact coordinate minimizations of one strictly convex
+  // quadratic; for relaxation in (0, 2) each step cannot raise the objective.
+  while (!failureReason && stableIterations < 2) {
+    if (iterations >= maxIterations) { failureReason = 'iteration-limit'; break; }
+    const previousLeaguePoints = leaguePoints;
+    maxParameterChange = 0;
+    ratingRows.forEach(function (observations, ratingKey) {
+      let sum = 0;
+      let weight = 0;
+      observations.forEach(function (observation) {
+        const game = observation.game;
+        const venue = game.neutral ? 0 : leaguePoints + homeEffect.get(game.homeKey);
+        sum += observation.side === 'home'
+          ? game.weight * (game.margin - venue + ratings.get(game.awayRatingKey))
+          : game.weight * (-game.margin + venue + ratings.get(game.homeRatingKey));
+        weight += game.weight;
+      });
+      const previous = ratings.get(ratingKey);
+      const next = previous + relaxation * (sum / (weight + strengthPrior) - previous);
+      maxParameterChange = Math.max(maxParameterChange, Math.abs(next - previous));
+      ratings.set(ratingKey, next);
+    });
+    components.forEach(function (keys) {
+      const mean = keys.reduce(function (sum, ratingKey) { return sum + ratings.get(ratingKey); }, 0) / keys.length;
+      keys.forEach(function (ratingKey) { ratings.set(ratingKey, ratings.get(ratingKey) - mean); });
+    });
+    teamKeys.forEach(function (teamKey) {
+      let sum = 0;
+      homeRows.get(teamKey).forEach(function (game) {
+        sum += game.weight * (game.margin - ratings.get(game.homeRatingKey) + ratings.get(game.awayRatingKey) - leaguePoints);
+      });
+      const previous = homeEffect.get(teamKey);
+      const next = previous + relaxation * (sum / (homeWeights.get(teamKey) + sitePrior) - previous);
+      maxParameterChange = Math.max(maxParameterChange, Math.abs(next - previous));
+      homeEffect.set(teamKey, next);
+    });
+    let venueSum = 0;
+    rows.forEach(function (game) {
+      if (!game.neutral) venueSum += game.weight * (game.margin - ratings.get(game.homeRatingKey) + ratings.get(game.awayRatingKey) - homeEffect.get(game.homeKey));
+    });
+    leaguePoints += relaxation * (venueSum / nonNeutralWeight - leaguePoints);
+    maxParameterChange = Math.max(maxParameterChange, Math.abs(leaguePoints - previousLeaguePoints));
+
+    iterations += 1;
+    finalObjective = objective();
+    if (!Number.isFinite(finalObjective) || finalObjective > previousObjective + 1e-10 * Math.max(1, Math.abs(previousObjective))) {
+      failureReason = 'objective-increased';
+      break;
+    }
+    const relativeObjectiveChange = Math.abs(previousObjective - finalObjective) / Math.max(1, Math.abs(previousObjective));
+    stableIterations = maxParameterChange <= tolerance && relativeObjectiveChange <= tolerance ? stableIterations + 1 : 0;
+    previousObjective = finalObjective;
+  }
+  const scaledGradient = failureReason ? null : maxScaledGradient();
+  if (!failureReason && !(scaledGradient <= gradientTolerance)) failureReason = 'not-stationary';
+  const converged = failureReason === null;
+  const rounded = function (value, digits) { return Number.isFinite(value) ? Number(value.toFixed(digits)) : null; };
+
+  return {
+    ...emptyResult,
+    method: CALCULATED_HOME_FIELD_METHOD,
+    fitStatus: converged ? 'converged' : 'not-converged',
+    fallbackReason: failureReason,
+    gamesUsed: rows.length,
+    leaguePoints: rounded(leaguePoints, 3),
+    diagnostics: {
+      iterations: iterations,
+      maxIterations: maxIterations,
+      tolerance: tolerance,
+      maxParameterChange: rounded(maxParameterChange, 8),
+      maxScaledGradient: rounded(scaledGradient, 10),
+      gradientTolerance: gradientTolerance,
+      objective: rounded(finalObjective, 6),
+      relaxation: relaxation,
+      strengthPriorGames: strengthPrior
+    },
+    teams: teamKeys.map(function (teamKey) {
+      const home = homeEffect.get(teamKey);
+      const id = teamNames.get(teamKey).id;
+      return {
+        ...(id ? { id: /^\d+$/.test(id) ? Number(id) : id } : {}),
+        name: teamNames.get(teamKey).name,
+        homeAdjustment: rounded(home, 3),
+        roadAdjustment: 0,
+        homeBoostPoints: rounded(leaguePoints + home, 3),
+        roadBoostPoints: rounded(-leaguePoints, 3),
+        homeFieldPoints: rounded(2 * leaguePoints + home, 3),
+        homeGames: homeGames.get(teamKey),
+        roadGames: roadGames.get(teamKey),
+        effectiveHomeGames: Number(homeWeights.get(teamKey).toFixed(2)),
+        effectiveRoadGames: Number(roadWeights.get(teamKey).toFixed(2))
+      };
+    }).sort(function (a, b) { return a.name.localeCompare(b.name) || String(a.id ?? '').localeCompare(String(b.id ?? '')); })
+  };
+}
+
+const TEAM_VENUE_FIELDS = ['homeAdjustment', 'roadAdjustment', 'homeBoostPoints', 'roadBoostPoints', 'homeFieldPoints'];
+
+function hasHomeVenueEvidence(estimate) {
+  const teams = Array.isArray(estimate?.teams) ? estimate.teams : [];
+  return Number(estimate?.gamesUsed) > 0 && teams.some(function (team) { return number(team?.homeGames) > 0; })
+    && teams.every(function (team) { return TEAM_VENUE_FIELDS.every(function (field) { return number(team?.[field]) !== null; }); });
+}
+
+function legacyFitIsPlausible(estimate, parameters) {
+  const points = number(estimate?.leaguePoints);
+  return points !== null && points >= 0 && points <= parameters.venueMaxPoints && hasHomeVenueEvidence(estimate);
+}
+
+function venueFitSummary(estimate) {
+  return { method: estimate?.method || null, leaguePoints: number(estimate?.leaguePoints),
+    fitStatus: estimate?.fitStatus || null, fallbackReason: estimate?.fallbackReason || null };
+}
+
+// Production venue policy. A plausible legacy fit (league edge from 0 to
+// venueMaxPoints) is kept unchanged. An invalid one is replaced by the converged
+// calculated fit. If that fit also fails with venue history available, the
+// result is a labeled 'baseline-fallback' that publication refuses.
+export function selectHomeFieldEstimate(legacyEstimate, calculatedEstimate, parameterOverrides) {
+  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
+  if (legacyFitIsPlausible(legacyEstimate, parameters)) return { ...legacyEstimate, fitStatus: 'legacy-in-range' };
+  const calculatedPoints = number(calculatedEstimate?.leaguePoints);
+  const calculatedInRange = calculatedPoints !== null
+    && calculatedPoints > parameters.venueMinPoints && calculatedPoints < parameters.venueMaxPoints;
+  const calculatedEvidence = hasHomeVenueEvidence(calculatedEstimate);
+  if (calculatedEstimate?.fitStatus === 'converged' && calculatedInRange && calculatedEvidence) {
+    return { ...calculatedEstimate, replacedLegacyEstimate: venueFitSummary(legacyEstimate) };
+  }
+  const gamesUsed = Math.max(Number(legacyEstimate?.gamesUsed) || 0, Number(calculatedEstimate?.gamesUsed) || 0);
+  return {
+    ...legacyEstimate,
+    leaguePoints: parameters.homeFieldBaseline,
+    teams: [],
+    fitStatus: 'baseline-fallback',
+    fallbackReason: gamesUsed === 0 ? 'no-venue-history'
+      : calculatedEstimate?.fitStatus !== 'converged' ? 'calculated-fit-' + (calculatedEstimate?.fallbackReason || 'missing')
+        : !calculatedEvidence ? 'calculated-fit-no-home-games' : 'calculated-fit-out-of-range',
+    replacedLegacyEstimate: venueFitSummary(legacyEstimate),
+    calculatedEstimate: venueFitSummary(calculatedEstimate)
+  };
+}
+
+export function estimateHomeFieldWithFallback(historyGames, referenceSeason, parameterOverrides) {
+  const parameters = { ...MODEL_PARAMETERS, ...(parameterOverrides || {}) };
+  const legacyEstimate = estimateHomeField(historyGames, referenceSeason, parameters);
+  // The calculated fit is needed only when the legacy fit is not retained.
+  const calculatedEstimate = legacyFitIsPlausible(legacyEstimate, parameters)
+    ? null : estimateCalculatedHomeField(historyGames, referenceSeason, parameters);
+  return selectHomeFieldEstimate(legacyEstimate, calculatedEstimate, parameterOverrides);
 }
 
 function teamStatsIndex(statGames) {
@@ -470,20 +782,50 @@ export function buildModel(rawData, requestedWeights, parameterOverrides) {
       fallbackReason: 'negative-legacy-estimate', teams: [] }
     : sourceHomeFieldEstimate;
   const leagueHomeField = legacyNegativeHomeField ? parameters.homeFieldBaseline : sourceLeagueHomeField;
-  const homeFieldByTeam = new Map();
-  (homeFieldEstimate && Array.isArray(homeFieldEstimate.teams) ? homeFieldEstimate.teams : []).forEach(function (entry) {
-    const teamKey = key(entry.name || entry.school);
-    if (teamKey) homeFieldByTeam.set(teamKey, entry);
+  // A calculated fit's league and team home effects were estimated jointly with
+  // team strength. Use them as fitted so power and forecasts share one venue term.
+  const calculatedVenueEstimate = sourceHomeFieldEstimate?.fitStatus === 'converged'
+    && sourceHomeFieldEstimate.method === CALCULATED_HOME_FIELD_METHOD;
+  // Fitted entries may carry stable CFBD IDs. Resolve current teams to an ID
+  // from this dataset's games (only when the name maps to exactly one ID) so a
+  // renamed program keeps its home effect; ID-less entries match by name.
+  const idsByTeam = new Map();
+  games.forEach(function (game) {
+    ['home', 'away'].forEach(function (side) {
+      const teamKey = key(game[side + 'Team']);
+      const id = text(game[side + 'Id']);
+      if (!teamKey || !id) return;
+      if (!idsByTeam.has(teamKey)) idsByTeam.set(teamKey, new Set());
+      idsByTeam.get(teamKey).add(id);
+    });
   });
+  const homeFieldById = new Map();
+  const homeFieldByName = new Map();
+  (homeFieldEstimate && Array.isArray(homeFieldEstimate.teams) ? homeFieldEstimate.teams : []).forEach(function (entry) {
+    const id = text(entry.id);
+    if (id) homeFieldById.set(id, entry);
+    const teamKey = key(entry.name || entry.school);
+    if (teamKey) homeFieldByName.set(teamKey, entry);
+  });
+  function venueEntry(teamKey) {
+    const ids = idsByTeam.get(teamKey);
+    const id = ids && ids.size === 1 ? ids.values().next().value : '';
+    if (id && homeFieldById.has(id)) return homeFieldById.get(id);
+    const named = homeFieldByName.get(teamKey);
+    const namedId = named ? text(named.id) : '';
+    // Never borrow another program's fitted effect through a shared name.
+    return named && (!namedId || !ids || namedId === id) ? named : undefined;
+  }
   function homeEdge(homeTeam, awayTeam) {
-    const homeEstimate = homeFieldByTeam.get(key(homeTeam));
-    const awayEstimate = homeFieldByTeam.get(key(awayTeam));
+    const homeEstimate = venueEntry(key(homeTeam));
+    const awayEstimate = venueEntry(key(awayTeam));
     const homeAdjustment = homeEstimate ? number(homeEstimate.homeAdjustment) || 0 : 0;
     const roadAdjustment = awayEstimate ? number(awayEstimate.roadAdjustment) || 0 : 0;
-    return clamp(leagueHomeField + homeAdjustment - roadAdjustment, parameters.venueMinPoints, parameters.venueMaxPoints);
+    const points = leagueHomeField + homeAdjustment - roadAdjustment;
+    return calculatedVenueEstimate ? points : clamp(points, parameters.venueMinPoints, parameters.venueMaxPoints);
   }
   teams.forEach(function (team, teamName) {
-    const estimate = homeFieldByTeam.get(teamName);
+    const estimate = venueEntry(teamName);
     team.homeFieldPoints = estimate && number(estimate.homeFieldPoints) !== null
       ? number(estimate.homeFieldPoints) : 2 * leagueHomeField;
     team.homeBoostPoints = estimate && number(estimate.homeBoostPoints) !== null

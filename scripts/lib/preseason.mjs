@@ -1,7 +1,8 @@
-import { buildModel, estimateHomeField, isRatedGame } from '../../js/model.js';
+import { buildModel, estimateHomeFieldWithFallback, isRatedGame } from '../../js/model.js';
 import { MODEL_VERSION, MODEL_PARAMETERS } from '../../js/config.js';
 import { fingerprint } from './backtest.mjs';
 import { assertValidDataset } from './dataset.mjs';
+import { assertPublishableHomeField } from './home-field.mjs';
 
 const key = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
@@ -27,7 +28,8 @@ export function buildPreseason(archives, currentSeason, { asOf, parameters: requ
   const previous = sources.at(-1);
   const ratedGames = previous.games.filter(isRatedGame);
   if (!ratedGames.length) throw new Error('Prior season ' + season + ' has no completed FBS/FCS games for the preseason fallback.');
-  const homeField = estimateHomeField(sources.flatMap(archive => archive.games), season, parameters);
+  // The prior-season power uses the same venue policy as the current snapshot.
+  const homeField = assertPublishableHomeField(estimateHomeFieldWithFallback(sources.flatMap(archive => archive.games), season, parameters), season);
   const model = buildModel({ ...previous, teamStats: [], homeField }, undefined, parameters);
   const teams = [];
   for (const team of model.allTeams) {

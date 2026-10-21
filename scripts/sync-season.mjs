@@ -1,6 +1,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { estimateHomeField, MODEL_VERSION } from '../js/model.js';
+import { estimateHomeFieldWithFallback, MODEL_VERSION } from '../js/model.js';
+import { assertPublishableHomeField } from './lib/home-field.mjs';
 import { createCfbdClient, promptForApiKey } from './lib/cfbd.mjs';
 import { assertValidDataset, datasetMetadata, deduplicateGames, readJson, writeJsonAtomic } from './lib/dataset.mjs';
 import { resolveSeason } from './lib/season.mjs';
@@ -19,12 +20,11 @@ function assertStatsOnlyInputs(previous, season, schedules, statsRefresh, force,
   const frozenGames = deduplicateGames(previous.games);
   const suppliedGames = deduplicateGames([...schedules.fbsGames, ...schedules.fcsGames]);
   if (JSON.stringify(frozenGames) !== JSON.stringify(suppliedGames)) throw new Error('Statistics-only retries cannot change schedules or results.');
-  const homeField = previous.homeField;
-  if (homeField?.referenceSeason !== season || !Number.isFinite(homeField.leaguePoints)
-    || !Array.isArray(homeField.teams) || !homeField.teams.length
-    || homeField.teams.some(entry => !entry?.name || ![entry.homeBoostPoints, entry.roadBoostPoints, entry.homeFieldPoints].every(Number.isFinite))
-    || !Array.isArray(previous.meta.homeFieldSeasons) || previous.meta.homeFieldSeasons.some(year => !Number.isInteger(year))) {
-    throw new Error('Statistics-only retries require validated reusable home-field estimates.');
+  try {
+    assertPublishableHomeField(previous.homeField, season);
+    if (!Array.isArray(previous.meta.homeFieldSeasons) || previous.meta.homeFieldSeasons.some(year => !Number.isInteger(year))) throw new Error('Invalid home-field seasons.');
+  } catch (error) {
+    throw new Error('Statistics-only retries require validated reusable home-field estimates. ' + error.message);
   }
   const preseason = previous.preseason;
   const names = new Set();
@@ -47,6 +47,7 @@ function assertStatsOnlyInputs(previous, season, schedules, statsRefresh, force,
 export async function persistSeasonDataset(dataset, {
   initialDataset = null, now = new Date(), projectDirectory = defaultProjectDirectory, logger = console
 } = {}) {
+  assertPublishableHomeField(dataset.homeField, dataset.meta?.season);
   const report = assertValidDataset(dataset, {
     previous: initialDataset?.meta?.season === dataset.meta?.season ? initialDataset : null, now
   });
@@ -101,7 +102,7 @@ export async function syncSeason({
     history.push(...dataset.games);
     if (year === season) current = dataset;
   }
-  const homeField = statsOnly ? previous.homeField : estimateHomeField(history, season);
+  const homeField = statsOnly ? previous.homeField : assertPublishableHomeField(estimateHomeFieldWithFallback(history, season), season);
   let dataset = {
     ...current,
     meta: datasetMetadata(season, current.games, {
@@ -118,7 +119,7 @@ export async function syncSeason({
   const apiCalls = client.apiCalls - callsBefore;
   logger.log((write ? 'Saved ' : 'Prepared ') + dataset.games.length + ' scheduled games and ' + dataset.teamStats.length + ' team box-score entries.');
   if (dataset.meta.gameStatusOverrides.appliedCount) logger.log('Applied ' + dataset.meta.gameStatusOverrides.appliedCount + ' sourced game-status correction(s).');
-  logger.log('Home-field model: ' + homeField.gamesUsed + ' completed FBS/FCS games across ' + homeField.seasons.length + ' seasons; league estimate ' + homeField.leaguePoints.toFixed(1) + ' points.');
+  logger.log('Home-field model: ' + homeField.gamesUsed + ' completed FBS/FCS games across ' + homeField.seasons.length + ' seasons; league estimate ' + homeField.leaguePoints.toFixed(1) + ' points (' + homeField.fitStatus + ').');
   logger.log('Prior-season fallback: ' + dataset.preseason.teams.length + ' teams from ' + dataset.preseason.season + ', estimated with five seasons of venue history.');
   logger.log('Rated-game box-score coverage: ' + (report.coverage.boxScoreCoverage * 100).toFixed(1) + '%.');
   for (const warning of report.warnings) logger.warn('Warning: ' + warning);
