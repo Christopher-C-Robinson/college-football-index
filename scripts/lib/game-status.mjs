@@ -29,7 +29,7 @@ export function validateGameStatusOverrides(config) {
 }
 
 /** Apply sourced cancellations only to an exact scheduled game; keep real finals. */
-export function applyGameStatusOverrides(dataset, config) {
+export function applyGameStatusOverrides(dataset, config, { previous = null } = {}) {
   validateGameStatusOverrides(config);
   if (!Array.isArray(dataset?.games)) throw new Error('Game-status overrides require a season dataset.');
   const season = dataset.meta?.season;
@@ -58,9 +58,24 @@ export function applyGameStatusOverrides(dataset, config) {
       statusSource: source };
   });
   const missing = applicable.filter(entry => !matched.has(entry.gameId));
-  if (missing.length) {
+  for (const override of missing) {
+    const sameId = games.find(game => String(game.id ?? game.gameId) === String(override.gameId));
+    if (sameId) continue;
+    const prior = previous?.meta?.season === override.season && previous?.games?.find(game => String(game.id ?? game.gameId) === String(override.gameId)
+      && Number(game.season ?? previous.meta?.season) === override.season
+      && game.homeTeam === override.homeTeam && game.awayTeam === override.awayTeam);
+    if (!prior || prior.canceled !== true || prior.status !== 'canceled' || prior.completed !== false
+      || prior.statusSource?.sourceURL !== override.sourceURL) continue;
+    // Some schedule feeds remove an already verified cancellation. Preserve its
+    // exact prior row so the sourced status remains visible and auditable.
+    games.push(prior);
+    matched.add(override.gameId);
+    applied.push({ ...override });
+  }
+  const unresolved = applicable.filter(entry => !matched.has(entry.gameId));
+  if (unresolved.length) {
     throw new Error('Sourced game-status correction no longer matches the season schedule: '
-      + missing.map(entry => entry.season + ':' + entry.gameId + ' (' + entry.awayTeam + ' at ' + entry.homeTeam + ')').join(', ')
+      + unresolved.map(entry => entry.season + ':' + entry.gameId + ' (' + entry.awayTeam + ' at ' + entry.homeTeam + ')').join(', ')
       + '. Refresh stopped to preserve the verified status.');
   }
   // Some providers attach box rows to completed 0–0 cancellation placeholders.

@@ -11,14 +11,16 @@ import { applyGameStatusOverrides, validateGameStatusOverrides } from './lib/gam
 
 const defaultProjectDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-function assertStatsOnlyInputs(previous, season, schedules, statsRefresh, force, now) {
+function assertStatsOnlyInputs(previous, season, schedules, statsRefresh, force, now, gameStatusOverrides) {
   if (previous?.meta?.season !== season || force || statsRefresh?.mode !== 'targeted'
     || !Array.isArray(schedules?.fbsGames) || !Array.isArray(schedules?.fcsGames)) {
     throw new Error('Statistics-only retries require a same-season initial dataset, frozen FBS/FCS schedules, targeted statistics, and force=false.');
   }
   assertValidDataset(previous, { now });
   const frozenGames = deduplicateGames(previous.games);
-  const suppliedGames = deduplicateGames([...schedules.fbsGames, ...schedules.fcsGames]);
+  const suppliedGames = deduplicateGames(applyGameStatusOverrides({ meta: { season },
+    games: deduplicateGames([...schedules.fbsGames, ...schedules.fcsGames]), teamStats: [] },
+  gameStatusOverrides, { previous }).games);
   if (JSON.stringify(frozenGames) !== JSON.stringify(suppliedGames)) throw new Error('Statistics-only retries cannot change schedules or results.');
   try {
     assertPublishableHomeField(previous.homeField, season);
@@ -75,7 +77,7 @@ export async function syncSeason({
   const previous = initialDataset === undefined ? await readJson(outputPath, { optional: true }) : initialDataset;
   if (statsOnly) {
     if (initialDataset === undefined) throw new Error('Statistics-only retries require an explicitly supplied initial dataset.');
-    assertStatsOnlyInputs(previous, season, currentSchedules, statsRefresh, force, now);
+    assertStatsOnlyInputs(previous, season, currentSchedules, statsRefresh, force, now, gameStatusOverrides);
   }
   const cacheDirectory = resolve(projectDirectory, '.cache/history');
   const client = suppliedClient || createCfbdClient({
@@ -97,7 +99,7 @@ export async function syncSeason({
       includeStats: year === season, seed: year === season ? previous : null,
       ...(year === season ? { schedules: currentSchedules, statsRefresh, preserveMetadata: statsOnly } : {})
     });
-    const dataset = year === season ? applyGameStatusOverrides(fetched, gameStatusOverrides) : fetched;
+    const dataset = year === season ? applyGameStatusOverrides(fetched, gameStatusOverrides, { previous }) : fetched;
     archives.push(dataset);
     history.push(...dataset.games);
     if (year === season) current = dataset;
