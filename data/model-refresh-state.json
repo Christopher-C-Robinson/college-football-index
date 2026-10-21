@@ -3607,6 +3607,39 @@
       "scheduleChanged": false,
       "missingRequiredBoxIds": [],
       "lastReadinessAttemptAt": "2026-10-21T04:26:00.738Z"
+    },
+    "2026:2026-10-21": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-10-21",
+      "expectedGames": [
+        {
+          "id": 401871070,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 8,
+          "startDate": "2026-10-22T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Sam Houston",
+          "awayTeam": "New Mexico State",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
