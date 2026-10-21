@@ -3543,9 +3543,9 @@
       "lastStatsAttemptAt": "2026-10-19T01:58:01.206Z"
     },
     "2026:2026-10-20": {
-      "readinessAttempts": 2,
+      "readinessAttempts": 3,
       "statsAttempts": 0,
-      "nextReadinessAt": "2026-10-21T05:56:00.738Z",
+      "nextReadinessAt": "2026-10-21T08:56:45.836Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-21T03:26:37.546Z",
       "publishedAt": null,
@@ -3606,7 +3606,8 @@
       "missingGameIds": [],
       "scheduleChanged": false,
       "missingRequiredBoxIds": [],
-      "lastReadinessAttemptAt": "2026-10-21T04:26:00.738Z"
+      "lastReadinessAttemptAt": "2026-10-21T05:56:45.836Z",
+      "stagedMissingRequiredBoxIds": []
     },
     "2026:2026-10-21": {
       "readinessAttempts": 0,
@@ -3642,21 +3643,28 @@
       "missingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-21T05:32:14.171Z",
+    "inputFingerprint": "2ecd5786accd69946438e377149796efc53a9d0d5bc63b94ebacef3731024237",
+    "dayKeys": [
+      "2026:2026-10-20"
+    ],
+    "dayKinds": {
+      "2026:2026-10-20": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-21T05:56:45.836Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
   "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-18T07:44:31.711Z",
+  "lastScheduleConfirmationAt": "2026-10-21T05:56:45.836Z",
   "quota": {
-    "checkedAt": "2026-10-19T01:58:01.206Z",
-    "remainingCalls": 643,
-    "reserve": 110
-  },
-  "lastError": {
-    "at": "2026-10-21T04:26:00.738Z",
-    "message": "Sourced game-status correction no longer matches the season schedule: 2026:401874036 (Northeastern State at West Florida). Refresh stopped to preserve the verified status."
+    "checkedAt": "2026-10-21T05:56:45.836Z",
+    "remainingCalls": 623,
+    "reserve": 101
   }
 }
