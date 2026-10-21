@@ -1167,24 +1167,6 @@
           "awayPoints": 38
         },
         {
-          "id": 401874036,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 6,
-          "startDate": "2026-10-10T21:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "Northeastern State",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null,
-          "canceled": true,
-          "status": "canceled"
-        },
-        {
           "id": 401860902,
           "season": 2026,
           "seasonType": "regular",
@@ -1535,6 +1517,24 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 38
+        },
+        {
+          "id": 401874036,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 6,
+          "startDate": "2026-10-10T21:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "Northeastern State",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null,
+          "canceled": true,
+          "status": "canceled"
         }
       ],
       "movedGameIds": [],
@@ -3565,9 +3565,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 23,
+          "awayPoints": 26
         },
         {
           "id": 401871069,
@@ -3581,9 +3581,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 61,
+          "awayPoints": 38
         },
         {
           "id": 401871092,
@@ -3597,9 +3597,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 20,
+          "awayPoints": 13
         }
       ],
       "movedGameIds": [],
