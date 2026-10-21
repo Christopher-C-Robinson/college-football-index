@@ -122,7 +122,7 @@ export async function refreshAfterGames({ projectDirectory = projectRoot, now = 
         fcsGames: await client.request('/games', { year: dataset.meta.season, seasonType: 'both', classification: 'fcs' }) };
       const games = deduplicateGames([...schedules.fbsGames, ...schedules.fcsGames]);
       const confirmationDataset = applyGameStatusOverrides({ ...dataset,
-        meta: datasetMetadata(dataset.meta.season, games, {}, now), games, teamStats: [] }, corrections);
+        meta: datasetMetadata(dataset.meta.season, games, {}, now), games, teamStats: [] }, corrections, { previous: dataset });
       assertValidDataset(confirmationDataset, { previous: dataset, now });
       plan = planGameDayRefresh({ dataset, liveScores, state, now,
         confirmation: { games: confirmationDataset.games, checkedAt: new Date(now).toISOString() } });
