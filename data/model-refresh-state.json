@@ -3655,65 +3655,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401858508": {
-      "game": {
-        "id": 401858508,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-31T20:15:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "UCLA",
-        "awayTeam": "Nevada",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-10-22T04:25:35.721Z"
-    },
-    "401868121": {
-      "game": {
-        "id": 401868121,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 8,
-        "startDate": "2026-10-24T19:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Montana State",
-        "awayTeam": "Weber State",
-        "homeClassification": "fcs",
-        "awayClassification": "fcs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-10-22T04:25:35.721Z"
-    },
-    "401871070": {
-      "game": {
-        "id": 401871070,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 8,
-        "startDate": "2026-10-22T00:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Sam Houston",
-        "awayTeam": "New Mexico State",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 24,
-        "awayPoints": 30
-      },
-      "checkedAt": "2026-10-22T04:25:35.721Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-10-22T04:25:35.721Z",
   "quota": {
     "checkedAt": "2026-10-22T04:25:35.721Z",
