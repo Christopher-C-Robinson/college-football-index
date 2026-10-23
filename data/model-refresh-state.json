@@ -3649,9 +3649,9 @@
       "inputFingerprint": "a043a6cb3802f9263736885ef5c60a0536d5230b9ad05cdc5e26d12b00ebaff1"
     },
     "2026:2026-10-22": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-23T04:55:50.202Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-23T03:50:00.186Z",
       "publishedAt": null,
@@ -3671,9 +3671,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 31
         },
         {
           "id": 401871056,
@@ -3687,9 +3687,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 6,
+          "awayPoints": 34
         },
         {
           "id": 401862807,
@@ -3703,28 +3703,118 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 41,
+          "awayPoints": 34
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-10-23T04:25:50.202Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-23T04:25:50.202Z",
+    "inputFingerprint": "cbd639ac9c1e2c83b4f11434846c7d0894b9b4a9da190b289d37e225a9f70146",
+    "dayKeys": [
+      "2026:2026-10-22"
+    ],
+    "dayKinds": {
+      "2026:2026-10-22": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-23T04:25:50.202Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-22T04:25:35.721Z",
+  "confirmedScheduleOverrides": {
+    "401862807": {
+      "game": {
+        "id": 401862807,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-22T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Memphis",
+        "awayTeam": "East Carolina",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 41,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-23T04:25:50.202Z"
+    },
+    "401868121": {
+      "game": {
+        "id": 401868121,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Montana State",
+        "awayTeam": "Weber State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-10-23T04:25:50.202Z"
+    },
+    "401869845": {
+      "game": {
+        "id": 401869845,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-22T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "App State",
+        "awayTeam": "James Madison",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-23T04:25:50.202Z"
+    },
+    "401871056": {
+      "game": {
+        "id": 401871056,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-22T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Kennesaw State",
+        "awayTeam": "Liberty",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 6,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-10-23T04:25:50.202Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-23T04:25:50.202Z",
   "quota": {
-    "checkedAt": "2026-10-22T04:25:35.721Z",
-    "remainingCalls": 619,
-    "reserve": 92
+    "checkedAt": "2026-10-23T04:25:50.202Z",
+    "remainingCalls": 614,
+    "reserve": 83
   }
 }
