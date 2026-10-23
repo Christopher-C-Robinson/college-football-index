@@ -3654,7 +3654,7 @@
       "nextReadinessAt": "2026-10-23T04:55:50.202Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-23T03:50:00.186Z",
-      "publishedAt": null,
+      "publishedAt": "2026-10-23T04:26:49.251Z",
       "baseline": false,
       "season": 2026,
       "date": "2026-10-22",
@@ -3713,21 +3713,12 @@
       "scheduleChanged": false,
       "missingRequiredBoxIds": [],
       "lastReadinessAttemptAt": "2026-10-23T04:25:50.202Z",
-      "stagedMissingRequiredBoxIds": []
+      "lastPublishedAt": "2026-10-23T04:26:49.251Z",
+      "snapshotGeneratedAt": "2026-10-23T04:25:50.202Z",
+      "inputFingerprint": "cbd639ac9c1e2c83b4f11434846c7d0894b9b4a9da190b289d37e225a9f70146"
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-10-23T04:25:50.202Z",
-    "inputFingerprint": "cbd639ac9c1e2c83b4f11434846c7d0894b9b4a9da190b289d37e225a9f70146",
-    "dayKeys": [
-      "2026:2026-10-22"
-    ],
-    "dayKinds": {
-      "2026:2026-10-22": "refresh"
-    },
-    "kind": "refresh",
-    "stagedAt": "2026-10-23T04:25:50.202Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
