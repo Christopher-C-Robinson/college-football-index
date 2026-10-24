@@ -3718,9 +3718,9 @@
       "inputFingerprint": "cbd639ac9c1e2c83b4f11434846c7d0894b9b4a9da190b289d37e225a9f70146"
     },
     "2026:2026-10-23": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-24T07:25:03.601Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-24T06:32:26.054Z",
       "publishedAt": null,
@@ -3740,9 +3740,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 12,
+          "awayPoints": 31
         },
         {
           "id": 401858271,
@@ -3756,9 +3756,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 16,
+          "awayPoints": 19
         },
         {
           "id": 401861965,
@@ -3772,9 +3772,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 16
         },
         {
           "id": 401870841,
@@ -3788,9 +3788,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 21
         },
         {
           "id": 401862808,
@@ -3804,9 +3804,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 35,
+          "awayPoints": 38
         },
         {
           "id": 401864525,
@@ -3820,9 +3820,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 14
         },
         {
           "id": 401858272,
@@ -3836,15 +3836,17 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 28
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-10-24T06:55:03.601Z",
+      "stagedMissingRequiredBoxIds": []
     },
     "2026:2026-10-24": {
       "readinessAttempts": 0,
@@ -5416,17 +5418,162 @@
       "missingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-24T06:55:03.601Z",
+    "inputFingerprint": "f52fd098f40e89fcdf39d43047d09f32118b4d4c3c451e9c0af52a7330add518",
+    "dayKeys": [
+      "2026:2026-10-23"
+    ],
+    "dayKinds": {
+      "2026:2026-10-23": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-24T06:55:03.601Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-23T04:25:50.202Z",
+  "confirmedScheduleOverrides": {
+    "401858271": {
+      "game": {
+        "id": 401858271,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-23T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Virginia",
+        "awayTeam": "Duke",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 16,
+        "awayPoints": 19
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401858272": {
+      "game": {
+        "id": 401858272,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stanford",
+        "awayTeam": "NC State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 31,
+        "awayPoints": 28
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401861965": {
+      "game": {
+        "id": 401861965,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-23T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UConn",
+        "awayTeam": "Massachusetts",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 16
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401862808": {
+      "game": {
+        "id": 401862808,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tulsa",
+        "awayTeam": "Army",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 35,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401864525": {
+      "game": {
+        "id": 401864525,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-24T01:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Wyoming",
+        "awayTeam": "Air Force",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 14
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401867955": {
+      "game": {
+        "id": 401867955,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-23T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Delaware State",
+        "awayTeam": "North Carolina Central",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 12,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    },
+    "401870841": {
+      "game": {
+        "id": 401870841,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 8,
+        "startDate": "2026-10-23T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Pennsylvania",
+        "awayTeam": "Yale",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-10-24T06:55:03.601Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-24T06:55:03.601Z",
   "quota": {
-    "checkedAt": "2026-10-23T04:25:50.202Z",
-    "remainingCalls": 614,
-    "reserve": 83
+    "checkedAt": "2026-10-24T06:55:03.601Z",
+    "remainingCalls": 610,
+    "reserve": 74
   }
 }
