@@ -5421,27 +5421,13 @@
         "401868003"
       ],
       "lastReadinessAttemptAt": "2026-10-25T06:32:54.420Z",
-      "lastPublishedAt": "2026-10-25T06:34:52.297Z",
-      "snapshotGeneratedAt": "2026-10-25T06:32:54.420Z",
-      "inputFingerprint": "51edfa9d770f3ea4a2db0042b2a0a9a4e2d40fb12843d52ccf8a59b0c861a8ac",
-      "lastStatsAttemptAt": "2026-10-25T09:34:24.182Z",
-      "stagedMissingRequiredBoxIds": [
-        "401868003"
-      ]
+      "lastPublishedAt": "2026-10-25T09:37:55.711Z",
+      "snapshotGeneratedAt": "2026-10-25T09:34:24.182Z",
+      "inputFingerprint": "e80d8d33fefe34915d522da47c9cd9c9b9cc737285319392b587e4997863531b",
+      "lastStatsAttemptAt": "2026-10-25T09:34:24.182Z"
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-10-25T09:34:24.182Z",
-    "inputFingerprint": "e80d8d33fefe34915d522da47c9cd9c9b9cc737285319392b587e4997863531b",
-    "dayKeys": [
-      "2026:2026-10-24"
-    ],
-    "dayKinds": {
-      "2026:2026-10-24": "stats-retry"
-    },
-    "kind": "stats-retry",
-    "stagedAt": "2026-10-25T09:34:24.182Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
