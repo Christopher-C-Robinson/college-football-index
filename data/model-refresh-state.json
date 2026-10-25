@@ -3852,9 +3852,9 @@
     },
     "2026:2026-10-24": {
       "readinessAttempts": 1,
-      "statsAttempts": 0,
+      "statsAttempts": 1,
       "nextReadinessAt": "2026-10-25T07:02:54.420Z",
-      "nextStatsAt": "2026-10-25T07:04:52.297Z",
+      "nextStatsAt": "2026-10-25T07:53:52.596Z",
       "firstAllFinalSeenAt": "2026-10-25T05:55:39.886Z",
       "publishedAt": "2026-10-25T06:34:52.297Z",
       "baseline": false,
@@ -5423,7 +5423,8 @@
       "lastReadinessAttemptAt": "2026-10-25T06:32:54.420Z",
       "lastPublishedAt": "2026-10-25T06:34:52.297Z",
       "snapshotGeneratedAt": "2026-10-25T06:32:54.420Z",
-      "inputFingerprint": "51edfa9d770f3ea4a2db0042b2a0a9a4e2d40fb12843d52ccf8a59b0c861a8ac"
+      "inputFingerprint": "51edfa9d770f3ea4a2db0042b2a0a9a4e2d40fb12843d52ccf8a59b0c861a8ac",
+      "lastStatsAttemptAt": "2026-10-25T07:23:52.596Z"
     }
   },
   "pendingPublication": null,
@@ -5438,5 +5439,9 @@
     "checkedAt": "2026-10-25T06:32:54.420Z",
     "remainingCalls": 606,
     "reserve": 65
+  },
+  "lastError": {
+    "at": "2026-10-25T07:23:52.596Z",
+    "message": "CFBD network request failed for /games/teams after 4 attempts."
   }
 }
