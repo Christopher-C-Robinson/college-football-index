@@ -5425,6 +5425,55 @@
       "snapshotGeneratedAt": "2026-10-26T00:56:02.512Z",
       "inputFingerprint": "e287c18a6f1c3c22b7f15f9558fe5299c16884c0c68d20a58a5705921dba2793",
       "lastStatsAttemptAt": "2026-10-26T00:56:02.512Z"
+    },
+    "2026:2026-10-27": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-10-27",
+      "expectedGames": [
+        {
+          "id": 401871071,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 9,
+          "startDate": "2026-10-27T23:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Western Kentucky",
+          "awayTeam": "Delaware",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401871072,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 9,
+          "startDate": "2026-10-28T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Missouri State",
+          "awayTeam": "Sam Houston",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
