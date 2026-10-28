@@ -5478,6 +5478,55 @@
       "lastPublishedAt": "2026-10-28T03:57:10.187Z",
       "snapshotGeneratedAt": "2026-10-28T03:56:14.240Z",
       "inputFingerprint": "644b3970a45a9723b2719839be4f5ccb0b29d87b73f85b411c7127fecde9c964"
+    },
+    "2026:2026-10-28": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-10-28",
+      "expectedGames": [
+        {
+          "id": 401871058,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 9,
+          "startDate": "2026-10-28T23:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Middle Tennessee",
+          "awayTeam": "Kennesaw State",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401871057,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 9,
+          "startDate": "2026-10-29T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "New Mexico State",
+          "awayTeam": "Jacksonville State",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
