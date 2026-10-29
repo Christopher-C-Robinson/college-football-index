@@ -5539,65 +5539,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401858514": {
-      "game": {
-        "id": 401858514,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 10,
-        "startDate": "2026-11-07T20:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Ohio State",
-        "awayTeam": "Oregon",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-10-29T03:41:43.357Z"
-    },
-    "401871057": {
-      "game": {
-        "id": 401871057,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-29T00:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "New Mexico State",
-        "awayTeam": "Jacksonville State",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 0,
-        "awayPoints": 24
-      },
-      "checkedAt": "2026-10-29T03:41:43.357Z"
-    },
-    "401871058": {
-      "game": {
-        "id": 401871058,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-28T23:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Middle Tennessee",
-        "awayTeam": "Kennesaw State",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 28,
-        "awayPoints": 44
-      },
-      "checkedAt": "2026-10-29T03:41:43.357Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-10-29T03:41:43.357Z",
   "quota": {
     "checkedAt": "2026-10-29T03:41:43.357Z",
