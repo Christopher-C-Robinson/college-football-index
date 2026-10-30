@@ -5533,9 +5533,9 @@
       "inputFingerprint": "c996a4a70a1755f16c8d72f12d94b82aed2081a537552ac31af87baad6452c9f"
     },
     "2026:2026-10-29": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-10-30T04:26:05.789Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-30T03:31:59.045Z",
       "publishedAt": null,
@@ -5555,9 +5555,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 10,
+          "awayPoints": 51
         },
         {
           "id": 401862812,
@@ -5571,9 +5571,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 48,
+          "awayPoints": 41
         },
         {
           "id": 401869963,
@@ -5587,28 +5587,99 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 21,
+          "awayPoints": 24
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-10-30T03:56:05.789Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-10-30T03:56:05.789Z",
+    "inputFingerprint": "3e326f7490f9da48fc61ae57cd1f1c1b072efe21a8acb0c545f383bf738678d8",
+    "dayKeys": [
+      "2026:2026-10-29"
+    ],
+    "dayKinds": {
+      "2026:2026-10-29": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-10-30T03:56:05.789Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-10-29T03:41:43.357Z",
+  "confirmedScheduleOverrides": {
+    "401862812": {
+      "game": {
+        "id": 401862812,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 9,
+        "startDate": "2026-10-29T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Texas",
+        "awayTeam": "Florida Atlantic",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 48,
+        "awayPoints": 41
+      },
+      "checkedAt": "2026-10-30T03:56:05.789Z"
+    },
+    "401867969": {
+      "game": {
+        "id": 401867969,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 9,
+        "startDate": "2026-10-29T23:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Morgan State",
+        "awayTeam": "South Carolina State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 10,
+        "awayPoints": 51
+      },
+      "checkedAt": "2026-10-30T03:56:05.789Z"
+    },
+    "401869963": {
+      "game": {
+        "id": 401869963,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 9,
+        "startDate": "2026-10-29T23:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "James Madison",
+        "awayTeam": "Troy",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 21,
+        "awayPoints": 24
+      },
+      "checkedAt": "2026-10-30T03:56:05.789Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-10-30T03:56:05.789Z",
   "quota": {
-    "checkedAt": "2026-10-29T03:41:43.357Z",
-    "remainingCalls": 583,
+    "checkedAt": "2026-10-30T03:56:05.789Z",
+    "remainingCalls": 579,
     "reserve": 50
   }
 }
