@@ -5608,65 +5608,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401862812": {
-      "game": {
-        "id": 401862812,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-29T23:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "North Texas",
-        "awayTeam": "Florida Atlantic",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 48,
-        "awayPoints": 41
-      },
-      "checkedAt": "2026-10-30T03:56:05.789Z"
-    },
-    "401867969": {
-      "game": {
-        "id": 401867969,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-29T23:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Morgan State",
-        "awayTeam": "South Carolina State",
-        "homeClassification": "fcs",
-        "awayClassification": "fcs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 10,
-        "awayPoints": 51
-      },
-      "checkedAt": "2026-10-30T03:56:05.789Z"
-    },
-    "401869963": {
-      "game": {
-        "id": 401869963,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 9,
-        "startDate": "2026-10-29T23:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "James Madison",
-        "awayTeam": "Troy",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 21,
-        "awayPoints": 24
-      },
-      "checkedAt": "2026-10-30T03:56:05.789Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-10-30T03:56:05.789Z",
   "quota": {
     "checkedAt": "2026-10-30T03:56:05.789Z",
