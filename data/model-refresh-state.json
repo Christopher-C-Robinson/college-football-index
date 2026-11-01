@@ -5688,9 +5688,9 @@
     },
     "2026:2026-10-31": {
       "readinessAttempts": 1,
-      "statsAttempts": 0,
+      "statsAttempts": 1,
       "nextReadinessAt": "2026-11-01T07:44:04.650Z",
-      "nextStatsAt": "2026-11-01T07:56:06.742Z",
+      "nextStatsAt": "2026-11-01T08:47:27.728Z",
       "firstAllFinalSeenAt": "2026-11-01T06:41:19.806Z",
       "publishedAt": "2026-11-01T07:26:06.742Z",
       "baseline": false,
@@ -7372,10 +7372,26 @@
       "lastReadinessAttemptAt": "2026-11-01T07:14:04.650Z",
       "lastPublishedAt": "2026-11-01T07:26:06.742Z",
       "snapshotGeneratedAt": "2026-11-01T07:14:04.650Z",
-      "inputFingerprint": "6ca94f0d351bb8eb4e6281125eefff8fd1374e42f39557b297cda953b7a05d1d"
+      "inputFingerprint": "6ca94f0d351bb8eb4e6281125eefff8fd1374e42f39557b297cda953b7a05d1d",
+      "lastStatsAttemptAt": "2026-11-01T08:17:27.728Z",
+      "stagedMissingRequiredBoxIds": [
+        "401858504",
+        "401861966"
+      ]
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-01T08:17:27.728Z",
+    "inputFingerprint": "9c4c644246899900eee1af3e7f89645ec574c210e0e3ce173aace47fa8dbb395",
+    "dayKeys": [
+      "2026:2026-10-31"
+    ],
+    "dayKinds": {
+      "2026:2026-10-31": "stats-retry"
+    },
+    "kind": "stats-retry",
+    "stagedAt": "2026-11-01T08:17:27.728Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -7384,8 +7400,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-01T07:14:04.650Z",
   "quota": {
-    "checkedAt": "2026-11-01T07:14:04.650Z",
-    "remainingCalls": 996,
+    "checkedAt": "2026-11-01T08:17:27.728Z",
+    "remainingCalls": 994,
     "reserve": 191
   }
 }
