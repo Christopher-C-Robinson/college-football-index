@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Run model and data integrity tests
@@ -46,19 +46,19 @@ jobs:
       pages: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
 
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
       - name: Restore historical schedules and completed box scores
         if: github.event_name != 'push'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .cache/history
           key: cfbd-history-main-${{ github.run_id }}
@@ -107,14 +107,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Check out requested branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Restore historical data
         id: history-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .cache/history
           key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -137,13 +137,13 @@ jobs:
         run: node scripts/score-backtest.mjs .cache/backtests --out .cache/backtests/summary.json
       - name: Preserve history even if a later collection or replay fails
         if: always() && steps.history-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .cache/history
           key: cfbd-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Upload raw history and backtest reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: accuracy-foundation-${{ github.run_id }}
           path: |
