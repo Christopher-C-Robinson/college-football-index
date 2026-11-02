@@ -3,9 +3,9 @@
     "season": 2026,
     "schemaVersion": 2,
     "modelVersion": "2.0.0",
-    "generatedAt": "2026-11-01T08:17:27.728Z",
-    "asOf": "2026-11-01",
-    "gitCommit": "2f5b906aa03a62ac69111dd15f574a4b1b86796c",
+    "generatedAt": "2026-11-02T01:15:57.744Z",
+    "asOf": "2026-11-02",
+    "gitCommit": "3ee49e1794586535a8c9ca1de1273922f36f2ee1",
     "resultsThrough": "2026-11-01",
     "provider": "CollegeFootballData.com API",
     "seasonTypes": [
@@ -27,11 +27,11 @@
       "regular:5": "2026-10-11T04:39:04.409Z",
       "regular:6": "2026-10-12T01:58:23.329Z",
       "regular:7": "2026-10-21T05:32:14.171Z",
-      "regular:8": "2026-10-26T00:56:02.512Z",
+      "regular:8": "2026-11-02T01:15:57.744Z",
       "regular:9": "2026-11-01T08:17:27.728Z"
     },
     "statsBatchKeysFetched": [
-      "regular:9"
+      "regular:8"
     ],
     "schedulesPrefetched": true,
     "metadataFetchedAt": "2026-10-31T06:41:35.829Z",
@@ -39,8 +39,8 @@
       "scheduledGames": 1609,
       "completedGames": 1156,
       "ratedGames": 1089,
-      "boxScoreGames": 1087,
-      "boxScoreCoverage": 0.9981634527089073,
+      "boxScoreGames": 1088,
+      "boxScoreCoverage": 0.9990817263544536,
       "teams": 266
     },
     "gameStatusOverrides": {
@@ -70,9 +70,9 @@
     "refreshTrigger": {
       "kind": "delayed-statistics",
       "gameDays": [
-        "2026:2026-10-31"
+        "2026:2026-10-24"
       ],
-      "confirmedAt": "2026-11-01T08:17:27.728Z"
+      "confirmedAt": "2026-11-02T01:15:57.744Z"
     }
   },
   "games": [
@@ -245425,7 +245425,7 @@
           "stats": [
             {
               "category": "rushingTDs",
-              "stat": "1"
+              "stat": "4"
             },
             {
               "category": "puntReturnYards",
@@ -245441,7 +245441,7 @@
             },
             {
               "category": "passingTDs",
-              "stat": "2"
+              "stat": "3"
             },
             {
               "category": "kickReturnYards",
@@ -245477,7 +245477,7 @@
             },
             {
               "category": "tackles",
-              "stat": "30"
+              "stat": "31"
             },
             {
               "category": "sacks",
@@ -245513,11 +245513,11 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "6.0"
+              "stat": "6.1"
             },
             {
               "category": "rushingAttempts",
-              "stat": "50"
+              "stat": "49"
             },
             {
               "category": "rushingYards",
@@ -245594,7 +245594,7 @@
             },
             {
               "category": "tackles",
-              "stat": "45"
+              "stat": "44"
             },
             {
               "category": "sacks",
@@ -245610,7 +245610,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "17:14"
+              "stat": "23:29"
             },
             {
               "category": "interceptions",
@@ -257211,7 +257211,7 @@
             },
             {
               "category": "passesDeflected",
-              "stat": "2"
+              "stat": "1"
             },
             {
               "category": "possessionTime",
@@ -258946,7 +258946,7 @@
             },
             {
               "category": "tackles",
-              "stat": "21"
+              "stat": "20"
             },
             {
               "category": "sacks",
@@ -267809,7 +267809,7 @@
             },
             {
               "category": "tackles",
-              "stat": "29"
+              "stat": "30"
             },
             {
               "category": "sacks",
@@ -272333,7 +272333,7 @@
             },
             {
               "category": "tackles",
-              "stat": "42"
+              "stat": "44"
             },
             {
               "category": "sacks",
@@ -272349,7 +272349,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "26:58"
+              "stat": "27:03"
             },
             {
               "category": "interceptions",
@@ -272357,11 +272357,11 @@
             },
             {
               "category": "fumblesLost",
-              "stat": "0"
+              "stat": "1"
             },
             {
               "category": "turnovers",
-              "stat": "0"
+              "stat": "1"
             },
             {
               "category": "totalPenaltiesYards",
@@ -272381,7 +272381,7 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "3.3"
+              "stat": "3.6"
             },
             {
               "category": "completionAttempts",
@@ -272389,11 +272389,11 @@
             },
             {
               "category": "netPassingYards",
-              "stat": "62"
+              "stat": "69"
             },
             {
               "category": "totalYards",
-              "stat": "175"
+              "stat": "182"
             },
             {
               "category": "fourthDownEff",
@@ -272454,7 +272454,7 @@
             },
             {
               "category": "fumblesRecovered",
-              "stat": "0"
+              "stat": "1"
             },
             {
               "category": "totalFumbles",
@@ -276008,7 +276008,7 @@
             },
             {
               "category": "interceptionTDs",
-              "stat": "1"
+              "stat": "0"
             },
             {
               "category": "passesIntercepted",
@@ -276028,11 +276028,11 @@
             },
             {
               "category": "defensiveTDs",
-              "stat": "2"
+              "stat": "1"
             },
             {
               "category": "tackles",
-              "stat": "52"
+              "stat": "51"
             },
             {
               "category": "sacks",
@@ -276048,7 +276048,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "22:07"
+              "stat": "23:23"
             },
             {
               "category": "interceptions",
@@ -276068,15 +276068,15 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "7.5"
+              "stat": "7.0"
             },
             {
               "category": "rushingAttempts",
-              "stat": "33"
+              "stat": "35"
             },
             {
               "category": "rushingYards",
-              "stat": "247"
+              "stat": "245"
             },
             {
               "category": "yardsPerPass",
@@ -276092,7 +276092,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "427"
+              "stat": "425"
             },
             {
               "category": "fourthDownEff",
@@ -276181,7 +276181,7 @@
             },
             {
               "category": "tackles",
-              "stat": "26"
+              "stat": "27"
             },
             {
               "category": "sacks",
@@ -277544,7 +277544,7 @@
             },
             {
               "category": "kickReturnYards",
-              "stat": "88"
+              "stat": "105"
             },
             {
               "category": "kickReturnTDs",
@@ -277552,7 +277552,7 @@
             },
             {
               "category": "kickReturns",
-              "stat": "6"
+              "stat": "5"
             },
             {
               "category": "kickingPoints",
@@ -277576,7 +277576,7 @@
             },
             {
               "category": "tackles",
-              "stat": "41"
+              "stat": "49"
             },
             {
               "category": "sacks",
@@ -278571,7 +278571,7 @@
             },
             {
               "category": "tackles",
-              "stat": "41"
+              "stat": "40"
             },
             {
               "category": "sacks",
@@ -287209,6 +287209,309 @@
       ]
     },
     {
+      "id": 401868003,
+      "teams": [
+        {
+          "teamId": 2142,
+          "team": "Colgate",
+          "conference": "Patriot",
+          "homeAway": "away",
+          "points": 6,
+          "stats": [
+            {
+              "category": "rushingTDs",
+              "stat": "0"
+            },
+            {
+              "category": "puntReturnYards",
+              "stat": "4"
+            },
+            {
+              "category": "puntReturnTDs",
+              "stat": "0"
+            },
+            {
+              "category": "puntReturns",
+              "stat": "3"
+            },
+            {
+              "category": "passingTDs",
+              "stat": "0"
+            },
+            {
+              "category": "kickReturnYards",
+              "stat": "30"
+            },
+            {
+              "category": "kickReturnTDs",
+              "stat": "0"
+            },
+            {
+              "category": "kickReturns",
+              "stat": "2"
+            },
+            {
+              "category": "kickingPoints",
+              "stat": "6"
+            },
+            {
+              "category": "interceptionYards",
+              "stat": "0"
+            },
+            {
+              "category": "interceptionTDs",
+              "stat": "0"
+            },
+            {
+              "category": "passesIntercepted",
+              "stat": "1"
+            },
+            {
+              "category": "fumblesRecovered",
+              "stat": "0"
+            },
+            {
+              "category": "totalFumbles",
+              "stat": "1"
+            },
+            {
+              "category": "tacklesForLoss",
+              "stat": "4"
+            },
+            {
+              "category": "defensiveTDs",
+              "stat": "0"
+            },
+            {
+              "category": "tackles",
+              "stat": "32"
+            },
+            {
+              "category": "sacks",
+              "stat": "1"
+            },
+            {
+              "category": "qbHurries",
+              "stat": "2"
+            },
+            {
+              "category": "passesDeflected",
+              "stat": "4"
+            },
+            {
+              "category": "possessionTime",
+              "stat": "34:55"
+            },
+            {
+              "category": "interceptions",
+              "stat": "3"
+            },
+            {
+              "category": "fumblesLost",
+              "stat": "1"
+            },
+            {
+              "category": "turnovers",
+              "stat": "4"
+            },
+            {
+              "category": "totalPenaltiesYards",
+              "stat": "6-51"
+            },
+            {
+              "category": "yardsPerRushAttempt",
+              "stat": "0.1"
+            },
+            {
+              "category": "rushingAttempts",
+              "stat": "29"
+            },
+            {
+              "category": "rushingYards",
+              "stat": "4"
+            },
+            {
+              "category": "yardsPerPass",
+              "stat": "6.9"
+            },
+            {
+              "category": "completionAttempts",
+              "stat": "25-45"
+            },
+            {
+              "category": "netPassingYards",
+              "stat": "312"
+            },
+            {
+              "category": "totalYards",
+              "stat": "316"
+            },
+            {
+              "category": "fourthDownEff",
+              "stat": "0-1"
+            },
+            {
+              "category": "thirdDownEff",
+              "stat": "10-19"
+            },
+            {
+              "category": "firstDowns",
+              "stat": "19"
+            }
+          ]
+        },
+        {
+          "teamId": 257,
+          "team": "Richmond",
+          "conference": "Patriot",
+          "homeAway": "home",
+          "points": 13,
+          "stats": [
+            {
+              "category": "rushingTDs",
+              "stat": "0"
+            },
+            {
+              "category": "puntReturnYards",
+              "stat": "12"
+            },
+            {
+              "category": "puntReturnTDs",
+              "stat": "0"
+            },
+            {
+              "category": "puntReturns",
+              "stat": "2"
+            },
+            {
+              "category": "passingTDs",
+              "stat": "1"
+            },
+            {
+              "category": "kickReturnYards",
+              "stat": "15"
+            },
+            {
+              "category": "kickReturnTDs",
+              "stat": "0"
+            },
+            {
+              "category": "kickReturns",
+              "stat": "1"
+            },
+            {
+              "category": "kickingPoints",
+              "stat": "7"
+            },
+            {
+              "category": "interceptionYards",
+              "stat": "17"
+            },
+            {
+              "category": "interceptionTDs",
+              "stat": "0"
+            },
+            {
+              "category": "passesIntercepted",
+              "stat": "3"
+            },
+            {
+              "category": "fumblesRecovered",
+              "stat": "1"
+            },
+            {
+              "category": "totalFumbles",
+              "stat": "0"
+            },
+            {
+              "category": "tacklesForLoss",
+              "stat": "11"
+            },
+            {
+              "category": "defensiveTDs",
+              "stat": "0"
+            },
+            {
+              "category": "tackles",
+              "stat": "46"
+            },
+            {
+              "category": "sacks",
+              "stat": "8"
+            },
+            {
+              "category": "qbHurries",
+              "stat": "7"
+            },
+            {
+              "category": "passesDeflected",
+              "stat": "4"
+            },
+            {
+              "category": "possessionTime",
+              "stat": "25:05"
+            },
+            {
+              "category": "interceptions",
+              "stat": "1"
+            },
+            {
+              "category": "fumblesLost",
+              "stat": "0"
+            },
+            {
+              "category": "turnovers",
+              "stat": "1"
+            },
+            {
+              "category": "totalPenaltiesYards",
+              "stat": "4-40"
+            },
+            {
+              "category": "yardsPerRushAttempt",
+              "stat": "4.0"
+            },
+            {
+              "category": "rushingAttempts",
+              "stat": "26"
+            },
+            {
+              "category": "rushingYards",
+              "stat": "103"
+            },
+            {
+              "category": "yardsPerPass",
+              "stat": "7.1"
+            },
+            {
+              "category": "completionAttempts",
+              "stat": "11-21"
+            },
+            {
+              "category": "netPassingYards",
+              "stat": "149"
+            },
+            {
+              "category": "totalYards",
+              "stat": "252"
+            },
+            {
+              "category": "fourthDownEff",
+              "stat": "1-1"
+            },
+            {
+              "category": "thirdDownEff",
+              "stat": "2-13"
+            },
+            {
+              "category": "firstDowns",
+              "stat": "11"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": 401868004,
       "teams": [
         {
@@ -290163,7 +290466,7 @@
             },
             {
               "category": "passesDeflected",
-              "stat": "10"
+              "stat": "9"
             },
             {
               "category": "possessionTime",
@@ -301282,7 +301585,7 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "8.0"
+              "stat": "8.3"
             },
             {
               "category": "completionAttempts",
@@ -301290,11 +301593,11 @@
             },
             {
               "category": "netPassingYards",
-              "stat": "328"
+              "stat": "341"
             },
             {
               "category": "totalYards",
-              "stat": "370"
+              "stat": "383"
             },
             {
               "category": "fourthDownEff",
@@ -301399,7 +301702,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "28:08"
+              "stat": "28:17"
             },
             {
               "category": "interceptions",
@@ -301427,7 +301730,7 @@
             },
             {
               "category": "rushingYards",
-              "stat": "151"
+              "stat": "152"
             },
             {
               "category": "yardsPerPass",
@@ -301443,7 +301746,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "386"
+              "stat": "387"
             },
             {
               "category": "fourthDownEff",
@@ -306567,7 +306870,7 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "2.1"
+              "stat": "2.5"
             },
             {
               "category": "rushingAttempts",
@@ -306575,7 +306878,7 @@
             },
             {
               "category": "rushingYards",
-              "stat": "46"
+              "stat": "56"
             },
             {
               "category": "yardsPerPass",
@@ -306591,7 +306894,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "266"
+              "stat": "276"
             },
             {
               "category": "fourthDownEff",
@@ -306660,7 +306963,7 @@
             },
             {
               "category": "tacklesForLoss",
-              "stat": "5"
+              "stat": "4"
             },
             {
               "category": "defensiveTDs",
@@ -320891,7 +321194,7 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "4.3"
+              "stat": "4.0"
             },
             {
               "category": "completionAttempts",
@@ -320899,11 +321202,11 @@
             },
             {
               "category": "netPassingYards",
-              "stat": "129"
+              "stat": "119"
             },
             {
               "category": "totalYards",
-              "stat": "146"
+              "stat": "136"
             },
             {
               "category": "fourthDownEff",
@@ -320911,7 +321214,7 @@
             },
             {
               "category": "thirdDownEff",
-              "stat": "6-15"
+              "stat": "6-14"
             },
             {
               "category": "firstDowns",
@@ -320944,7 +321247,7 @@
             },
             {
               "category": "passingTDs",
-              "stat": "0"
+              "stat": "1"
             },
             {
               "category": "kickReturnYards",
@@ -322314,7 +322617,7 @@
             },
             {
               "category": "passesDeflected",
-              "stat": "5"
+              "stat": "6"
             },
             {
               "category": "possessionTime",
@@ -322391,7 +322694,7 @@
             },
             {
               "category": "puntReturnYards",
-              "stat": "0"
+              "stat": "14"
             },
             {
               "category": "puntReturnTDs",
@@ -322455,7 +322758,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "22:48"
+              "stat": "23:10"
             },
             {
               "category": "interceptions",
@@ -322487,7 +322790,7 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "6.1"
+              "stat": "6.2"
             },
             {
               "category": "completionAttempts",
@@ -322495,11 +322798,11 @@
             },
             {
               "category": "netPassingYards",
-              "stat": "209"
+              "stat": "210"
             },
             {
               "category": "totalYards",
-              "stat": "240"
+              "stat": "241"
             },
             {
               "category": "fourthDownEff",
@@ -322507,7 +322810,7 @@
             },
             {
               "category": "thirdDownEff",
-              "stat": "3-12"
+              "stat": "3-13"
             },
             {
               "category": "firstDowns",
@@ -325997,7 +326300,7 @@
             },
             {
               "category": "passesIntercepted",
-              "stat": "1"
+              "stat": "2"
             },
             {
               "category": "fumblesRecovered",
@@ -326166,7 +326469,7 @@
             },
             {
               "category": "tackles",
-              "stat": "33"
+              "stat": "34"
             },
             {
               "category": "sacks",
@@ -328516,7 +328819,7 @@
             },
             {
               "category": "tackles",
-              "stat": "41"
+              "stat": "43"
             },
             {
               "category": "sacks",
@@ -328681,7 +328984,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "33:57"
+              "stat": "38:22"
             },
             {
               "category": "interceptions",
@@ -328701,15 +329004,15 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "4.9"
+              "stat": "4.7"
             },
             {
               "category": "rushingAttempts",
-              "stat": "49"
+              "stat": "52"
             },
             {
               "category": "rushingYards",
-              "stat": "240"
+              "stat": "244"
             },
             {
               "category": "yardsPerPass",
@@ -328725,7 +329028,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "389"
+              "stat": "393"
             },
             {
               "category": "fourthDownEff",
@@ -328733,11 +329036,11 @@
             },
             {
               "category": "thirdDownEff",
-              "stat": "6-14"
+              "stat": "7-15"
             },
             {
               "category": "firstDowns",
-              "stat": "18"
+              "stat": "19"
             }
           ]
         }
@@ -331374,7 +331677,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "31:25"
+              "stat": "32:22"
             },
             {
               "category": "interceptions",
@@ -331406,19 +331709,19 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "8.2"
+              "stat": "8.4"
             },
             {
               "category": "completionAttempts",
-              "stat": "37-55"
+              "stat": "37-56"
             },
             {
               "category": "netPassingYards",
-              "stat": "453"
+              "stat": "471"
             },
             {
               "category": "totalYards",
-              "stat": "513"
+              "stat": "531"
             },
             {
               "category": "fourthDownEff",
@@ -331430,7 +331733,7 @@
             },
             {
               "category": "firstDowns",
-              "stat": "27"
+              "stat": "28"
             }
           ]
         },
@@ -331495,7 +331798,7 @@
             },
             {
               "category": "tackles",
-              "stat": "47"
+              "stat": "48"
             },
             {
               "category": "sacks",
@@ -331507,7 +331810,7 @@
             },
             {
               "category": "passesDeflected",
-              "stat": "4"
+              "stat": "5"
             },
             {
               "category": "possessionTime",
@@ -332689,7 +332992,7 @@
             },
             {
               "category": "passesDeflected",
-              "stat": "7"
+              "stat": "6"
             },
             {
               "category": "possessionTime",
@@ -338927,7 +339230,7 @@
             },
             {
               "category": "possessionTime",
-              "stat": "38:08"
+              "stat": "38:56"
             },
             {
               "category": "interceptions",
@@ -338947,15 +339250,15 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "5.0"
+              "stat": "4.7"
             },
             {
               "category": "rushingAttempts",
-              "stat": "46"
+              "stat": "48"
             },
             {
               "category": "rushingYards",
-              "stat": "231"
+              "stat": "227"
             },
             {
               "category": "yardsPerPass",
@@ -338971,7 +339274,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "433"
+              "stat": "429"
             },
             {
               "category": "fourthDownEff",
@@ -341801,7 +342104,7 @@
             },
             {
               "category": "yardsPerRushAttempt",
-              "stat": "3.2"
+              "stat": "3.3"
             },
             {
               "category": "rushingAttempts",
@@ -341809,7 +342112,7 @@
             },
             {
               "category": "rushingYards",
-              "stat": "102"
+              "stat": "104"
             },
             {
               "category": "yardsPerPass",
@@ -341825,7 +342128,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "377"
+              "stat": "379"
             },
             {
               "category": "fourthDownEff",
@@ -347465,7 +347768,7 @@
             },
             {
               "category": "totalPenaltiesYards",
-              "stat": "7-58"
+              "stat": "6-58"
             },
             {
               "category": "yardsPerRushAttempt",
@@ -361097,7 +361400,7 @@
             },
             {
               "category": "tackles",
-              "stat": "25"
+              "stat": "26"
             },
             {
               "category": "sacks",
@@ -364420,7 +364723,7 @@
             },
             {
               "category": "totalPenaltiesYards",
-              "stat": "6-50"
+              "stat": "6-49"
             },
             {
               "category": "yardsPerRushAttempt",
@@ -364513,11 +364816,11 @@
             },
             {
               "category": "totalFumbles",
-              "stat": "3"
+              "stat": "4"
             },
             {
               "category": "tacklesForLoss",
-              "stat": "7"
+              "stat": "8"
             },
             {
               "category": "defensiveTDs",
@@ -364525,7 +364828,7 @@
             },
             {
               "category": "tackles",
-              "stat": "34"
+              "stat": "35"
             },
             {
               "category": "sacks",
@@ -370655,7 +370958,7 @@
             },
             {
               "category": "tackles",
-              "stat": "35"
+              "stat": "36"
             },
             {
               "category": "sacks",
@@ -370699,7 +371002,7 @@
             },
             {
               "category": "rushingYards",
-              "stat": "190"
+              "stat": "194"
             },
             {
               "category": "yardsPerPass",
@@ -370715,7 +371018,7 @@
             },
             {
               "category": "totalYards",
-              "stat": "314"
+              "stat": "318"
             },
             {
               "category": "fourthDownEff",
@@ -372511,7 +372814,7 @@
             },
             {
               "category": "yardsPerPass",
-              "stat": "7.4"
+              "stat": "7.7"
             },
             {
               "category": "completionAttempts",
@@ -372519,11 +372822,11 @@
             },
             {
               "category": "netPassingYards",
-              "stat": "340"
+              "stat": "356"
             },
             {
               "category": "totalYards",
-              "stat": "463"
+              "stat": "479"
             },
             {
               "category": "fourthDownEff",
