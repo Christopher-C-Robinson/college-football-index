@@ -3854,7 +3854,7 @@
       "readinessAttempts": 1,
       "statsAttempts": 6,
       "nextReadinessAt": "2026-10-25T07:02:54.420Z",
-      "nextStatsAt": "2026-11-09T01:15:57.744Z",
+      "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-10-25T05:55:39.886Z",
       "publishedAt": "2026-10-25T06:34:52.297Z",
       "baseline": false,
@@ -5419,11 +5419,10 @@
       "scheduleChanged": false,
       "missingRequiredBoxIds": [],
       "lastReadinessAttemptAt": "2026-10-25T06:32:54.420Z",
-      "lastPublishedAt": "2026-10-26T01:35:54.765Z",
-      "snapshotGeneratedAt": "2026-10-26T00:56:02.512Z",
-      "inputFingerprint": "e287c18a6f1c3c22b7f15f9558fe5299c16884c0c68d20a58a5705921dba2793",
-      "lastStatsAttemptAt": "2026-11-02T01:15:57.744Z",
-      "stagedMissingRequiredBoxIds": []
+      "lastPublishedAt": "2026-11-02T01:17:13.952Z",
+      "snapshotGeneratedAt": "2026-11-02T01:15:57.744Z",
+      "inputFingerprint": "e2bf620e67709eef2bb264b226ee79e59c3975515760b34c7921121d973e58bb",
+      "lastStatsAttemptAt": "2026-11-02T01:15:57.744Z"
     },
     "2026:2026-10-27": {
       "readinessAttempts": 1,
@@ -7375,18 +7374,7 @@
       "lastStatsAttemptAt": "2026-11-01T13:41:00.641Z"
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-11-02T01:15:57.744Z",
-    "inputFingerprint": "e2bf620e67709eef2bb264b226ee79e59c3975515760b34c7921121d973e58bb",
-    "dayKeys": [
-      "2026:2026-10-24"
-    ],
-    "dayKinds": {
-      "2026:2026-10-24": "stats-retry"
-    },
-    "kind": "stats-retry",
-    "stagedAt": "2026-11-02T01:15:57.744Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
