@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -36,7 +36,7 @@ jobs:
       - name: Restore historical schedules and completed box scores
         id: history-cache
         if: steps.plan.outputs.needs_cfbd == 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: .cache/history
           key: cfbd-history-main-${{ github.run_id }}-${{ github.run_attempt }}
@@ -88,7 +88,7 @@ jobs:
 
       - name: Preserve reusable historical data
         if: always() && steps.history-cache.outcome == 'success' && steps.history-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .cache/history
           key: cfbd-history-main-${{ github.run_id }}-${{ github.run_attempt }}
