@@ -7371,6 +7371,55 @@
       "snapshotGeneratedAt": "2026-11-02T01:41:51.403Z",
       "inputFingerprint": "92c0e6aeec2880201294ba5a472aaef4b1c291f0c01b255ee06518970458f0b5",
       "lastStatsAttemptAt": "2026-11-02T01:41:51.403Z"
+    },
+    "2026:2026-11-03": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-11-03",
+      "expectedGames": [
+        {
+          "id": 401866453,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 10,
+          "startDate": "2026-11-04T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Akron",
+          "awayTeam": "Ohio",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401866454,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 10,
+          "startDate": "2026-11-04T01:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Miami (OH)",
+          "awayTeam": "Buffalo",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
