@@ -7501,65 +7501,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401866455": {
-      "game": {
-        "id": 401866455,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 10,
-        "startDate": "2026-11-05T00:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Massachusetts",
-        "awayTeam": "Ball State",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 31,
-        "awayPoints": 30
-      },
-      "checkedAt": "2026-11-05T04:16:58.069Z"
-    },
-    "401866456": {
-      "game": {
-        "id": 401866456,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 10,
-        "startDate": "2026-11-05T00:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Eastern Michigan",
-        "awayTeam": "Central Michigan",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": true,
-        "completed": true,
-        "homePoints": 7,
-        "awayPoints": 35
-      },
-      "checkedAt": "2026-11-05T04:16:58.069Z"
-    },
-    "401866457": {
-      "game": {
-        "id": 401866457,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 10,
-        "startDate": "2026-11-05T00:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Sacramento State",
-        "awayTeam": "Toledo",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 17,
-        "awayPoints": 20
-      },
-      "checkedAt": "2026-11-05T04:16:58.069Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-05T04:16:58.069Z",
   "quota": {
     "checkedAt": "2026-11-05T04:16:58.069Z",
