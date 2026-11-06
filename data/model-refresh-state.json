@@ -7495,9 +7495,9 @@
       "inputFingerprint": "69fe4012bbd98de2f052a2b3c17b49a7d6dc257a7870f978d94d75a2fa3a16f6"
     },
     "2026:2026-11-05": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-06T05:55:53.561Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-06T04:55:56.229Z",
       "publishedAt": null,
@@ -7517,9 +7517,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 60,
+          "awayPoints": 29
         },
         {
           "id": 401867964,
@@ -7533,9 +7533,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 35
         },
         {
           "id": 401869964,
@@ -7549,28 +7549,156 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 23,
+          "awayPoints": 54
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-06T05:25:53.561Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-06T05:25:53.561Z",
+    "inputFingerprint": "86778b89a95a52726a7931c2d44b329c4c451a3aeb4e6b20186f7814024b818d",
+    "dayKeys": [
+      "2026:2026-11-05"
+    ],
+    "dayKinds": {
+      "2026:2026-11-05": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-06T05:25:53.561Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-05T04:16:58.069Z",
+  "confirmedScheduleOverrides": {
+    "401862817": {
+      "game": {
+        "id": 401862817,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 10,
+        "startDate": "2026-11-06T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Florida Atlantic",
+        "awayTeam": "UTSA",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 60,
+        "awayPoints": 29
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    },
+    "401862840": {
+      "game": {
+        "id": 401862840,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 13,
+        "startDate": "2026-11-27T05:00:00.000Z",
+        "startTimeTBD": true,
+        "homeTeam": "UTSA",
+        "awayTeam": "Tulsa",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    },
+    "401866461": {
+      "game": {
+        "id": 401866461,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-12T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Ball State",
+        "awayTeam": "Buffalo",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    },
+    "401867964": {
+      "game": {
+        "id": 401867964,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 10,
+        "startDate": "2026-11-06T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Howard",
+        "awayTeam": "South Carolina State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 35
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    },
+    "401868068": {
+      "game": {
+        "id": 401868068,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 10,
+        "startDate": "2026-11-07T22:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Austin Peay",
+        "awayTeam": "Eastern Kentucky",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    },
+    "401869964": {
+      "game": {
+        "id": 401869964,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 10,
+        "startDate": "2026-11-06T01:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southern Miss",
+        "awayTeam": "James Madison",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 23,
+        "awayPoints": 54
+      },
+      "checkedAt": "2026-11-06T05:25:53.561Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-06T05:25:53.561Z",
   "quota": {
-    "checkedAt": "2026-11-05T04:16:58.069Z",
-    "remainingCalls": 976,
-    "reserve": 173
+    "checkedAt": "2026-11-06T05:25:53.561Z",
+    "remainingCalls": 972,
+    "reserve": 164
   }
 }
