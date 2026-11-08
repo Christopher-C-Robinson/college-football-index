@@ -8892,22 +8892,6 @@
           "awayPoints": 19
         },
         {
-          "id": 401868068,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 10,
-          "startDate": "2026-11-07T21:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "Austin Peay",
-          "awayTeam": "Eastern Kentucky",
-          "homeClassification": "fcs",
-          "awayClassification": "fcs",
-          "neutralSite": false,
-          "completed": true,
-          "homePoints": 55,
-          "awayPoints": 31
-        },
-        {
           "id": 401868313,
           "season": 2026,
           "seasonType": "regular",
@@ -9002,6 +8986,22 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 10
+        },
+        {
+          "id": 401868068,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 10,
+          "startDate": "2026-11-07T21:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Austin Peay",
+          "awayTeam": "Eastern Kentucky",
+          "homeClassification": "fcs",
+          "awayClassification": "fcs",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 55,
+          "awayPoints": 31
         },
         {
           "id": 401868082,
@@ -9454,7 +9454,7 @@
       ],
       "movedGameIds": [],
       "missingGameIds": [],
-      "scheduleChanged": true,
+      "scheduleChanged": false,
       "missingRequiredBoxIds": [
         "401856738",
         "401856739",
