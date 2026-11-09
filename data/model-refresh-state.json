@@ -7666,9 +7666,9 @@
     },
     "2026:2026-11-07": {
       "readinessAttempts": 1,
-      "statsAttempts": 4,
+      "statsAttempts": 5,
       "nextReadinessAt": "2026-11-08T08:47:32.983Z",
-      "nextStatsAt": "2026-11-09T02:12:40.371Z",
+      "nextStatsAt": "2026-11-16T02:20:03.190Z",
       "firstAllFinalSeenAt": "2026-11-08T07:40:52.583Z",
       "publishedAt": "2026-11-08T08:18:32.612Z",
       "baseline": false,
@@ -9455,19 +9455,28 @@
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": [
-        "401868321",
-        "401871076"
-      ],
+      "missingRequiredBoxIds": [],
       "lastReadinessAttemptAt": "2026-11-08T08:17:32.983Z",
       "completedWithoutGamesAt": null,
       "lastPublishedAt": "2026-11-08T08:56:31.780Z",
       "snapshotGeneratedAt": "2026-11-08T08:55:34.747Z",
       "inputFingerprint": "709cdba7cc0730ed4f85265dd6d05dcd1d1d7a349b9eec8fb0db6c9646dbb654",
-      "lastStatsAttemptAt": "2026-11-08T14:12:40.371Z"
+      "lastStatsAttemptAt": "2026-11-09T02:20:03.190Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-09T02:20:03.190Z",
+    "inputFingerprint": "259d36591236ab765240671dba9f9addf33c6a2816901635a9e550b1dd106d65",
+    "dayKeys": [
+      "2026:2026-11-07"
+    ],
+    "dayKinds": {
+      "2026:2026-11-07": "stats-retry"
+    },
+    "kind": "stats-retry",
+    "stagedAt": "2026-11-09T02:20:03.190Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -9476,8 +9485,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-08T08:17:32.983Z",
   "quota": {
-    "checkedAt": "2026-11-09T01:55:23.628Z",
-    "remainingCalls": 951,
+    "checkedAt": "2026-11-09T02:20:03.190Z",
+    "remainingCalls": 949,
     "reserve": 146
   }
 }
