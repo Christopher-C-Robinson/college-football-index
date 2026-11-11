@@ -1167,24 +1167,6 @@
           "awayPoints": 38
         },
         {
-          "id": 401874036,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 6,
-          "startDate": "2026-10-10T21:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "Northeastern State",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null,
-          "canceled": true,
-          "status": "canceled"
-        },
-        {
           "id": 401860902,
           "season": 2026,
           "seasonType": "regular",
@@ -1535,6 +1517,24 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 38
+        },
+        {
+          "id": 401874036,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 6,
+          "startDate": "2026-10-10T21:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "Northeastern State",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null,
+          "canceled": true,
+          "status": "canceled"
         }
       ],
       "movedGameIds": [],
@@ -9464,9 +9464,9 @@
       "lastStatsAttemptAt": "2026-11-09T02:20:03.190Z"
     },
     "2026:2026-11-10": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-11T05:55:26.266Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-11T04:55:40.489Z",
       "publishedAt": null,
@@ -9486,9 +9486,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 14,
+          "awayPoints": 42
         },
         {
           "id": 401866459,
@@ -9502,9 +9502,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 33,
+          "awayPoints": 28
         },
         {
           "id": 401866460,
@@ -9518,28 +9518,935 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 34,
+          "awayPoints": 17
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-11T05:25:26.266Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-11T05:25:26.266Z",
+    "inputFingerprint": "947ff1e887cc30e27acd4bb24462990da612bc4327ac111bb9d330d5ce908006",
+    "dayKeys": [
+      "2026:2026-11-10"
+    ],
+    "dayKinds": {
+      "2026:2026-11-10": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-11T05:25:26.266Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-08T08:17:32.983Z",
+  "confirmedScheduleOverrides": {
+    "401856748": {
+      "game": {
+        "id": 401856748,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Florida",
+        "awayTeam": "Vanderbilt",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856751": {
+      "game": {
+        "id": 401856751,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Missouri",
+        "awayTeam": "Kentucky",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856752": {
+      "game": {
+        "id": 401856752,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oklahoma",
+        "awayTeam": "Texas A&M",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856753": {
+      "game": {
+        "id": 401856753,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "South Carolina",
+        "awayTeam": "Georgia",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856754": {
+      "game": {
+        "id": 401856754,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tennessee",
+        "awayTeam": "LSU",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856755": {
+      "game": {
+        "id": 401856755,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas",
+        "awayTeam": "Arkansas",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856857": {
+      "game": {
+        "id": 401856857,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "UCF",
+        "awayTeam": "Arizona State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856858": {
+      "game": {
+        "id": 401856858,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "BYU",
+        "awayTeam": "Baylor",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856859": {
+      "game": {
+        "id": 401856859,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Iowa State",
+        "awayTeam": "Cincinnati",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856861": {
+      "game": {
+        "id": 401856861,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T22:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "West Virginia",
+        "awayTeam": "Kansas",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856862": {
+      "game": {
+        "id": 401856862,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "TCU",
+        "awayTeam": "Kansas State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856863": {
+      "game": {
+        "id": 401856863,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T02:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oklahoma State",
+        "awayTeam": "Texas Tech",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856864": {
+      "game": {
+        "id": 401856864,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Arizona",
+        "awayTeam": "Utah",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856867": {
+      "game": {
+        "id": 401856867,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Cincinnati",
+        "awayTeam": "Colorado",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856870": {
+      "game": {
+        "id": 401856870,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T03:15:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Arizona State",
+        "awayTeam": "Oklahoma State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856883": {
+      "game": {
+        "id": 401856883,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Georgia",
+        "awayTeam": "Missouri",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856884": {
+      "game": {
+        "id": 401856884,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T23:15:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Kentucky",
+        "awayTeam": "Florida",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856885": {
+      "game": {
+        "id": 401856885,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "LSU",
+        "awayTeam": "Texas",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856887": {
+      "game": {
+        "id": 401856887,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T21:15:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oklahoma",
+        "awayTeam": "Ole Miss",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401856888": {
+      "game": {
+        "id": 401856888,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas A&M",
+        "awayTeam": "Tennessee",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858298": {
+      "game": {
+        "id": 401858298,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "North Carolina",
+        "awayTeam": "Louisville",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858299": {
+      "game": {
+        "id": 401858299,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Virginia Tech",
+        "awayTeam": "Stanford",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858304": {
+      "game": {
+        "id": 401858304,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Florida State",
+        "awayTeam": "NC State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858305": {
+      "game": {
+        "id": 401858305,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Virginia",
+        "awayTeam": "North Carolina",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858308": {
+      "game": {
+        "id": 401858308,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "California",
+        "awayTeam": "Stanford",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858309": {
+      "game": {
+        "id": 401858309,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Boston College",
+        "awayTeam": "Syracuse",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858519": {
+      "game": {
+        "id": 401858519,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Iowa",
+        "awayTeam": "Purdue",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858527": {
+      "game": {
+        "id": 401858527,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Illinois",
+        "awayTeam": "Iowa",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858530": {
+      "game": {
+        "id": 401858530,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Minnesota",
+        "awayTeam": "Northwestern",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858533": {
+      "game": {
+        "id": 401858533,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Purdue",
+        "awayTeam": "Wisconsin",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401858534": {
+      "game": {
+        "id": 401858534,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T23:15:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "USC",
+        "awayTeam": "Maryland",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401862832": {
+      "game": {
+        "id": 401862832,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Tulsa",
+        "awayTeam": "Charlotte",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401862833": {
+      "game": {
+        "id": 401862833,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Florida Atlantic",
+        "awayTeam": "South Florida",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401864541": {
+      "game": {
+        "id": 401864541,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T03:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Nevada",
+        "awayTeam": "Hawai'i",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866458": {
+      "game": {
+        "id": 401866458,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-11T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Akron",
+        "awayTeam": "Western Michigan",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 14,
+        "awayPoints": 42
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866459": {
+      "game": {
+        "id": 401866459,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-11T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Bowling Green",
+        "awayTeam": "Kent State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 33,
+        "awayPoints": 28
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866460": {
+      "game": {
+        "id": 401866460,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-11T01:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Miami (OH)",
+        "awayTeam": "Ohio",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 34,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866463": {
+      "game": {
+        "id": 401866463,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-12T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Toledo",
+        "awayTeam": "Massachusetts",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866467": {
+      "game": {
+        "id": 401866467,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-19T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Massachusetts",
+        "awayTeam": "Akron",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401866469": {
+      "game": {
+        "id": 401866469,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-19T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Buffalo",
+        "awayTeam": "Central Michigan",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401868395": {
+      "game": {
+        "id": 401868395,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-14T17:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "VMI",
+        "awayTeam": "The Citadel",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401869929": {
+      "game": {
+        "id": 401869929,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "App State",
+        "awayTeam": "UL Monroe",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401869938": {
+      "game": {
+        "id": 401869938,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-22T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Louisiana Tech",
+        "awayTeam": "Arkansas State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401869946": {
+      "game": {
+        "id": 401869946,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Louisiana",
+        "awayTeam": "Coastal Carolina",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401869953": {
+      "game": {
+        "id": 401869953,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Troy",
+        "awayTeam": "Georgia Southern",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401869958": {
+      "game": {
+        "id": 401869958,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Marshall",
+        "awayTeam": "Georgia State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    },
+    "401871101": {
+      "game": {
+        "id": 401871101,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T21:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Southern Miss",
+        "awayTeam": "South Alabama",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-11T05:25:26.266Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-11T05:25:26.266Z",
   "quota": {
-    "checkedAt": "2026-11-09T02:20:03.190Z",
-    "remainingCalls": 949,
-    "reserve": 146
+    "checkedAt": "2026-11-11T05:25:26.266Z",
+    "remainingCalls": 945,
+    "reserve": 137
   }
 }
