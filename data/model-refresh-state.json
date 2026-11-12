@@ -9533,9 +9533,9 @@
       "inputFingerprint": "947ff1e887cc30e27acd4bb24462990da612bc4327ac111bb9d330d5ce908006"
     },
     "2026:2026-11-11": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-12T05:10:48.384Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-12T04:16:25.379Z",
       "publishedAt": null,
@@ -9555,9 +9555,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 7,
+          "awayPoints": 28
         },
         {
           "id": 401866462,
@@ -9571,9 +9571,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 28,
+          "awayPoints": 7
         },
         {
           "id": 401866463,
@@ -9587,28 +9587,118 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 0
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-12T04:40:48.384Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-12T04:40:48.384Z",
+    "inputFingerprint": "bc7807db8baaa06f6ac32435175cd3cfaac9370130ebe8513746d5eb07f726b4",
+    "dayKeys": [
+      "2026:2026-11-11"
+    ],
+    "dayKinds": {
+      "2026:2026-11-11": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-12T04:40:48.384Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-11T05:25:26.266Z",
+  "confirmedScheduleOverrides": {
+    "401858532": {
+      "game": {
+        "id": 401858532,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Penn State",
+        "awayTeam": "Rutgers",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-12T04:40:48.384Z"
+    },
+    "401866461": {
+      "game": {
+        "id": 401866461,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-12T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Ball State",
+        "awayTeam": "Buffalo",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 7,
+        "awayPoints": 28
+      },
+      "checkedAt": "2026-11-12T04:40:48.384Z"
+    },
+    "401866462": {
+      "game": {
+        "id": 401866462,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-12T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Central Michigan",
+        "awayTeam": "Sacramento State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 28,
+        "awayPoints": 7
+      },
+      "checkedAt": "2026-11-12T04:40:48.384Z"
+    },
+    "401866463": {
+      "game": {
+        "id": 401866463,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-12T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Toledo",
+        "awayTeam": "Massachusetts",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-11-12T04:40:48.384Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-12T04:40:48.384Z",
   "quota": {
-    "checkedAt": "2026-11-11T05:25:26.266Z",
-    "remainingCalls": 945,
-    "reserve": 137
+    "checkedAt": "2026-11-12T04:40:48.384Z",
+    "remainingCalls": 941,
+    "reserve": 128
   }
 }
