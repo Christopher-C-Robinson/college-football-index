@@ -9600,6 +9600,55 @@
       "lastPublishedAt": "2026-11-12T04:55:40.576Z",
       "snapshotGeneratedAt": "2026-11-12T04:40:48.384Z",
       "inputFingerprint": "bc7807db8baaa06f6ac32435175cd3cfaac9370130ebe8513746d5eb07f726b4"
+    },
+    "2026:2026-11-12": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-11-12",
+      "expectedGames": [
+        {
+          "id": 401862824,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 11,
+          "startDate": "2026-11-13T01:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "South Florida",
+          "awayTeam": "Memphis",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401869969,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 11,
+          "startDate": "2026-11-13T02:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "UL Monroe",
+          "awayTeam": "Louisiana",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
