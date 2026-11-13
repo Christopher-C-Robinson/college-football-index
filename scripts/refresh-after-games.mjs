@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { appendFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
@@ -193,10 +194,146 @@ export async function discardPreparedPublication({ projectDirectory = projectRoo
   await saveState(path, state);
 }
 
+export const PAGES_ENVIRONMENT = 'github-pages';
+export const PAGES_DEPLOYMENT_TIMEOUT_MS = 8 * 60_000;
+export const PUBLIC_SNAPSHOT_TIMEOUT_MS = 5 * 60_000;
+export const PUBLICATION_VERIFY_TIMEOUT_MS = 13 * 60_000;
+export const VERIFY_BACKOFF_SCHEDULE_MS = [5_000, 10_000, 20_000, 30_000];
+const FAILED_DEPLOYMENT_STATES = new Set(['failure', 'error', 'inactive']);
+const TRANSIENT_HTTP = status => status === 404 || status === 429 || status >= 500;
+const RETRY_WITHOUT_CFBD = 'The next checker will retry publication without recollecting CFBD data.';
+
+export function verifyBackoffMs(attempt) {
+  return VERIFY_BACKOFF_SCHEDULE_MS[Math.min(Math.max(attempt, 0), VERIFY_BACKOFF_SCHEDULE_MS.length - 1)];
+}
+
+export function resolvePushedCommitSha(projectDirectory, env = process.env) {
+  const supplied = String(env.PAGES_DEPLOYMENT_SHA || '').trim();
+  if (supplied) return supplied;
+  try {
+    const sha = execFileSync('git', ['-C', projectDirectory, 'rev-parse', 'HEAD'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (sha) return sha;
+  } catch { /* Fall through to the same error as a missing checkout. */ }
+  throw new Error('Unable to resolve the pushed commit SHA for Pages verification.');
+}
+
+export function describeDeploymentFailure(deployment, status) {
+  const state = status?.state || 'unknown';
+  const logUrl = status?.log_url || status?.target_url || 'unavailable';
+  return 'Pages deployment ' + (deployment?.id ?? 'unknown') + ' ended in ' + state
+    + ' (log: ' + logUrl + '). ' + RETRY_WITHOUT_CFBD;
+}
+
+function githubHeaders(token) {
+  return { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token,
+    'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'college-football-index' };
+}
+
+function remainingMs(deadline, clock) {
+  return Math.max(0, deadline - clock());
+}
+
+async function waitForDeadline(wait, clock, deadline, milliseconds) {
+  const slice = Math.min(milliseconds, remainingMs(deadline, clock));
+  if (slice > 0) await wait(slice);
+}
+
+async function githubJson(fetchImpl, url, { token, timeoutMs = 15_000 } = {}) {
+  const response = await fetchImpl(url, { headers: githubHeaders(token),
+    signal: AbortSignal.timeout(timeoutMs), cache: 'no-store' });
+  if (TRANSIENT_HTTP(response.status)) {
+    const error = new Error('GitHub API HTTP ' + response.status + '.');
+    error.transient = true;
+    error.status = response.status;
+    throw error;
+  }
+  if (!response.ok) throw new Error('GitHub API HTTP ' + response.status + ' for ' + url + '.');
+  return response.json();
+}
+
+function latestStatus(statuses) {
+  if (!Array.isArray(statuses) || !statuses.length) return null;
+  return statuses.slice().sort((left, right) => (Date.parse(right.created_at || '') - Date.parse(left.created_at || ''))
+    || ((right.id || 0) - (left.id || 0)))[0];
+}
+
+function newestDeployment(deployments) {
+  if (!Array.isArray(deployments) || !deployments.length) return null;
+  return deployments.slice().sort((left, right) => (Date.parse(right.created_at || '') - Date.parse(left.created_at || ''))
+    || ((right.id || 0) - (left.id || 0)))[0];
+}
+
+/** Stage 1: wait until the Pages deployment for the pushed commit reports success. */
+export async function waitForPagesDeployment({ repository, sha, token, environment = PAGES_ENVIRONMENT,
+  apiBase = 'https://api.github.com', timeoutMs = PAGES_DEPLOYMENT_TIMEOUT_MS, deadline = null,
+  fetchImpl = fetch, wait = milliseconds => new Promise(resolveWait => setTimeout(resolveWait, milliseconds)),
+  clock = Date.now, logger = console } = {}) {
+  if (!repository) throw new Error('GITHUB_REPOSITORY is required to poll Pages deployments.');
+  if (!token) throw new Error('A GitHub token is required to poll Pages deployments. Set GH_TOKEN or GITHUB_TOKEN.');
+  if (!sha) throw new Error('A commit SHA is required to poll the matching Pages deployment.');
+  const stopAt = deadline == null ? clock() + timeoutMs : Math.min(deadline, clock() + timeoutMs);
+  const listUrl = new URL(apiBase.replace(/\/$/, '') + '/repos/' + repository + '/deployments');
+  listUrl.searchParams.set('environment', environment);
+  listUrl.searchParams.set('sha', sha);
+  listUrl.searchParams.set('per_page', '10');
+  let attempt = 0;
+  let lastDeployment = null;
+  let lastStatus = null;
+  while (remainingMs(stopAt, clock) > 0) {
+    try {
+      const deployment = newestDeployment(await githubJson(fetchImpl, listUrl, { token }));
+      if (deployment) {
+        lastDeployment = deployment;
+        const statuses = await githubJson(fetchImpl,
+          apiBase.replace(/\/$/, '') + '/repos/' + repository + '/deployments/' + deployment.id + '/statuses', { token });
+        lastStatus = latestStatus(statuses);
+        const state = lastStatus?.state;
+        if (state === 'success') {
+          logger.log('Pages deployment ' + deployment.id + ' for ' + sha + ' reported success.');
+          return { deployment, status: lastStatus };
+        }
+        if (FAILED_DEPLOYMENT_STATES.has(state)) throw new Error(describeDeploymentFailure(deployment, lastStatus));
+        logger.warn('Waiting for Pages deployment ' + deployment.id + ' (' + (state || 'no-status') + ').');
+      } else logger.warn('Waiting for a Pages deployment for ' + sha + ' to appear.');
+    } catch (error) {
+      if (error.message?.startsWith('Pages deployment ')) throw error;
+      if (!error.transient && error.name !== 'TimeoutError' && error.name !== 'AbortError') throw error;
+      logger.warn('Transient error polling Pages deployments: ' + error.message);
+    }
+    if (remainingMs(stopAt, clock) <= 0) break;
+    await waitForDeadline(wait, clock, stopAt, verifyBackoffMs(attempt));
+    attempt += 1;
+  }
+  if (lastDeployment) {
+    throw new Error('Pages deployment ' + lastDeployment.id + ' for commit ' + sha + ' is still '
+      + (lastStatus?.state || 'pending') + ' after the deployment wait (log: '
+      + (lastStatus?.log_url || lastStatus?.target_url || 'unavailable') + '). ' + RETRY_WITHOUT_CFBD);
+  }
+  throw new Error('No GitHub Pages deployment for commit ' + sha
+    + ' became available before the deployment wait ended. ' + RETRY_WITHOUT_CFBD);
+}
+
+function snapshotMarker(dataset) {
+  let fingerprint = 'unreadable';
+  try { fingerprint = modelInputFingerprint(dataset); } catch { /* Keep a readable observed marker. */ }
+  return { generatedAt: dataset?.meta?.generatedAt || 'missing', fingerprint };
+}
+
+function describeStaleSnapshot(expected, observed) {
+  return 'Public snapshot is still stale after Pages reported success. Expected generatedAt '
+    + expected.generatedAt + ' (fingerprint ' + expected.fingerprint + '), observed '
+    + observed.generatedAt + ' (fingerprint ' + observed.fingerprint + '). ' + RETRY_WITHOUT_CFBD;
+}
+
 /** Verify the actual public model before recording a successful publication. */
 export async function finalizePublication({ projectDirectory = projectRoot, now = new Date(), fetchImpl = fetch,
   publicUrl = 'https://christopher-c-robinson.github.io/college-football-index/data/current-season.json',
-  timeoutMs = 240_000, wait = milliseconds => new Promise(resolveWait => setTimeout(resolveWait, milliseconds)), logger = console } = {}) {
+  repository = process.env.GITHUB_REPOSITORY, token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
+  sha, apiBase = 'https://api.github.com', deploymentTimeoutMs = PAGES_DEPLOYMENT_TIMEOUT_MS,
+  snapshotTimeoutMs = PUBLIC_SNAPSHOT_TIMEOUT_MS, timeoutMs = PUBLICATION_VERIFY_TIMEOUT_MS,
+  wait = milliseconds => new Promise(resolveWait => setTimeout(resolveWait, milliseconds)),
+  clock = Date.now, logger = console } = {}) {
   const statePath = resolve(projectDirectory, 'data/model-refresh-state.json');
   let state = await readJson(statePath);
   const pending = state.pendingPublication;
@@ -209,47 +346,70 @@ export async function finalizePublication({ projectDirectory = projectRoot, now 
   const superseded = Date.parse(current.meta.generatedAt) > Date.parse(pending.snapshotGeneratedAt);
   const targetGeneration = superseded ? current.meta.generatedAt : pending.snapshotGeneratedAt;
   const targetFingerprint = superseded ? modelInputFingerprint(current) : pending.inputFingerprint;
-  const deadline = Date.now() + timeoutMs;
+  const expected = { generatedAt: targetGeneration, fingerprint: targetFingerprint };
+  const overallDeadline = clock() + timeoutMs;
+  const deploymentSha = sha || resolvePushedCommitSha(projectDirectory);
+  await waitForPagesDeployment({ repository, sha: deploymentSha, token, apiBase, fetchImpl, wait, clock, logger,
+    timeoutMs: deploymentTimeoutMs, deadline: overallDeadline });
+  const snapshotDeadline = Math.min(overallDeadline, clock() + snapshotTimeoutMs);
+  let attempt = 0;
+  let lastObserved = null;
+  let sawStale = false;
   do {
+    let publicDataset = null;
     try {
       const endpoint = new URL(publicUrl);
       endpoint.searchParams.set('generation', targetGeneration);
-      const response = await fetchImpl(endpoint, { signal: AbortSignal.timeout(15_000), cache: 'no-store' });
-      if (response.ok) {
-        const publicDataset = await response.json();
-        if (publicDataset.meta?.generatedAt === targetGeneration
-          && modelInputFingerprint(publicDataset) === targetFingerprint) {
-          assertValidDataset(publicDataset, { now: new Date() });
-          if (superseded) {
-            state.pendingPublication = null;
-            for (const dayKey of pending.dayKeys) delete state.days[dayKey]?.stagedMissingRequiredBoxIds;
-            state.lastSupersededPublication = { ...pending, replacedBy: targetGeneration, verifiedAt: new Date().toISOString() };
-            for (const dayKey of pending.dayKeys) {
-              if (state.days[dayKey]?.season !== publicDataset.meta.season) continue;
-              try {
-                const staged = stageGameDaysPublication(state, { dataset: publicDataset, dayKeys: [dayKey],
-                  kind: pending.dayKinds?.[dayKey] || pending.kind, inputFingerprint: targetFingerprint, now: new Date() });
-                state = markGameDaysPublished(staged, { snapshotGeneratedAt: targetGeneration,
-                  inputFingerprint: targetFingerprint, now: new Date() });
-              } catch {
-                // Changed identities or reopened games require normal planner
-                // reconciliation; the obsolete marker must not block it.
-                logger.warn('The newer public schedule requires reconciliation for ' + dayKey + '.');
-              }
-            }
-          } else state = markGameDaysPublished(state, { snapshotGeneratedAt: targetGeneration,
-            inputFingerprint: targetFingerprint, now: new Date() });
-          await saveState(statePath, state);
-          logger.log('Verified public snapshot ' + targetGeneration + ' for ' + pending.dayKeys.join(', ') + '.');
-          await output({ published: true });
-          return { published: true, generatedAt: targetGeneration, gameDays: pending.dayKeys, superseded };
+      endpoint.searchParams.set('t', String(clock()));
+      const response = await fetchImpl(endpoint, { signal: AbortSignal.timeout(15_000), cache: 'no-store',
+        headers: { Accept: 'application/json', 'Cache-Control': 'no-cache', Pragma: 'no-cache' } });
+      if (TRANSIENT_HTTP(response.status)) {
+        logger.warn('Waiting for the staged snapshot to become publicly available (HTTP ' + response.status + ').');
+      } else if (response.ok) {
+        const candidate = await response.json();
+        lastObserved = snapshotMarker(candidate);
+        if (candidate.meta?.generatedAt === targetGeneration
+          && modelInputFingerprint(candidate) === targetFingerprint) publicDataset = candidate;
+        else {
+          sawStale = true;
+          logger.warn('Public snapshot is stale: expected ' + targetGeneration + ', observed ' + lastObserved.generatedAt + '.');
         }
-      }
-    } catch (error) { logger.warn('Waiting for the staged snapshot to become publicly available.'); }
-    if (Date.now() >= deadline) break;
-    await wait(10_000);
-  } while (Date.now() <= deadline);
-  throw new Error('Public snapshot verification is still pending. The next checker will retry publication without recollecting CFBD data.');
+      } else logger.warn('Waiting for the staged snapshot to become publicly available (HTTP ' + response.status + ').');
+    } catch {
+      logger.warn('Waiting for the staged snapshot to become publicly available.');
+    }
+    if (publicDataset) {
+      assertValidDataset(publicDataset, { now: new Date() });
+      if (superseded) {
+        state.pendingPublication = null;
+        for (const dayKey of pending.dayKeys) delete state.days[dayKey]?.stagedMissingRequiredBoxIds;
+        state.lastSupersededPublication = { ...pending, replacedBy: targetGeneration, verifiedAt: new Date().toISOString() };
+        for (const dayKey of pending.dayKeys) {
+          if (state.days[dayKey]?.season !== publicDataset.meta.season) continue;
+          try {
+            const staged = stageGameDaysPublication(state, { dataset: publicDataset, dayKeys: [dayKey],
+              kind: pending.dayKinds?.[dayKey] || pending.kind, inputFingerprint: targetFingerprint, now: new Date() });
+            state = markGameDaysPublished(staged, { snapshotGeneratedAt: targetGeneration,
+              inputFingerprint: targetFingerprint, now: new Date() });
+          } catch {
+            // Changed identities or reopened games require normal planner
+            // reconciliation; the obsolete marker must not block it.
+            logger.warn('The newer public schedule requires reconciliation for ' + dayKey + '.');
+          }
+        }
+      } else state = markGameDaysPublished(state, { snapshotGeneratedAt: targetGeneration,
+        inputFingerprint: targetFingerprint, now: new Date() });
+      await saveState(statePath, state);
+      logger.log('Verified public snapshot ' + targetGeneration + ' for ' + pending.dayKeys.join(', ') + '.');
+      await output({ published: true });
+      return { published: true, generatedAt: targetGeneration, gameDays: pending.dayKeys, superseded };
+    }
+    if (remainingMs(snapshotDeadline, clock) <= 0) break;
+    await waitForDeadline(wait, clock, snapshotDeadline, verifyBackoffMs(attempt));
+    attempt += 1;
+  } while (remainingMs(snapshotDeadline, clock) > 0);
+  if (sawStale && lastObserved) throw new Error(describeStaleSnapshot(expected, lastObserved));
+  throw new Error('Public snapshot verification is still pending after Pages reported success. ' + RETRY_WITHOUT_CFBD);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

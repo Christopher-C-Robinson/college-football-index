@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pages: write
+  deployments: read
 
 # The manual season workflow uses this same writer lock. A checker queued
 # overnight reads main after acquiring it, not an old event-time checkout.
@@ -19,7 +20,7 @@ jobs:
   completion:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -101,6 +102,8 @@ jobs:
 
       - name: Verify the deployed snapshot and finalize its game days
         if: steps.refresh.outputs.publication_pending == 'true' || steps.plan.outputs.publication_pending == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: node scripts/refresh-after-games.mjs --finalize
 
       - name: Persist verified publication state
