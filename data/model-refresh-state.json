@@ -9741,9 +9741,9 @@
     },
     "2026:2026-11-14": {
       "readinessAttempts": 1,
-      "statsAttempts": 0,
+      "statsAttempts": 1,
       "nextReadinessAt": "2026-11-15T08:47:47.058Z",
-      "nextStatsAt": "2026-11-15T08:49:13.701Z",
+      "nextStatsAt": "2026-11-15T09:26:17.721Z",
       "firstAllFinalSeenAt": "2026-11-15T07:55:27.743Z",
       "publishedAt": "2026-11-15T08:19:13.701Z",
       "baseline": false,
@@ -11635,7 +11635,13 @@
       "completedWithoutGamesAt": null,
       "lastPublishedAt": "2026-11-15T08:19:13.701Z",
       "snapshotGeneratedAt": "2026-11-15T08:17:47.058Z",
-      "inputFingerprint": "2e9ef7a21cda6c6a6150d38640b1345c21e4c54b68df0356835bd79b3b7256b2"
+      "inputFingerprint": "2e9ef7a21cda6c6a6150d38640b1345c21e4c54b68df0356835bd79b3b7256b2",
+      "lastStatsAttemptAt": "2026-11-15T08:56:17.721Z",
+      "stagedMissingRequiredBoxIds": [
+        "401864538",
+        "401868322",
+        "401868332"
+      ]
     },
     "2026:2026-11-15": {
       "readinessAttempts": 0,
@@ -11671,7 +11677,18 @@
       "missingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-15T08:56:17.721Z",
+    "inputFingerprint": "3736acdad2fa99b51a448666ffcf93ca82e623e7137e05e071ee74790a5e5cc3",
+    "dayKeys": [
+      "2026:2026-11-14"
+    ],
+    "dayKinds": {
+      "2026:2026-11-14": "stats-retry"
+    },
+    "kind": "stats-retry",
+    "stagedAt": "2026-11-15T08:56:17.721Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -11680,8 +11697,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-15T08:17:47.058Z",
   "quota": {
-    "checkedAt": "2026-11-15T08:17:47.058Z",
-    "remainingCalls": 926,
-    "reserve": 101
+    "checkedAt": "2026-11-15T08:56:17.721Z",
+    "remainingCalls": 924,
+    "reserve": 110
   }
 }
