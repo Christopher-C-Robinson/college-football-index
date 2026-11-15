@@ -1167,24 +1167,6 @@
           "awayPoints": 38
         },
         {
-          "id": 401874036,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 6,
-          "startDate": "2026-10-10T21:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "Northeastern State",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null,
-          "canceled": true,
-          "status": "canceled"
-        },
-        {
           "id": 401860902,
           "season": 2026,
           "seasonType": "regular",
@@ -1535,6 +1517,24 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 38
+        },
+        {
+          "id": 401874036,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 6,
+          "startDate": "2026-10-10T21:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "Northeastern State",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null,
+          "canceled": true,
+          "status": "canceled"
         }
       ],
       "movedGameIds": [],
@@ -11639,9 +11639,9 @@
       "lastStatsAttemptAt": "2026-11-15T14:12:52.974Z"
     },
     "2026:2026-11-15": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-15T22:25:32.748Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-15T21:25:46.778Z",
       "publishedAt": null,
@@ -11661,28 +11661,118 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 24,
+          "awayPoints": 17
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-15T21:55:32.748Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-15T21:55:32.748Z",
+    "inputFingerprint": "61f32d9a3a672ad1c22f21ce2937a470380278977092d0e30667221db42fd1f3",
+    "dayKeys": [
+      "2026:2026-11-15"
+    ],
+    "dayKinds": {
+      "2026:2026-11-15": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-15T21:55:32.748Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-15T08:17:47.058Z",
+  "confirmedScheduleOverrides": {
+    "401856887": {
+      "game": {
+        "id": 401856887,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 11,
+        "startDate": "2026-11-15T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Oklahoma",
+        "awayTeam": "Ole Miss",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 24,
+        "awayPoints": 17
+      },
+      "checkedAt": "2026-11-15T21:55:32.748Z"
+    },
+    "401858528": {
+      "game": {
+        "id": 401858528,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Michigan",
+        "awayTeam": "UCLA",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-15T21:55:32.748Z"
+    },
+    "401858531": {
+      "game": {
+        "id": 401858531,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Nebraska",
+        "awayTeam": "Ohio State",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-15T21:55:32.748Z"
+    },
+    "401858535": {
+      "game": {
+        "id": 401858535,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Washington",
+        "awayTeam": "Indiana",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-15T21:55:32.748Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-15T21:55:32.748Z",
   "quota": {
-    "checkedAt": "2026-11-15T14:12:52.974Z",
-    "remainingCalls": 918,
-    "reserve": 110
+    "checkedAt": "2026-11-15T21:55:32.748Z",
+    "remainingCalls": 914,
+    "reserve": 101
   }
 }
