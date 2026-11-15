@@ -11627,9 +11627,7 @@
       "missingGameIds": [],
       "scheduleChanged": false,
       "missingRequiredBoxIds": [
-        "401864538",
-        "401868322",
-        "401868332"
+        "401864538"
       ],
       "lastReadinessAttemptAt": "2026-11-15T08:17:47.058Z",
       "completedWithoutGamesAt": null,
@@ -11682,84 +11680,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401856887": {
-      "game": {
-        "id": 401856887,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 11,
-        "startDate": "2026-11-15T18:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Oklahoma",
-        "awayTeam": "Ole Miss",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 24,
-        "awayPoints": 17
-      },
-      "checkedAt": "2026-11-15T21:55:32.748Z"
-    },
-    "401858528": {
-      "game": {
-        "id": 401858528,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 12,
-        "startDate": "2026-11-21T20:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Michigan",
-        "awayTeam": "UCLA",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-11-15T21:55:32.748Z"
-    },
-    "401858531": {
-      "game": {
-        "id": 401858531,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 12,
-        "startDate": "2026-11-21T17:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Nebraska",
-        "awayTeam": "Ohio State",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-11-15T21:55:32.748Z"
-    },
-    "401858535": {
-      "game": {
-        "id": 401858535,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 12,
-        "startDate": "2026-11-21T20:30:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Washington",
-        "awayTeam": "Indiana",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": false,
-        "homePoints": null,
-        "awayPoints": null
-      },
-      "checkedAt": "2026-11-15T21:55:32.748Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-15T21:55:32.748Z",
   "quota": {
     "checkedAt": "2026-11-15T21:55:32.748Z",
