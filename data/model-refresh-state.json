@@ -1167,6 +1167,24 @@
           "awayPoints": 38
         },
         {
+          "id": 401874036,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 6,
+          "startDate": "2026-10-10T21:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "West Florida",
+          "awayTeam": "Northeastern State",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null,
+          "canceled": true,
+          "status": "canceled"
+        },
+        {
           "id": 401860902,
           "season": 2026,
           "seasonType": "regular",
@@ -1517,24 +1535,6 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 38
-        },
-        {
-          "id": 401874036,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 6,
-          "startDate": "2026-10-10T21:00:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "West Florida",
-          "awayTeam": "Northeastern State",
-          "homeClassification": "fcs",
-          "awayClassification": "ii",
-          "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null,
-          "canceled": true,
-          "status": "canceled"
         }
       ],
       "movedGameIds": [],
@@ -9741,9 +9741,9 @@
     },
     "2026:2026-11-14": {
       "readinessAttempts": 1,
-      "statsAttempts": 4,
+      "statsAttempts": 5,
       "nextReadinessAt": "2026-11-15T08:47:47.058Z",
-      "nextStatsAt": "2026-11-16T02:12:52.974Z",
+      "nextStatsAt": "2026-11-23T02:21:37.823Z",
       "firstAllFinalSeenAt": "2026-11-15T07:55:27.743Z",
       "publishedAt": "2026-11-15T08:19:13.701Z",
       "baseline": false,
@@ -11634,7 +11634,7 @@
       "lastPublishedAt": "2026-11-15T08:57:38.156Z",
       "snapshotGeneratedAt": "2026-11-15T08:56:17.721Z",
       "inputFingerprint": "3736acdad2fa99b51a448666ffcf93ca82e623e7137e05e071ee74790a5e5cc3",
-      "lastStatsAttemptAt": "2026-11-15T14:12:52.974Z"
+      "lastStatsAttemptAt": "2026-11-16T02:21:37.823Z"
     },
     "2026:2026-11-15": {
       "readinessAttempts": 1,
@@ -11683,8 +11683,8 @@
   "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-15T21:55:32.748Z",
   "quota": {
-    "checkedAt": "2026-11-16T01:55:59.474Z",
-    "remainingCalls": 912,
+    "checkedAt": "2026-11-16T02:21:37.823Z",
+    "remainingCalls": 910,
     "reserve": 101
   }
 }
