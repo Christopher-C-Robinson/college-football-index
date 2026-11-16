@@ -7367,13 +7367,10 @@
         "401861966"
       ],
       "lastReadinessAttemptAt": "2026-11-01T07:14:04.650Z",
-      "lastPublishedAt": "2026-11-02T01:42:47.295Z",
-      "snapshotGeneratedAt": "2026-11-02T01:41:51.403Z",
-      "inputFingerprint": "92c0e6aeec2880201294ba5a472aaef4b1c291f0c01b255ee06518970458f0b5",
-      "lastStatsAttemptAt": "2026-11-16T01:55:59.474Z",
-      "stagedMissingRequiredBoxIds": [
-        "401861966"
-      ]
+      "lastPublishedAt": "2026-11-16T01:57:18.959Z",
+      "snapshotGeneratedAt": "2026-11-16T01:55:59.474Z",
+      "inputFingerprint": "39c408b3c045fac23ae0dceb0f9310ab3a08ddce10b198d5fbfaf47b805a48c5",
+      "lastStatsAttemptAt": "2026-11-16T01:55:59.474Z"
     },
     "2026:2026-11-03": {
       "readinessAttempts": 1,
@@ -11677,18 +11674,7 @@
       "inputFingerprint": "61f32d9a3a672ad1c22f21ce2937a470380278977092d0e30667221db42fd1f3"
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-11-16T01:55:59.474Z",
-    "inputFingerprint": "39c408b3c045fac23ae0dceb0f9310ab3a08ddce10b198d5fbfaf47b805a48c5",
-    "dayKeys": [
-      "2026:2026-10-31"
-    ],
-    "dayKinds": {
-      "2026:2026-10-31": "stats-retry"
-    },
-    "kind": "stats-retry",
-    "stagedAt": "2026-11-16T01:55:59.474Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
