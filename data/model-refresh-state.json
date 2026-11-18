@@ -11741,6 +11741,55 @@
       "lastPublishedAt": "2026-11-18T04:02:33.319Z",
       "snapshotGeneratedAt": "2026-11-18T03:56:02.589Z",
       "inputFingerprint": "5e99038246885dc29ff35de0faa42b003b802f500adeaae17ea2b192f7029036"
+    },
+    "2026:2026-11-18": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-11-18",
+      "expectedGames": [
+        {
+          "id": 401866467,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 12,
+          "startDate": "2026-11-19T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Massachusetts",
+          "awayTeam": "Akron",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401866469,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 12,
+          "startDate": "2026-11-19T00:30:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Buffalo",
+          "awayTeam": "Central Michigan",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
