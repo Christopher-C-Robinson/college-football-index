@@ -11743,9 +11743,9 @@
       "inputFingerprint": "5e99038246885dc29ff35de0faa42b003b802f500adeaae17ea2b192f7029036"
     },
     "2026:2026-11-18": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-19T04:47:10.781Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-19T03:40:41.402Z",
       "publishedAt": null,
@@ -11765,9 +11765,9 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 33,
+          "awayPoints": 34
         },
         {
           "id": 401866469,
@@ -11781,28 +11781,137 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 40,
+          "awayPoints": 21
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-19T04:17:10.781Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-19T04:17:10.781Z",
+    "inputFingerprint": "e52e74358f7152358d15d08a397253a99437349ad31d9b0acb833dbf22c73197",
+    "dayKeys": [
+      "2026:2026-11-18"
+    ],
+    "dayKinds": {
+      "2026:2026-11-18": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-19T04:17:10.781Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-18T03:56:02.589Z",
+  "confirmedScheduleOverrides": {
+    "401866467": {
+      "game": {
+        "id": 401866467,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-19T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Massachusetts",
+        "awayTeam": "Akron",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 33,
+        "awayPoints": 34
+      },
+      "checkedAt": "2026-11-19T04:17:10.781Z"
+    },
+    "401866469": {
+      "game": {
+        "id": 401866469,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-19T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Buffalo",
+        "awayTeam": "Central Michigan",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 40,
+        "awayPoints": 21
+      },
+      "checkedAt": "2026-11-19T04:17:10.781Z"
+    },
+    "401868117": {
+      "game": {
+        "id": 401868117,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:05:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Montana State",
+        "awayTeam": "Montana",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-19T04:17:10.781Z"
+    },
+    "401868304": {
+      "game": {
+        "id": 401868304,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T18:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Mississippi Valley State",
+        "awayTeam": "Alabama A&M",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-19T04:17:10.781Z"
+    },
+    "401868941": {
+      "game": {
+        "id": 401868941,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas Southern",
+        "awayTeam": "Arkansas-Pine Bluff",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-19T04:17:10.781Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-19T04:17:10.781Z",
   "quota": {
-    "checkedAt": "2026-11-18T03:56:02.589Z",
-    "remainingCalls": 906,
-    "reserve": 92
+    "checkedAt": "2026-11-19T04:17:10.781Z",
+    "remainingCalls": 902,
+    "reserve": 83
   }
 }
