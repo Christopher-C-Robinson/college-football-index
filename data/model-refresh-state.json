@@ -11747,7 +11747,7 @@
       "statsAttempts": 0,
       "nextReadinessAt": null,
       "nextStatsAt": null,
-      "firstAllFinalSeenAt": null,
+      "firstAllFinalSeenAt": "2026-11-19T03:40:41.402Z",
       "publishedAt": null,
       "baseline": false,
       "season": 2026,
