@@ -11796,9 +11796,9 @@
       "inputFingerprint": "e52e74358f7152358d15d08a397253a99437349ad31d9b0acb833dbf22c73197"
     },
     "2026:2026-11-19": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-20T04:47:38.603Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-20T03:55:45.572Z",
       "publishedAt": null,
@@ -11818,9 +11818,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 66,
+          "awayPoints": 0
         },
         {
           "id": 401868323,
@@ -11834,9 +11834,9 @@
           "homeClassification": "fcs",
           "awayClassification": "fcs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 10,
+          "awayPoints": 38
         },
         {
           "id": 401862830,
@@ -11850,28 +11850,137 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 27,
+          "awayPoints": 31
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-20T04:17:38.603Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-20T04:17:38.603Z",
+    "inputFingerprint": "5faf70867a2eac25c79661cb94b567016b6d49fa5189025ce7d7077f0dca94e0",
+    "dayKeys": [
+      "2026:2026-11-19"
+    ],
+    "dayKinds": {
+      "2026:2026-11-19": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-20T04:17:38.603Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-19T04:17:10.781Z",
+  "confirmedScheduleOverrides": {
+    "401862830": {
+      "game": {
+        "id": 401862830,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-20T00:30:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Temple",
+        "awayTeam": "Rice",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 27,
+        "awayPoints": 31
+      },
+      "checkedAt": "2026-11-20T04:17:38.603Z"
+    },
+    "401866697": {
+      "game": {
+        "id": 401866697,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T17:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Campbell",
+        "awayTeam": "Monmouth",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-20T04:17:38.603Z"
+    },
+    "401868117": {
+      "game": {
+        "id": 401868117,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-21T19:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Montana State",
+        "awayTeam": "Montana",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": false,
+        "homePoints": null,
+        "awayPoints": null
+      },
+      "checkedAt": "2026-11-20T04:17:38.603Z"
+    },
+    "401868314": {
+      "game": {
+        "id": 401868314,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-20T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Stephen F. Austin",
+        "awayTeam": "Northwestern State",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 66,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-11-20T04:17:38.603Z"
+    },
+    "401868323": {
+      "game": {
+        "id": 401868323,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 12,
+        "startDate": "2026-11-20T00:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Nicholls",
+        "awayTeam": "SE Louisiana",
+        "homeClassification": "fcs",
+        "awayClassification": "fcs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 10,
+        "awayPoints": 38
+      },
+      "checkedAt": "2026-11-20T04:17:38.603Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-20T04:17:38.603Z",
   "quota": {
-    "checkedAt": "2026-11-19T04:17:10.781Z",
-    "remainingCalls": 902,
-    "reserve": 83
+    "checkedAt": "2026-11-20T04:17:38.603Z",
+    "remainingCalls": 898,
+    "reserve": 74
   }
 }
