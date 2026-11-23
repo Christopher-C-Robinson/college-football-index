@@ -3,9 +3,9 @@
     "season": 2026,
     "schemaVersion": 2,
     "modelVersion": "2.0.0",
-    "generatedAt": "2026-11-22T08:18:02.049Z",
-    "asOf": "2026-11-22",
-    "gitCommit": "e789e55dbb7e09517216abb9b1db01d347ef00ad",
+    "generatedAt": "2026-11-23T02:21:52.897Z",
+    "asOf": "2026-11-23",
+    "gitCommit": "cb2a7275567f2ddf179170986e16f832935a94aa",
     "resultsThrough": "2026-11-22",
     "provider": "CollegeFootballData.com API",
     "seasonTypes": [
@@ -18,7 +18,7 @@
     "starter": false,
     "completeD1": true,
     "includesStats": true,
-    "apiCalls": 6,
+    "apiCalls": 5,
     "statsBatchFetchedAt": {
       "regular:1": "2026-10-08T21:54:45.848Z",
       "regular:2": "2026-10-08T21:54:45.848Z",
@@ -28,13 +28,14 @@
       "regular:6": "2026-10-12T01:58:23.329Z",
       "regular:7": "2026-10-21T05:32:14.171Z",
       "regular:8": "2026-11-02T01:15:57.744Z",
-      "regular:9": "2026-11-16T01:55:59.474Z",
+      "regular:9": "2026-11-23T02:21:52.897Z",
       "regular:10": "2026-11-09T02:20:03.190Z",
-      "regular:11": "2026-11-16T02:21:37.823Z",
+      "regular:11": "2026-11-23T02:21:52.897Z",
       "regular:12": "2026-11-22T08:18:02.049Z"
     },
     "statsBatchKeysFetched": [
-      "regular:12"
+      "regular:9",
+      "regular:11"
     ],
     "schedulesPrefetched": true,
     "metadataFetchedAt": "2026-11-22T08:18:02.049Z",
@@ -71,11 +72,12 @@
       2026
     ],
     "refreshTrigger": {
-      "kind": "game-day-complete",
+      "kind": "delayed-statistics",
       "gameDays": [
-        "2026:2026-11-21"
+        "2026:2026-10-31",
+        "2026:2026-11-14"
       ],
-      "confirmedAt": "2026-11-22T08:18:02.049Z"
+      "confirmedAt": "2026-11-23T02:21:52.897Z"
     }
   },
   "games": [
@@ -36460,6 +36462,49 @@
       "highlights": "",
       "notes": null,
       "playoff": null
+    },
+    {
+      "id": 401874036,
+      "season": 2026,
+      "week": 6,
+      "seasonType": "regular",
+      "startDate": "2026-10-10T21:00:00.000Z",
+      "startTimeTBD": false,
+      "completed": false,
+      "neutralSite": false,
+      "conferenceGame": false,
+      "attendance": null,
+      "venueId": 10803,
+      "venue": "Pen-Air Field",
+      "homeId": 110242,
+      "homeTeam": "West Florida",
+      "homeClassification": "fcs",
+      "homeConference": "UAC",
+      "homePoints": null,
+      "homeLineScores": [],
+      "homePostgameWinProbability": null,
+      "homePregameElo": null,
+      "homePostgameElo": null,
+      "awayId": 196,
+      "awayTeam": "Northeastern State",
+      "awayClassification": "ii",
+      "awayConference": "Independent DII",
+      "awayPoints": null,
+      "awayLineScores": [],
+      "awayPostgameWinProbability": null,
+      "awayPregameElo": null,
+      "awayPostgameElo": null,
+      "excitementIndex": null,
+      "highlights": "",
+      "notes": null,
+      "playoff": null,
+      "canceled": true,
+      "status": "canceled",
+      "statusSource": {
+        "sourceURL": "https://goriverhawksgo.com/news/2026/10/7/northeastern-state-west-florida-football-game-canceled.aspx?path=rodeo",
+        "verifiedAt": "2026-10-11T04:45:47Z",
+        "reason": "Canceled due to weather; no makeup game."
+      }
     },
     {
       "id": 401860902,
@@ -73488,49 +73533,6 @@
       "highlights": "",
       "notes": null,
       "playoff": null
-    },
-    {
-      "id": 401874036,
-      "season": 2026,
-      "week": 6,
-      "seasonType": "regular",
-      "startDate": "2026-10-10T21:00:00.000Z",
-      "startTimeTBD": false,
-      "completed": false,
-      "neutralSite": false,
-      "conferenceGame": false,
-      "attendance": null,
-      "venueId": 10803,
-      "venue": "Pen-Air Field",
-      "homeId": 110242,
-      "homeTeam": "West Florida",
-      "homeClassification": "fcs",
-      "homeConference": "UAC",
-      "homePoints": null,
-      "homeLineScores": [],
-      "homePostgameWinProbability": null,
-      "homePregameElo": null,
-      "homePostgameElo": null,
-      "awayId": 196,
-      "awayTeam": "Northeastern State",
-      "awayClassification": "ii",
-      "awayConference": "Independent DII",
-      "awayPoints": null,
-      "awayLineScores": [],
-      "awayPostgameWinProbability": null,
-      "awayPregameElo": null,
-      "awayPostgameElo": null,
-      "excitementIndex": null,
-      "highlights": "",
-      "notes": null,
-      "playoff": null,
-      "canceled": true,
-      "status": "canceled",
-      "statusSource": {
-        "sourceURL": "https://goriverhawksgo.com/news/2026/10/7/northeastern-state-west-florida-football-game-canceled.aspx?path=rodeo",
-        "verifiedAt": "2026-10-11T04:45:47Z",
-        "reason": "Canceled due to weather; no makeup game."
-      }
     }
   ],
   "teamMetadata": [
