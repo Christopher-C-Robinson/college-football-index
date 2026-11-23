@@ -7367,13 +7367,10 @@
         "401861966"
       ],
       "lastReadinessAttemptAt": "2026-11-01T07:14:04.650Z",
-      "lastPublishedAt": "2026-11-16T01:57:18.959Z",
-      "snapshotGeneratedAt": "2026-11-16T01:55:59.474Z",
-      "inputFingerprint": "39c408b3c045fac23ae0dceb0f9310ab3a08ddce10b198d5fbfaf47b805a48c5",
-      "lastStatsAttemptAt": "2026-11-23T02:21:52.897Z",
-      "stagedMissingRequiredBoxIds": [
-        "401861966"
-      ]
+      "lastPublishedAt": "2026-11-23T02:23:15.112Z",
+      "snapshotGeneratedAt": "2026-11-23T02:21:52.897Z",
+      "inputFingerprint": "65683abd8cdbc11785cde1bef867b94dca9825129eb4cdd90bbf4cae6197c592",
+      "lastStatsAttemptAt": "2026-11-23T02:21:52.897Z"
     },
     "2026:2026-11-03": {
       "readinessAttempts": 1,
@@ -11634,13 +11631,10 @@
       ],
       "lastReadinessAttemptAt": "2026-11-15T08:17:47.058Z",
       "completedWithoutGamesAt": null,
-      "lastPublishedAt": "2026-11-15T08:57:38.156Z",
-      "snapshotGeneratedAt": "2026-11-15T08:56:17.721Z",
-      "inputFingerprint": "3736acdad2fa99b51a448666ffcf93ca82e623e7137e05e071ee74790a5e5cc3",
-      "lastStatsAttemptAt": "2026-11-23T02:21:52.897Z",
-      "stagedMissingRequiredBoxIds": [
-        "401864538"
-      ]
+      "lastPublishedAt": "2026-11-23T02:23:15.112Z",
+      "snapshotGeneratedAt": "2026-11-23T02:21:52.897Z",
+      "inputFingerprint": "65683abd8cdbc11785cde1bef867b94dca9825129eb4cdd90bbf4cae6197c592",
+      "lastStatsAttemptAt": "2026-11-23T02:21:52.897Z"
     },
     "2026:2026-11-15": {
       "readinessAttempts": 1,
@@ -13866,20 +13860,7 @@
       "inputFingerprint": "b0af9ef2a08e88d6fd25d554c3cdcf6a2cad31045ce6e310194a72a030e12775"
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-11-23T02:21:52.897Z",
-    "inputFingerprint": "65683abd8cdbc11785cde1bef867b94dca9825129eb4cdd90bbf4cae6197c592",
-    "dayKeys": [
-      "2026:2026-10-31",
-      "2026:2026-11-14"
-    ],
-    "dayKinds": {
-      "2026:2026-10-31": "stats-retry",
-      "2026:2026-11-14": "stats-retry"
-    },
-    "kind": "stats-retry",
-    "stagedAt": "2026-11-23T02:21:52.897Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
