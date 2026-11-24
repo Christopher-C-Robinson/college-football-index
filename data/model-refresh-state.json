@@ -13858,6 +13858,55 @@
       "lastPublishedAt": "2026-11-22T08:19:30.893Z",
       "snapshotGeneratedAt": "2026-11-22T08:18:02.049Z",
       "inputFingerprint": "b0af9ef2a08e88d6fd25d554c3cdcf6a2cad31045ce6e310194a72a030e12775"
+    },
+    "2026:2026-11-24": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-11-24",
+      "expectedGames": [
+        {
+          "id": 401866470,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-25T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Eastern Michigan",
+          "awayTeam": "Kent State",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401866471,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-25T00:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Western Michigan",
+          "awayTeam": "Miami (OH)",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
