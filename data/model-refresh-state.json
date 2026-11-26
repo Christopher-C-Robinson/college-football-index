@@ -13911,6 +13911,55 @@
       "lastPublishedAt": "2026-11-25T03:56:55.871Z",
       "snapshotGeneratedAt": "2026-11-25T03:55:32.517Z",
       "inputFingerprint": "57d5b8bff8fbc284db4ee16aab2edc86c7e2b56c7a4ac131f8844efe49c56b5e"
+    },
+    "2026:2026-11-26": {
+      "readinessAttempts": 0,
+      "statsAttempts": 0,
+      "nextReadinessAt": null,
+      "nextStatsAt": null,
+      "firstAllFinalSeenAt": null,
+      "publishedAt": null,
+      "baseline": false,
+      "season": 2026,
+      "date": "2026-11-26",
+      "expectedGames": [
+        {
+          "id": 401868354,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-26T20:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Alabama State",
+          "awayTeam": "Tuskegee",
+          "homeClassification": "fcs",
+          "awayClassification": "ii",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        },
+        {
+          "id": 401856879,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-27T01:00:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Texas Tech",
+          "awayTeam": "TCU",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": false,
+          "homePoints": null,
+          "awayPoints": null
+        }
+      ],
+      "movedGameIds": [],
+      "missingGameIds": [],
+      "scheduleChanged": false,
+      "missingRequiredBoxIds": []
     }
   },
   "pendingPublication": null,
