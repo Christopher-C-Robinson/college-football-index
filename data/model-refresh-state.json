@@ -13972,46 +13972,7 @@
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {
-    "401856879": {
-      "game": {
-        "id": 401856879,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 13,
-        "startDate": "2026-11-27T01:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Texas Tech",
-        "awayTeam": "TCU",
-        "homeClassification": "fbs",
-        "awayClassification": "fbs",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 48,
-        "awayPoints": 27
-      },
-      "checkedAt": "2026-11-27T05:16:17.980Z"
-    },
-    "401868354": {
-      "game": {
-        "id": 401868354,
-        "season": 2026,
-        "seasonType": "regular",
-        "week": 13,
-        "startDate": "2026-11-26T20:00:00.000Z",
-        "startTimeTBD": false,
-        "homeTeam": "Alabama State",
-        "awayTeam": "Tuskegee",
-        "homeClassification": "fcs",
-        "awayClassification": "ii",
-        "neutralSite": false,
-        "completed": true,
-        "homePoints": 45,
-        "awayPoints": 0
-      },
-      "checkedAt": "2026-11-27T05:16:17.980Z"
-    }
-  },
+  "confirmedScheduleOverrides": {},
   "lastScheduleConfirmationAt": "2026-11-27T05:16:17.980Z",
   "quota": {
     "checkedAt": "2026-11-27T05:16:17.980Z",
