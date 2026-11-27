@@ -13913,9 +13913,9 @@
       "inputFingerprint": "57d5b8bff8fbc284db4ee16aab2edc86c7e2b56c7a4ac131f8844efe49c56b5e"
     },
     "2026:2026-11-26": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-27T05:46:17.980Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-27T04:40:42.918Z",
       "publishedAt": null,
@@ -13935,9 +13935,9 @@
           "homeClassification": "fcs",
           "awayClassification": "ii",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 45,
+          "awayPoints": 0
         },
         {
           "id": 401856879,
@@ -13951,28 +13951,80 @@
           "homeClassification": "fbs",
           "awayClassification": "fbs",
           "neutralSite": false,
-          "completed": false,
-          "homePoints": null,
-          "awayPoints": null
+          "completed": true,
+          "homePoints": 48,
+          "awayPoints": 27
         }
       ],
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": []
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-27T05:16:17.980Z",
+      "stagedMissingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-27T05:16:17.980Z",
+    "inputFingerprint": "e77c6cc3bda88ac96dcb19539c8fba767c33c0d7e12e11f93585bf7409039c63",
+    "dayKeys": [
+      "2026:2026-11-26"
+    ],
+    "dayKinds": {
+      "2026:2026-11-26": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-27T05:16:17.980Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
   "activeSeason": 2026,
   "confirmedMissingGameIds": [],
-  "confirmedScheduleOverrides": {},
-  "lastScheduleConfirmationAt": "2026-11-25T03:55:32.517Z",
+  "confirmedScheduleOverrides": {
+    "401856879": {
+      "game": {
+        "id": 401856879,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 13,
+        "startDate": "2026-11-27T01:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Texas Tech",
+        "awayTeam": "TCU",
+        "homeClassification": "fbs",
+        "awayClassification": "fbs",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 48,
+        "awayPoints": 27
+      },
+      "checkedAt": "2026-11-27T05:16:17.980Z"
+    },
+    "401868354": {
+      "game": {
+        "id": 401868354,
+        "season": 2026,
+        "seasonType": "regular",
+        "week": 13,
+        "startDate": "2026-11-26T20:00:00.000Z",
+        "startTimeTBD": false,
+        "homeTeam": "Alabama State",
+        "awayTeam": "Tuskegee",
+        "homeClassification": "fcs",
+        "awayClassification": "ii",
+        "neutralSite": false,
+        "completed": true,
+        "homePoints": 45,
+        "awayPoints": 0
+      },
+      "checkedAt": "2026-11-27T05:16:17.980Z"
+    }
+  },
+  "lastScheduleConfirmationAt": "2026-11-27T05:16:17.980Z",
   "quota": {
-    "checkedAt": "2026-11-25T03:55:32.517Z",
-    "remainingCalls": 879,
+    "checkedAt": "2026-11-27T05:16:17.980Z",
+    "remainingCalls": 875,
     "reserve": 50
   }
 }
