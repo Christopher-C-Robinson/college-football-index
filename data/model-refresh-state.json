@@ -13971,7 +13971,7 @@
       "nextReadinessAt": "2026-11-28T07:15:19.431Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-28T06:21:58.514Z",
-      "publishedAt": null,
+      "publishedAt": "2026-11-28T06:46:49.193Z",
       "baseline": false,
       "season": 2026,
       "date": "2026-11-27",
@@ -14191,7 +14191,9 @@
       "missingRequiredBoxIds": [],
       "lastReadinessAttemptAt": "2026-11-28T06:45:19.431Z",
       "completedWithoutGamesAt": null,
-      "stagedMissingRequiredBoxIds": []
+      "lastPublishedAt": "2026-11-28T06:46:49.193Z",
+      "snapshotGeneratedAt": "2026-11-28T06:45:19.431Z",
+      "inputFingerprint": "0a3bbb0b4174d2d4ba1cd5150af7bc9edd110f7366906468b59cc0d89cfe4fb6"
     },
     "2026:2026-11-28": {
       "readinessAttempts": 0,
@@ -15203,18 +15205,7 @@
       "missingRequiredBoxIds": []
     }
   },
-  "pendingPublication": {
-    "snapshotGeneratedAt": "2026-11-28T06:45:19.431Z",
-    "inputFingerprint": "0a3bbb0b4174d2d4ba1cd5150af7bc9edd110f7366906468b59cc0d89cfe4fb6",
-    "dayKeys": [
-      "2026:2026-11-27"
-    ],
-    "dayKinds": {
-      "2026:2026-11-27": "refresh"
-    },
-    "kind": "refresh",
-    "stagedAt": "2026-11-28T06:45:19.431Z"
-  },
+  "pendingPublication": null,
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
