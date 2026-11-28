@@ -13993,6 +13993,22 @@
           "awayPoints": 17
         },
         {
+          "id": 401858536,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-27T17:08:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Iowa",
+          "awayTeam": "Nebraska",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 7
+        },
+        {
           "id": 401862840,
           "season": 2026,
           "seasonType": "regular",
@@ -14039,22 +14055,6 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 34
-        },
-        {
-          "id": 401858536,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 13,
-          "startDate": "2026-11-27T17:08:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "Iowa",
-          "awayTeam": "Nebraska",
-          "homeClassification": "fbs",
-          "awayClassification": "fbs",
-          "neutralSite": false,
-          "completed": true,
-          "homePoints": 31,
-          "awayPoints": 7
         },
         {
           "id": 401869930,
@@ -14187,7 +14187,7 @@
       ],
       "movedGameIds": [],
       "missingGameIds": [],
-      "scheduleChanged": true,
+      "scheduleChanged": false,
       "missingRequiredBoxIds": [
         "401856756",
         "401856759",
