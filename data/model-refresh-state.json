@@ -13966,9 +13966,9 @@
       "inputFingerprint": "e77c6cc3bda88ac96dcb19539c8fba767c33c0d7e12e11f93585bf7409039c63"
     },
     "2026:2026-11-27": {
-      "readinessAttempts": 0,
+      "readinessAttempts": 1,
       "statsAttempts": 0,
-      "nextReadinessAt": null,
+      "nextReadinessAt": "2026-11-28T07:15:19.431Z",
       "nextStatsAt": null,
       "firstAllFinalSeenAt": "2026-11-28T06:21:58.514Z",
       "publishedAt": null,
@@ -13991,22 +13991,6 @@
           "completed": true,
           "homePoints": 41,
           "awayPoints": 17
-        },
-        {
-          "id": 401858536,
-          "season": 2026,
-          "seasonType": "regular",
-          "week": 13,
-          "startDate": "2026-11-27T17:08:00.000Z",
-          "startTimeTBD": false,
-          "homeTeam": "Iowa",
-          "awayTeam": "Nebraska",
-          "homeClassification": "fbs",
-          "awayClassification": "fbs",
-          "neutralSite": false,
-          "completed": true,
-          "homePoints": 31,
-          "awayPoints": 7
         },
         {
           "id": 401862840,
@@ -14055,6 +14039,22 @@
           "completed": true,
           "homePoints": 31,
           "awayPoints": 34
+        },
+        {
+          "id": 401858536,
+          "season": 2026,
+          "seasonType": "regular",
+          "week": 13,
+          "startDate": "2026-11-27T17:08:00.000Z",
+          "startTimeTBD": false,
+          "homeTeam": "Iowa",
+          "awayTeam": "Nebraska",
+          "homeClassification": "fbs",
+          "awayClassification": "fbs",
+          "neutralSite": false,
+          "completed": true,
+          "homePoints": 31,
+          "awayPoints": 7
         },
         {
           "id": 401869930,
@@ -14188,23 +14188,10 @@
       "movedGameIds": [],
       "missingGameIds": [],
       "scheduleChanged": false,
-      "missingRequiredBoxIds": [
-        "401856756",
-        "401856759",
-        "401856762",
-        "401856880",
-        "401858536",
-        "401858544",
-        "401862838",
-        "401862840",
-        "401864546",
-        "401864549",
-        "401866472",
-        "401866473",
-        "401869930"
-      ],
-      "lastReadinessAttemptAt": "2026-11-28T06:21:58.514Z",
-      "completedWithoutGamesAt": null
+      "missingRequiredBoxIds": [],
+      "lastReadinessAttemptAt": "2026-11-28T06:45:19.431Z",
+      "completedWithoutGamesAt": null,
+      "stagedMissingRequiredBoxIds": []
     },
     "2026:2026-11-28": {
       "readinessAttempts": 0,
@@ -15216,7 +15203,18 @@
       "missingRequiredBoxIds": []
     }
   },
-  "pendingPublication": null,
+  "pendingPublication": {
+    "snapshotGeneratedAt": "2026-11-28T06:45:19.431Z",
+    "inputFingerprint": "0a3bbb0b4174d2d4ba1cd5150af7bc9edd110f7366906468b59cc0d89cfe4fb6",
+    "dayKeys": [
+      "2026:2026-11-27"
+    ],
+    "dayKinds": {
+      "2026:2026-11-27": "refresh"
+    },
+    "kind": "refresh",
+    "stagedAt": "2026-11-28T06:45:19.431Z"
+  },
   "bootstrapDates": {
     "2026": "2026-10-10"
   },
@@ -15240,7 +15238,7 @@
         "homePoints": 6,
         "awayPoints": 16
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401856759": {
       "game": {
@@ -15259,7 +15257,7 @@
         "homePoints": 10,
         "awayPoints": 26
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401856762": {
       "game": {
@@ -15278,7 +15276,7 @@
         "homePoints": 41,
         "awayPoints": 17
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401856880": {
       "game": {
@@ -15297,7 +15295,7 @@
         "homePoints": 52,
         "awayPoints": 28
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401858536": {
       "game": {
@@ -15316,7 +15314,7 @@
         "homePoints": 31,
         "awayPoints": 7
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401858544": {
       "game": {
@@ -15335,7 +15333,7 @@
         "homePoints": 28,
         "awayPoints": 5
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401862838": {
       "game": {
@@ -15354,7 +15352,7 @@
         "homePoints": 31,
         "awayPoints": 35
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401862840": {
       "game": {
@@ -15373,7 +15371,7 @@
         "homePoints": 28,
         "awayPoints": 22
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401864546": {
       "game": {
@@ -15392,7 +15390,7 @@
         "homePoints": 42,
         "awayPoints": 19
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401864549": {
       "game": {
@@ -15411,7 +15409,7 @@
         "homePoints": 31,
         "awayPoints": 38
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401866472": {
       "game": {
@@ -15430,7 +15428,7 @@
         "homePoints": 9,
         "awayPoints": 17
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401866473": {
       "game": {
@@ -15449,7 +15447,7 @@
         "homePoints": 31,
         "awayPoints": 34
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401869533": {
       "game": {
@@ -15468,7 +15466,7 @@
         "homePoints": null,
         "awayPoints": null
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     },
     "401869930": {
       "game": {
@@ -15487,13 +15485,13 @@
         "homePoints": 20,
         "awayPoints": 13
       },
-      "checkedAt": "2026-11-28T06:21:58.514Z"
+      "checkedAt": "2026-11-28T06:45:19.431Z"
     }
   },
-  "lastScheduleConfirmationAt": "2026-11-28T06:21:58.514Z",
+  "lastScheduleConfirmationAt": "2026-11-28T06:45:19.431Z",
   "quota": {
-    "checkedAt": "2026-11-28T06:21:58.514Z",
-    "remainingCalls": 873,
+    "checkedAt": "2026-11-28T06:45:19.431Z",
+    "remainingCalls": 869,
     "reserve": 50
   }
 }
